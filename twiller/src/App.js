@@ -32,7 +32,7 @@ function App() {
             <Route path="messages" element={<Message />} />
             <Route path="lists" element={<Lists />} />
             <Route path="bookmarks" element={<Bookmark />} />
-            <Route path="profile" element={<Mainprofile />} />
+            <Route path="profile" element={<Profile />} />
             <Route path="more" element={<More />} />
           </Route>
       </Routes>

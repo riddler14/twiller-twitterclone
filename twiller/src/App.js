@@ -13,7 +13,7 @@ import Profile from "./Pages/Profile/Profile";
 import More from "./Pages/more/More";
 import { UserAuthContextProvider } from "./context/UserAuthContext";
 import Bookmark from "./Pages/Bookmark/Bookmark";
-import Mainprofile from './Pages/Profile/Mainprofile/Mainprofile';
+// import Mainprofile from './Pages/Profile/Mainprofile/Mainprofile';
 function App() {
   return (
    <div className='app'>

@@ -25,7 +25,7 @@ const Signup=()=>{
         name: name,
         email: email,
       };
-      fetch("http://localhost:5000/register", {
+      fetch("https://twiller-twitterclone-ewhk.onrender.com/register", {
         method: "POST",
         headers: {
           "content-type": "application/json",

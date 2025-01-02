@@ -17,14 +17,39 @@ const Mainprofile = ({ user }) => {
     const [loggedinuser] = useLoggedinuser();
     const username = user?.email?.split("@")[0];
     const [post, setpost] = useState([]);
+    const [location, setLocation] = useState('');
+     const [weather, setWeather] = useState('');
+
+
     useEffect(() => {
-      fetch(`http://localhost:5000/userpost?email=${user?.email}`)
+      fetch(`https://twiller-twitterclone-ewhk.onrender.com/userpost?email=${user?.email}`)
         .then((res) => res.json())
         .then((data) => {
           setpost(data);
         });
     }, [user.email]);
     
+    useEffect(() => { 
+      // Obtain user's geographical coordinates
+       navigator.geolocation.getCurrentPosition((position) => {
+         const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          // Convert coordinates to address using Google Maps Geocoding API 
+          fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`)
+           .then(response => response.json())
+            .then(data => {
+               const address = data.results[0].formatted_address; setLocation(address);
+               
+               // Get weather conditions using a weather API 
+               fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${process.env.REACT_APP_WEATHER_API_KEY}`)
+                .then(response => response.json())
+                .then(weatherData => {
+                   const weatherDescription = weatherData.weather[0].description;
+                    setWeather(weatherDescription);
+                   });
+                   });
+                   }); 
+                  }, []);
     const handleuploadcoverimage = (e) => {
       setisloading(true);
       const image = e.target.files[0];
@@ -45,7 +70,7 @@ const Mainprofile = ({ user }) => {
           };
           setisloading(false);
           if (url) {
-            fetch(`http://localhost:5000/userupdate/${user?.email}`, {
+            fetch(`https://twiller-twitterclone-ewhk.onrender.com/userupdate/${user?.email}`, {
               method: "PATCH",
               headers: {
                 "content-type": "application/json",
@@ -84,7 +109,7 @@ const Mainprofile = ({ user }) => {
           };
           setisloading(false);
           if (url) {
-            fetch(`http://localhost:5000/userupdate/${user?.email}`, {
+            fetch(`https://twiller-twitterclone-ewhk.onrender.com/userupdate/${user?.email}`, {
               method: "PATCH",
               headers: {
                 "content-type": "application/json",
@@ -218,7 +243,7 @@ const Mainprofile = ({ user }) => {
                   <div className="locationAndLink">
                     {loggedinuser[0]?.location ? (
                       <p className="suvInfo">
-                        <MyLocationIcon /> {loggedinuser[0].location}
+                        <MyLocationIcon /> {location} | weather: {weather}
                       </p>
                     ) : (
                       ""

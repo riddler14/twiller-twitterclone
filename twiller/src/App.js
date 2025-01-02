@@ -9,7 +9,7 @@ import Notification from "./Pages/Notification/Notification";
 import Message from "./Pages/Messages/Message";
 //import ProtectedRoute from "./Pages/ProtectedRoute";
 import Lists from "./Pages/Lists/Lists";
-// import Profile from "./Pages/Profile/Profile";
+import Profile from "./Pages/Profile/Profile";
 import More from "./Pages/more/More";
 import { UserAuthContextProvider } from "./context/UserAuthContext";
 import Bookmark from "./Pages/Bookmark/Bookmark";

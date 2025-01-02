@@ -256,7 +256,8 @@ const Mainprofile = ({ user }) => {
                   
                     <p className="suvInfo">
                      
-                      <MyLocationIcon /> {location} | Weather: {weather}
+                      <MyLocationIcon /> 
+                      Location: {location} | Weather: {weather}
                     </p>
                     {loggedinuser[0]?.website ? (
                       <p className="subInfo link">

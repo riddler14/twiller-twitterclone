@@ -253,10 +253,10 @@ const Mainprofile = ({ user }) => {
                 <div className="infoContainer">
                   {loggedinuser[0]?.bio ? <p>{loggedinuser[0].bio}</p> : ""}
                   <div className="locationAndLink">
-                    {" "}
+                  
                     <p className="suvInfo">
-                      {" "}
-                      <MyLocationIcon /> {location} | Weather: {weather}{" "}
+                     
+                      <MyLocationIcon /> {location} | Weather: {weather}
                     </p>
                     {loggedinuser[0]?.website ? (
                       <p className="subInfo link">

@@ -22,71 +22,73 @@ const Mainprofile = ({ user }) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
 
   useEffect(() => {
-    fetch(`https://twiller-twitterclone-ewhk.onrender.com/userpost?email=${user?.email}`)
+    fetch(
+      `https://twiller-twitterclone-ewhk.onrender.com/userpost?email=${user?.email}`
+    )
       .then((res) => res.json())
       .then((data) => {
         setpost(data);
       });
   }, [user.email]);
 
-  useEffect(() => {
+  const fetchLocationAndWeather = () => {
     if (navigator.geolocation) {
-      setLoadingLocation(true); // Start loading
-  
+      setLoadingLocation(true);
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
-  
+
           fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
           )
             .then((response) => response.json())
             .then((data) => {
               if (data.results && data.results.length > 0) {
-                const address = data.results[0]?.formatted_address || "Address not found";
+                const address =
+                  data.results[0]?.formatted_address || "Address not found";
                 setLocation(address);
-  
-                // Fetch weather details
+
                 fetch(
                   `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
                 )
                   .then((response) => response.json())
                   .then((weatherData) => {
                     if (weatherData.weather && weatherData.weather.length > 0) {
-                      const weatherDescription = weatherData.weather[0].description;
+                      const weatherDescription =
+                        weatherData.weather[0].description;
                       setWeather(weatherDescription);
                     } else {
                       console.error("No weather data found.");
                     }
-                    setLoadingLocation(false); // Stop loading
+                    setLoadingLocation(false);
                   })
                   .catch((error) => {
                     console.error("Error fetching weather data:", error);
-                    setLoadingLocation(false); // Stop loading
+                    setLoadingLocation(false);
                   });
               } else {
                 console.error("No results found for the given coordinates.");
                 setLocation("Location not found");
-                setLoadingLocation(false); // Stop loading
+                setLoadingLocation(false);
               }
             })
             .catch((error) => {
               console.error("Error fetching geocoding data:", error);
-              setLoadingLocation(false); // Stop loading
+              setLoadingLocation(false);
             });
         },
         (error) => {
           console.error("Error obtaining location:", error);
-          setLoadingLocation(false); // Stop loading
+          setLoadingLocation(false);
         }
       );
     } else {
       console.error("Geolocation is not supported by this browser.");
-      setLoadingLocation(false); // Stop loading
     }
-  }, []);
-  
+  };
+
   const handleuploadcoverimage = (e) => {
     setisloading(true);
     const image = e.target.files[0];
@@ -284,12 +286,17 @@ const Mainprofile = ({ user }) => {
                 <div className="infoContainer">
                   {loggedinuser[0]?.bio ? <p>{loggedinuser[0].bio}</p> : ""}
                   <div className="locationAndLink">
+                    <button
+                      onClick={fetchLocationAndWeather}
+                      className="getLocationButton"
+                    >
+                      Get Location & Weather
+                    </button>
                     <p className="suvInfo">
-                      {" "}
-                      <MyLocationIcon />{" "}
+                      <MyLocationIcon />
                       {loadingLocation
                         ? "Loading location and weather..."
-                        : ` ${location} | Weather: ${weather}`}{" "}
+                        : ` ${location} | Weather: ${weather}`}
                     </p>
                     {loggedinuser[0]?.website ? (
                       <p className="subInfo link">

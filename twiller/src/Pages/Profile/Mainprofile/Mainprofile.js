@@ -32,29 +32,38 @@ const Mainprofile = ({ user }) => {
 
   useEffect(() => {
     // Obtain user's geographical coordinates
-    navigator.geolocation.getCurrentPosition((position) => {
-      const lat = position.coords.latitude;
-      const lng = position.coords.longitude;
-      // Convert coordinates to address using Google Maps Geocoding API
-      fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
-      )
-        .then((response) => response.json())
-        .then((data) => {
-          const address = data.results[0].formatted_address;
-          setLocation(address);
-
-          // Get weather conditions using a weather API
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
           fetch(
-            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
           )
             .then((response) => response.json())
-            .then((weatherData) => {
-              const weatherDescription = weatherData.weather[0].description;
-              setWeather(weatherDescription);
+            .then((data) => {
+              const address = data.results[0].formatted_address;
+              setLocation(address);
+              fetch(
+                `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
+              )
+                .then((response) => response.json())
+                .then((weatherData) => {
+                  const weatherDescription = weatherData.weather[0].description;
+                  setWeather(weatherDescription);
+                  setLoadingLocation(false);
+                });
             });
-        });
-    });
+        },
+        (error) => {
+          console.error("Error obtaining location:", error);
+          setLoadingLocation(false);
+        }
+      );
+    } else {
+      console.error("Geolocation is not supported by this browser.");
+      setLoadingLocation(false);
+    }
   }, []);
   const handleuploadcoverimage = (e) => {
     setisloading(true);
@@ -253,11 +262,12 @@ const Mainprofile = ({ user }) => {
                 <div className="infoContainer">
                   {loggedinuser[0]?.bio ? <p>{loggedinuser[0].bio}</p> : ""}
                   <div className="locationAndLink">
-                  
                     <p className="suvInfo">
-                     
-                      <MyLocationIcon /> 
-                      Location: {location} | Weather: {weather}
+                      {" "}
+                      <MyLocationIcon />{" "}
+                      {loadingLocation
+                        ? "Loading location and weather..."
+                        : `Location: ${location} | Weather: ${weather}`}{" "}
                     </p>
                     {loggedinuser[0]?.website ? (
                       <p className="subInfo link">

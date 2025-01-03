@@ -22,6 +22,14 @@ const Mainprofile = ({ user }) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
 
   useEffect(() => {
+    fetch(`https://twiller-twitterclone-ewhk.onrender.com/userpost?email=${user?.email}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setpost(data);
+      });
+  }, [user.email]);
+
+  useEffect(() => {
     if (navigator.geolocation) {
       setLoadingLocation(true); // Start loading
   

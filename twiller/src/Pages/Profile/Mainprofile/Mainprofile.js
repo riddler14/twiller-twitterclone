@@ -38,8 +38,8 @@ const Mainprofile = ({ user }) => {
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
+          const lat = 40.73061; // Example: New York City
+          const lng = -73.935242;
 
           fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`

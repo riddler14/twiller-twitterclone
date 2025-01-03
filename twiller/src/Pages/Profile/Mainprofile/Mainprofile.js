@@ -35,16 +35,21 @@ const Mainprofile = ({ user }) => {
         (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
+  
           fetch(
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
           )
             .then((response) => response.json())
             .then((data) => {
+              console.log(data); // Debug the response structure
+  
               if (data.results && data.results.length > 0) {
-                const address = data.results[0].formatted_address;
+                const address = data.results[0]?.formatted_address || "Address not found";
                 setLocation(address);
+  
+                // Fetch weather details
                 fetch(
-                  `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
+                  `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
                 )
                   .then((response) => response.json())
                   .then((weatherData) => {
@@ -54,30 +59,19 @@ const Mainprofile = ({ user }) => {
                     } else {
                       console.error("No weather data found.");
                     }
-                    setLoadingLocation(false);
                   })
-                  .catch((error) => {
-                    console.error("Error fetching weather data:", error);
-                    setLoadingLocation(false);
-                  });
+                  .catch((error) => console.error("Error fetching weather data:", error));
               } else {
                 console.error("No results found for the given coordinates.");
-                setLoadingLocation(false);
+                setLocation("Location not found");
               }
             })
-            .catch((error) => {
-              console.error("Error fetching geocoding data:", error);
-              setLoadingLocation(false);
-            });
+            .catch((error) => console.error("Error fetching geocoding data:", error));
         },
-        (error) => {
-          console.error("Error obtaining location:", error);
-          setLoadingLocation(false);
-        }
+        (error) => console.error("Error obtaining location:", error)
       );
     } else {
       console.error("Geolocation is not supported by this browser.");
-      setLoadingLocation(false);
     }
   }, []);
   

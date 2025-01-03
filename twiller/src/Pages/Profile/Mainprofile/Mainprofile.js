@@ -42,17 +42,27 @@ const Mainprofile = ({ user }) => {
           )
             .then((response) => response.json())
             .then((data) => {
-              const address = data.results[0].formatted_address;
-              setLocation(address);
-              fetch(
-                `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
-              )
-                .then((response) => response.json())
-                .then((weatherData) => {
-                  const weatherDescription = weatherData.weather[0].description;
-                  setWeather(weatherDescription);
-                  setLoadingLocation(false);
-                });
+              if (data.results && data.results[0]) {
+                const address = data.results[0].formatted_address;
+                setLocation(address);
+                fetch(
+                  `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
+                )
+                  .then((response) => response.json())
+                  .then((weatherData) => {
+                    const weatherDescription =
+                      weatherData.weather[0].description;
+                    setWeather(weatherDescription);
+                    setLoadingLocation(false);
+                  });
+              } else {
+                console.error("No results found for the given coordinates.");
+                setLoadingLocation(false);
+              }
+            })
+            .catch((error) => {
+              console.error("Error fetching geocoding data:", error);
+              setLoadingLocation(false);
             });
         },
         (error) => {

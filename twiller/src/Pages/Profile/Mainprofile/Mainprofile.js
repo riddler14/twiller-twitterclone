@@ -10,6 +10,7 @@ import AddLinkIcon from "@mui/icons-material/AddLink";
 import Editprofile from "../Editprofile/Editprofile";
 import axios from "axios";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
+
 const Mainprofile = ({ user }) => {
   const navigate = useNavigate();
   const [isloading, setisloading] = useState(false);

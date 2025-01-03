@@ -42,7 +42,7 @@ const Mainprofile = ({ user }) => {
           const lng = position.coords.longitude;
 
           fetch(
-            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${REACT_APP_GOOGLE_MAPS_API_KEY}`
           )
             .then((response) => response.json())
             .then((data) => {
@@ -52,7 +52,7 @@ const Mainprofile = ({ user }) => {
                 setLocation(address);
 
                 fetch(
-                  `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=${process.env.REACT_APP_WEATHER_API_KEY}`
+                  `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lng}&units=metric&appid=${REACT_APP_WEATHER_API_KEY}`
                 )
                   .then((response) => response.json())
                   .then((weatherData) => {

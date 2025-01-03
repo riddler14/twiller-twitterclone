@@ -19,18 +19,12 @@ const Mainprofile = ({ user }) => {
   const [post, setpost] = useState([]);
   const [location, setLocation] = useState("");
   const [weather, setWeather] = useState("");
+  const [loadingLocation, setLoadingLocation] = useState(false);
 
   useEffect(() => {
-    fetch(
-      `https://twiller-twitterclone-ewhk.onrender.com/userpost?email=${user?.email}`
-    )
-      .then((res) => res.json())
-      .then((data) => {
-        setpost(data);
-      });
-  }, [user.email]);
-  useEffect(() => {
     if (navigator.geolocation) {
+      setLoadingLocation(true); // Start loading
+  
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const lat = position.coords.latitude;
@@ -41,8 +35,6 @@ const Mainprofile = ({ user }) => {
           )
             .then((response) => response.json())
             .then((data) => {
-              console.log(data); // Debug the response structure
-  
               if (data.results && data.results.length > 0) {
                 const address = data.results[0]?.formatted_address || "Address not found";
                 setLocation(address);
@@ -59,19 +51,31 @@ const Mainprofile = ({ user }) => {
                     } else {
                       console.error("No weather data found.");
                     }
+                    setLoadingLocation(false); // Stop loading
                   })
-                  .catch((error) => console.error("Error fetching weather data:", error));
+                  .catch((error) => {
+                    console.error("Error fetching weather data:", error);
+                    setLoadingLocation(false); // Stop loading
+                  });
               } else {
                 console.error("No results found for the given coordinates.");
                 setLocation("Location not found");
+                setLoadingLocation(false); // Stop loading
               }
             })
-            .catch((error) => console.error("Error fetching geocoding data:", error));
+            .catch((error) => {
+              console.error("Error fetching geocoding data:", error);
+              setLoadingLocation(false); // Stop loading
+            });
         },
-        (error) => console.error("Error obtaining location:", error)
+        (error) => {
+          console.error("Error obtaining location:", error);
+          setLoadingLocation(false); // Stop loading
+        }
       );
     } else {
       console.error("Geolocation is not supported by this browser.");
+      setLoadingLocation(false); // Stop loading
     }
   }, []);
   

@@ -295,14 +295,11 @@ const Mainprofile = ({ user }) => {
                     </button>
                     <p className="suvInfo">
                       <MyLocationIcon />
-                      {loadingLocation
-                        ? "Loading location and weather..."
-                        : ` ${location} 
-                        
-
-                        
-                        
-                        Weather: ${weather}`}
+                      <strong>
+                        {loadingLocation
+                          ? "Loading location and weather..."
+                          : ` ${location}`}
+                      </strong>
                     </p>
                     {loggedinuser[0]?.website ? (
                       <p className="subInfo link">

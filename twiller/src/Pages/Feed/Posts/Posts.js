@@ -31,12 +31,12 @@ const Posts = ({ p }) => {
         <img src={photo} alt="" width="500" />
         <div className="post__footer">
           <ChatBubbleOutlineIcon
-            className="post__fotter__icon"
+            className="post__footer__icon"
             fontSize="small"
           />
-          <RepeatIcon className="post__fotter__icon" fontSize="small" />
-          <FavoriteBorderIcon className="post__fotter__icon" fontSize="small" />
-          <PublishIcon className="post__fotter__icon" fontSize="small" />
+          <RepeatIcon className="post__footer__icon" fontSize="small" />
+          <FavoriteBorderIcon className="post__footer__icon" fontSize="small" />
+          <PublishIcon className="post__footer__icon" fontSize="small" />
         </div>
       </div>
     </div>

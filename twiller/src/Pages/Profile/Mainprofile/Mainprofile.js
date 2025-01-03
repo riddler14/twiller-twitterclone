@@ -277,7 +277,7 @@ const Mainprofile = ({ user }) => {
                       <MyLocationIcon />{" "}
                       {loadingLocation
                         ? "Loading location and weather..."
-                        : `Location: ${location} | Weather: ${weather}`}{" "}
+                        : ` ${location} | Weather: ${weather}`}{" "}
                     </p>
                     {loggedinuser[0]?.website ? (
                       <p className="subInfo link">

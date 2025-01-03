@@ -29,9 +29,7 @@ const Mainprofile = ({ user }) => {
         setpost(data);
       });
   }, [user.email]);
-
   useEffect(() => {
-    // Obtain user's geographical coordinates
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -42,7 +40,7 @@ const Mainprofile = ({ user }) => {
           )
             .then((response) => response.json())
             .then((data) => {
-              if (data.results && data.results[0]) {
+              if (data.results && data.results.length > 0) {
                 const address = data.results[0].formatted_address;
                 setLocation(address);
                 fetch(
@@ -50,9 +48,16 @@ const Mainprofile = ({ user }) => {
                 )
                   .then((response) => response.json())
                   .then((weatherData) => {
-                    const weatherDescription =
-                      weatherData.weather[0].description;
-                    setWeather(weatherDescription);
+                    if (weatherData.weather && weatherData.weather.length > 0) {
+                      const weatherDescription = weatherData.weather[0].description;
+                      setWeather(weatherDescription);
+                    } else {
+                      console.error("No weather data found.");
+                    }
+                    setLoadingLocation(false);
+                  })
+                  .catch((error) => {
+                    console.error("Error fetching weather data:", error);
                     setLoadingLocation(false);
                   });
               } else {
@@ -75,6 +80,7 @@ const Mainprofile = ({ user }) => {
       setLoadingLocation(false);
     }
   }, []);
+  
   const handleuploadcoverimage = (e) => {
     setisloading(true);
     const image = e.target.files[0];

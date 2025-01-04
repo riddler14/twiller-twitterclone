@@ -314,7 +314,7 @@ const Mainprofile = ({ user }) => {
                       </strong>
                     </p>
                     {loggedinuser[0]?.website ? (
-                      <p className="subInfo link">
+                      <p className="suvInfo link">
                         <AddLinkIcon /> {loggedinuser[0].website}
                       </p>
                     ) : (

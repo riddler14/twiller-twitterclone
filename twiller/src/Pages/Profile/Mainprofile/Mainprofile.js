@@ -47,8 +47,18 @@ const Mainprofile = ({ user }) => {
             .then((response) => response.json())
             .then((data) => {
               if (data.results && data.results.length > 0) {
-                const address =
-                  data.results[0]?.formatted_address || "Address not found";
+                const addressComponents = data.results[0].address_components;
+                const city = addressComponents.find((component) =>
+                  component.types.includes("locality")
+                )?.long_name;
+                const state = addressComponents.find((component) =>
+                  component.types.includes("administrative_area_level_1")
+                )?.long_name;
+                const country = addressComponents.find((component) =>
+                  component.types.includes("country")
+                )?.long_name;
+                const address = `${city}, ${state}, ${country}`;
+
                 setLocation(address);
 
                 fetch(

@@ -293,6 +293,8 @@ const Mainprofile = ({ user }) => {
                     >
                       Get Location & Weather
                     </button>
+                    <br/>
+                    <br/>
                     <p className="suvInfo">
                       <MyLocationIcon />
                       <br/>

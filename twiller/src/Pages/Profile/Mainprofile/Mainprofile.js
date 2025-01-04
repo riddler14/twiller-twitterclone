@@ -293,24 +293,22 @@ const Mainprofile = ({ user }) => {
                     >
                       Get Location & Weather
                     </button>
-                    <br/>
-                    <br/>
+                    <br />
+                    <br />
                     <p className="suvInfo">
                       <MyLocationIcon />
-                      <br/>
+                      <br />
 
                       <strong>
                         {loadingLocation
                           ? "Loading location ..."
                           : ` ${location}`}
                       </strong>
-                      <br/>
+                      <br />
                       <strong>
-                        {
-                          loadingLocation
+                        {loadingLocation
                           ? "Loading  Weather..."
-                          : ` ${weather}`
-                        }
+                          : ` ${weather}`}
                       </strong>
                     </p>
                     {loggedinuser[0]?.website ? (

@@ -295,10 +295,20 @@ const Mainprofile = ({ user }) => {
                     </button>
                     <p className="suvInfo">
                       <MyLocationIcon />
+                      <br/>
+
                       <strong>
                         {loadingLocation
-                          ? "Loading location and weather..."
+                          ? "Loading location ..."
                           : ` ${location}`}
+                      </strong>
+                      <br/>
+                      <strong>
+                        {
+                          loadingLocation
+                          ? "Loading  Weather..."
+                          : ` ${weather}`
+                        }
                       </strong>
                     </p>
                     {loggedinuser[0]?.website ? (

@@ -307,18 +307,18 @@ const Mainprofile = ({ user }) => {
                     <br />
                     <p className="suvInfo">
                       <MyLocationIcon />
-                      <br />
+                  
 
                       <strong>
                         {loadingLocation
                           ? "Loading location ..."
-                          : ` ${location}`}
+                          : ` Location: ${location}`}
                       </strong>
                       <br />
                       <strong>
                         {loadingLocation
                           ? "Loading  Weather..."
-                          : ` ${weather}`}
+                          : ` Weather: ${weather}`}
                       </strong>
                     </p>
                     {loggedinuser[0]?.website ? (

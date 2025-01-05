@@ -1,9 +1,11 @@
 .feed {
-    flex: 0.4;
-    border-right: 1px solid var(--twitter-background);
-    min-width: fit-content;
-    overflow-y: scroll;
-    width: 100vw;
+  flex: 0.4;
+  border-right: 1px solid var(--twitter-background);
+  width: 100vw;
+  padding: 0 180px;
+  height: 100vh;
+  display: flex;
+  align-items: center;
   }
   
   .feed::-webkit-scrollbar {

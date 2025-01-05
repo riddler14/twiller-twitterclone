@@ -6,6 +6,7 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import ListAltIcon from "@mui/icons-material/ListAlt";
+import ChatBubbleIcon from "@mui/icons-material/ChatBubbleTwoTone"
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
 import MoreIcon from "@mui/icons-material/More";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
@@ -17,6 +18,7 @@ import { Avatar } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
+
 import "./sidebar.css";
 import Customlink from "./Customlink";
 import Sidebaroption from "./Sidebaroption";
@@ -57,6 +59,9 @@ const Sidebar = ({ handlelogout, user }) => {
         </Customlink>
         <Customlink to="/home/lists">
           <Sidebaroption Icon={ListAltIcon} text="Lists" />
+        </Customlink>
+        <Customlink to="/home/chatbot">
+          <Sidebaroption Icon={ChatBubbleIcon} text="Chatbot" />
         </Customlink>
         <Customlink to="/home/profile">
           <Sidebaroption Icon={PermIdentityIcon} text="Profile" />

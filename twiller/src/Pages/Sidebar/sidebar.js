@@ -70,7 +70,7 @@ const Sidebar = ({ handlelogout, user }) => {
           <Sidebaroption Icon={MoreIcon} text="More" />
         </Customlink>
         <Button variant="outlined" className="sidebar__tweet" fullWidth>
-          Tweet
+          Make a Post
         </Button>
         <div className="Profile__info">
           <Avatar

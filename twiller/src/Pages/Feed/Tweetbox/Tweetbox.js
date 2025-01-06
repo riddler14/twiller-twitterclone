@@ -107,7 +107,7 @@ const Tweetbox=()=>{
             onChange={handleuploadimage}
           />
           <Button className="tweetBox__tweetButton" type="submit">
-            Tweets
+            Post
           </Button>
         </div>
       </form>

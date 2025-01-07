@@ -1,6 +1,6 @@
 import React from 'react'
 import { Avatar } from "@mui/material";
-import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
+import VerifiedUserIcon from "@mui/icons-material/Verified";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";

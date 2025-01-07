@@ -1,9 +1,10 @@
 .feed {
   flex: 0.4;
   border-right: 1px solid var(--twitter-background);
+  min-width: fit-content;
   width: 709px;
   width: 100vw;
-
+  overflow-y: scroll;
   
  
   }
@@ -24,10 +25,12 @@
     width: 100vw; */
   /* padding: 0 180px; */
     width: 708px;
+   
     
   }
   
   .feed__header>h2 {
     font-size: 20px;
     font-weight: 800;
+    margin-left: 300px;
   }

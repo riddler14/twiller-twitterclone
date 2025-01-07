@@ -23,6 +23,8 @@
     border: none;
     margin-top: 0px;
     background-color: var(--twitter-background);
+    border: none;
+    outline: none;
   }
   
   .widgets__searchIcon {

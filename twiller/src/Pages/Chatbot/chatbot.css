@@ -1,0 +1,82 @@
+.chatbot {
+  flex: 0.4;
+  border-right: 1px solid var(--twitter-background);
+  width: 708px;
+  width: 100vw;
+}
+
+.chatbot::-webkit-scrollbar {
+  display: none;
+}
+.chatbot__header {
+  position: sticky;
+  top: 0;
+  /* min-width: fit-content; */
+  background-color: white;
+  z-index: 100;
+  border: 1px solid var(--twitter-background);
+
+  /* 
+    width: 100vw; */
+  /* padding: 0 180px; */
+  width: 708px;
+  align-items: center;
+}
+
+.chatbot__header > h2 {
+  font-size: 20px;
+  font-weight: 800;
+  /* align-items: center; */
+  margin-left: 300px;
+}
+
+.post__badge {
+  font-size: 18px !important;
+  color: var(--twitter-color);
+}
+
+.searchbox {
+  display: flex;
+  align-items: center;
+  background-color: var(--twitter-background);
+  padding: 10px 20px;
+  border-radius: 50px;
+  margin-top: 590px;
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+.searchbox input {
+  border: none !important;
+  outline: none !important ;
+  margin-top: 0px;
+  background-color: var(--twitter-background);
+  width: 85%;
+  margin-left: 10px;
+  font-style: italic;
+  
+  
+}
+/* .searchbox input::placeholder {
+  color: #888;
+} */
+.searchbox__Icon {
+  color: black;
+}
+/* .searchbox .send-button {
+  width: 20px;
+  height: 20px;
+  margin-left: 10px;
+  cursor: pointer;
+} */
+
+.send_icon{
+  color: black;
+  margin-left: 20px;
+  cursor: pointer;
+
+}
+
+.send_icon:hover{
+  color: gray;
+}

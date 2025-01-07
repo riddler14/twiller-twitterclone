@@ -6,7 +6,8 @@ const url =
 const port = 5000;
 const axios = require("axios");
 
-const BEARER_TOKEN = "AAAAAAAAAAAAAAAAAAAAAAbGxwEAAAAAg4LFbxNVXMhHWl5nMREorp%2FU3gw%3Dbs727pAIVl9NbydzOPEQzewVcSCf2OlyruIw4XsSXwP2tf5Ys6";
+const BEARER_TOKEN =
+  "AAAAAAAAAAAAAAAAAAAAAAbGxwEAAAAAg4LFbxNVXMhHWl5nMREorp%2FU3gw%3Dbs727pAIVl9NbydzOPEQzewVcSCf2OlyruIw4XsSXwP2tf5Ys6";
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -70,7 +71,13 @@ async function run() {
         });
         res.json(response.data);
       } catch (error) {
-        res.status(500).send(error);
+        console.error("Error fetching tweets:", error); // Log the full error object
+        res
+          .status(500)
+          .send({
+            message: "Error fetching tweets",
+            error: error.response ? error.response.data : error.message,
+          });
       }
     });
   } catch (error) {

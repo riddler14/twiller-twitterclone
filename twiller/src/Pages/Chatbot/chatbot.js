@@ -1,4 +1,4 @@
-import React,{useState}from "react";
+import React, { useState } from "react";
 import "./chatbot.css";
 import VerifiedUserIcon from "@mui/icons-material/Verified";
 import ChatIcon from "@mui/icons-material/Chat";
@@ -16,7 +16,7 @@ const Chatbot = () => {
       const response = await axios.get(
         `https://twiller-twitterclone-ewhk.onrender.com/tweets?q=${query}`
       );
-      setTweets(response.data);
+      setTweets(response.data.data || []);
     } catch (error) {
       console.error("Error fetching tweets:", error);
     }
@@ -50,13 +50,13 @@ const Chatbot = () => {
         </div>{" "}
       </form>{" "}
       <div className="tweets">
-        {" "}
-        {tweets.map((tweet) => (
-          <div key={tweet.id} className="tweet">
-            {" "}
-            {tweet.text}{" "}
-          </div>
-        ))}{" "}
+        {Array.isArray(tweets) &&
+          tweets.map((tweet) => (
+            <div key={tweet.id} className="tweet">
+              {" "}
+              {tweet.text}{" "}
+            </div>
+          ))}
       </div>
     </div>
   );

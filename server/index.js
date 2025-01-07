@@ -32,8 +32,8 @@ app.use(passport.session());
 passport.use(
   new TwitterStrategy(
     {
-      consumerKey: "NWVIV2o0MkZBTFc2akJETkpVbzc6MTpjaQ",
-      consumerSecret: "JtQFDiwS_Z7bMjFjoavRTPM93v4pEzNuAF3fkARwSWWrH_B0X8",
+      consumerKey: "pvKwnLQu1WbsXEn3oukKdKgBW",
+      consumerSecret: "FrTp07icR5o3fn15JvFMqUxAO4pzdJLTNqi9DOCswcR5upCNOE",
       callbackURL: "https://twiller-twitterclone-ewhk.onrender.com/auth/twitter/callback",
     },
     function (token, tokenSecret, profile, done) {

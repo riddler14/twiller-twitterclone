@@ -5,7 +5,10 @@ const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
 const axios = require("axios");
-
+const passport = require("passport");
+const TwitterStrategy = require("passport-twitter").Strategy;
+const session = require("express-session");
+const Bottleneck=require("bottleneck");
 const BEARER_TOKEN =
   "AAAAAAAAAAAAAAAAAAAAAAbGxwEAAAAAg4LFbxNVXMhHWl5nMREorp%2FU3gw%3Dbs727pAIVl9NbydzOPEQzewVcSCf2OlyruIw4XsSXwP2tf5Ys6";
 const app = express();
@@ -13,6 +16,38 @@ app.use(cors());
 app.use(express.json());
 
 const client = new MongoClient(url);
+
+
+
+const limiter = new Bottleneck({ 
+  minTime: 1000,
+   // Minimum time between requests (in milliseconds)
+    maxConcurrent: 1, 
+    });
+// Configure session middleware
+app.use(session({ secret: "secret", resave: false, saveUninitialized: true }));
+// Initialize Passport and session
+app.use(passport.initialize());
+app.use(passport.session());
+passport.use(
+  new TwitterStrategy(
+    {
+      consumerKey: "NWVIV2o0MkZBTFc2akJETkpVbzc6MTpjaQ",
+      consumerSecret: "JtQFDiwS_Z7bMjFjoavRTPM93v4pEzNuAF3fkARwSWWrH_B0X8",
+      callbackURL: "https://twiller-twitterclone-ewhk.onrender.com/auth/twitter/callback",
+    },
+    function (token, tokenSecret, profile, done) {
+      // Save user profile or token information here if needed
+      return done(null, profile);
+    }
+  )
+);
+passport.serializeUser(function (user, done) {
+  done(null, user);
+});
+passport.deserializeUser(function (obj, done) {
+  done(null, obj);
+});
 
 async function run() {
   try {
@@ -72,14 +107,24 @@ async function run() {
         res.json(response.data);
       } catch (error) {
         console.error("Error fetching tweets:", error); // Log the full error object
-        res
-          .status(500)
-          .send({
-            message: "Error fetching tweets",
-            error: error.response ? error.response.data : error.message,
-          });
+        res.status(500).send({
+          message: "Error fetching tweets",
+          error: error.response ? error.response.data : error.message,
+        });
       }
     });
+
+    // Twitter Authentication Route
+    app.get("/auth/twitter", passport.authenticate("twitter"));
+    // Twitter Callback Route
+    app.get(
+      "/auth/twitter/callback",
+      passport.authenticate("twitter", { failureRedirect: "/" }),
+      function (req, res) {
+        // Successful authentication, redirect home.
+        res.redirect("/");
+      }
+    );
   } catch (error) {
     console.log(error);
   }

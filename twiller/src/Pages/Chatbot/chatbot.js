@@ -4,6 +4,18 @@ import VerifiedUserIcon from "@mui/icons-material/Verified";
 import ChatIcon from "@mui/icons-material/Chat";
 import SendIcon from "@mui/icons-material/Send";
 import axios from "axios";
+
+const Tweet = ({ tweet }) => (
+  <div className="tweet">
+    {" "}
+    <div className="tweet__header">
+      {" "}
+      <span className="tweet__author">{tweet.author}</span>{" "}
+      <span className="tweet__username">@{tweet.username}</span>{" "}
+    </div>{" "}
+    <div className="tweet__text">{tweet.text}</div>{" "}
+  </div>
+);
 const Chatbot = () => {
   const [query, setQuery] = useState("");
   const [tweets, setTweets] = useState([]);
@@ -32,6 +44,13 @@ const Chatbot = () => {
           </span>
         </h2>
       </div>
+      <div className="tweets">
+        {Array.isArray(tweets) &&
+          tweets.map((tweet) => (
+            <Tweet key={tweet.id} className="tweet" />
+             
+          ))}
+      </div>
       <form onSubmit={handleFormSubmit}>
         {" "}
         <div className="searchbox">
@@ -49,15 +68,6 @@ const Chatbot = () => {
           </button>{" "}
         </div>{" "}
       </form>{" "}
-      <div className="tweets">
-        {Array.isArray(tweets) &&
-          tweets.map((tweet) => (
-            <div key={tweet.id} className="tweet">
-              {" "}
-              {tweet.text}{" "}
-            </div>
-          ))}
-      </div>
     </div>
   );
 };

@@ -8,7 +8,9 @@ const axios = require("axios");
 const passport = require("passport");
 const TwitterStrategy = require("passport-twitter").Strategy;
 const session = require("express-session");
-const Bottleneck=require("bottleneck");
+const Bottleneck = require("bottleneck");
+
+const NodeCache = require("node-cache");
 const BEARER_TOKEN =
   "AAAAAAAAAAAAAAAAAAAAAAbGxwEAAAAAg4LFbxNVXMhHWl5nMREorp%2FU3gw%3Dbs727pAIVl9NbydzOPEQzewVcSCf2OlyruIw4XsSXwP2tf5Ys6";
 const app = express();
@@ -17,13 +19,13 @@ app.use(express.json());
 
 const client = new MongoClient(url);
 
-
-
-const limiter = new Bottleneck({ 
+const limiter = new Bottleneck({
   minTime: 1000,
-   // Minimum time between requests (in milliseconds)
-    maxConcurrent: 1, 
-    });
+  // Minimum time between requests (in milliseconds)
+  maxConcurrent: 1,
+});
+
+const cache = new NodeCache({ stdTTL: 600, checkperiod: 60 });
 // Configure session middleware
 app.use(session({ secret: "secret", resave: false, saveUninitialized: true }));
 // Initialize Passport and session
@@ -34,7 +36,8 @@ passport.use(
     {
       consumerKey: "pvKwnLQu1WbsXEn3oukKdKgBW",
       consumerSecret: "FrTp07icR5o3fn15JvFMqUxAO4pzdJLTNqi9DOCswcR5upCNOE",
-      callbackURL: "https://twiller-twitterclone-ewhk.onrender.com/auth/twitter/callback",
+      callbackURL:
+        "https://twiller-twitterclone-ewhk.onrender.com/auth/twitter/callback",
     },
     function (token, tokenSecret, profile, done) {
       // Save user profile or token information here if needed
@@ -106,20 +109,41 @@ async function run() {
         });
         res.json(response.data);
       } catch (error) {
-
         if (error.response && error.response.status === 429) {
-           // Handle rate limit error
-            console.error('Rate limit exceeded:', error.response.data);
-             res.status(429).send({
-               message: 'Too Many Requests - Rate limit exceeded. Please try again later.', 
-               error: error.response.data, });
-             }else{
-        console.error("Error fetching tweets:", error); // Log the full error object
-        res.status(500).send({
-          message: "Error fetching tweets",
-          error: error.response ? error.response.data : error.message,
-        });
-      }
+          // Handle rate limit error with exponential backoff
+          const retryAfter = parseInt(
+            error.response.headers["retry-after"] || "60",
+            10
+          ); // Fallback to 60 seconds if not provided
+          console.error(
+            `Rate limit exceeded. Retrying after ${retryAfter} seconds`
+          );
+          setTimeout(async () => {
+            try {
+              const response = await limiter.schedule(() =>
+                axios.get(url, {
+                  headers: { Authorization: `Bearer ${BEARER_TOKEN}` },
+                })
+              );
+              cache.set(query, response.data);
+              res.json(response.data);
+            } catch (retryError) {
+              console.error("Error fetching tweets after retry:", retryError);
+              res.status(500).send({
+                message: "Error fetching tweets after retry",
+                error: retryError.response
+                  ? retryError.response.data
+                  : retryError.message,
+              });
+            }
+          }, retryAfter * 1000);
+        } else {
+          console.error("Error fetching tweets:", error); // Log the full error object
+          res.status(500).send({
+            message: "Error fetching tweets",
+            error: error.response ? error.response.data : error.message,
+          });
+        }
       }
     });
 

@@ -106,11 +106,20 @@ async function run() {
         });
         res.json(response.data);
       } catch (error) {
+
+        if (error.response && error.response.status === 429) {
+           // Handle rate limit error
+            console.error('Rate limit exceeded:', error.response.data);
+             res.status(429).send({
+               message: 'Too Many Requests - Rate limit exceeded. Please try again later.', 
+               error: error.response.data, });
+             }else{
         console.error("Error fetching tweets:", error); // Log the full error object
         res.status(500).send({
           message: "Error fetching tweets",
           error: error.response ? error.response.data : error.message,
         });
+      }
       }
     });
 

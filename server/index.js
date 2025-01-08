@@ -102,11 +102,16 @@ async function run() {
 
     app.get("/tweets", async (req, res) => {
       const query = req.query.q;
-      const url = `https://api.twitter.com/2/tweets/search/recent?query=${query}`;
+      const url = `https://api.twitter.com/2/tweets/search/recent?query=${encodeURIComponent(
+        query
+      )}`;
       try {
-        const response = await axios.get(url, {
-          headers: { Authorization: `Bearer ${BEARER_TOKEN}` },
-        });
+        const response = await limiter.schedule(() =>
+          axios.get(url, {
+            headers: { Authorization: `Bearer ${BEARER_TOKEN}` },
+          })
+        );
+        cache.set(query, response.data);
         res.json(response.data);
       } catch (error) {
         if (error.response && error.response.status === 429) {

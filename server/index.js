@@ -21,16 +21,15 @@ const client = new MongoClient(url);
 
 const limiter = new Bottleneck({
   minTime: 1000,
-  // Minimum time between requests (in milliseconds)
   maxConcurrent: 1,
 });
 
 const cache = new NodeCache({ stdTTL: 600, checkperiod: 60 });
-// Configure session middleware
+
 app.use(session({ secret: "secret", resave: false, saveUninitialized: true }));
-// Initialize Passport and session
 app.use(passport.initialize());
 app.use(passport.session());
+
 passport.use(
   new TwitterStrategy(
     {
@@ -40,14 +39,15 @@ passport.use(
         "https://twiller-twitterclone-ewhk.onrender.com/auth/twitter/callback",
     },
     function (token, tokenSecret, profile, done) {
-      // Save user profile or token information here if needed
       return done(null, profile);
     }
   )
 );
+
 passport.serializeUser(function (user, done) {
   done(null, user);
 });
+
 passport.deserializeUser(function (obj, done) {
   done(null, obj);
 });
@@ -58,26 +58,30 @@ async function run() {
     console.log(`server running on port ${port}`);
     const postcollection = client.db("database").collection("posts");
     const usercollection = client.db("database").collection("users");
+
     app.post("/register", async (req, res) => {
       const user = req.body;
-      // console.log(user)
       const result = await usercollection.insertOne(user);
       res.send(result);
     });
+
     app.get("/loggedinuser", async (req, res) => {
       const email = req.query.email;
       const user = await usercollection.find({ email: email }).toArray();
       res.send(user);
     });
+
     app.post("/post", async (req, res) => {
       const post = req.body;
       const result = await postcollection.insertOne(post);
       res.send(result);
     });
+
     app.get("/post", async (req, res) => {
       const post = (await postcollection.find().toArray()).reverse();
       res.send(post);
     });
+
     app.get("/userpost", async (req, res) => {
       const email = req.query.email;
       const post = (
@@ -85,6 +89,7 @@ async function run() {
       ).reverse();
       res.send(post);
     });
+
     app.get("/user", async (req, res) => {
       const user = await usercollection.find().toArray();
       res.send(user);
@@ -95,13 +100,18 @@ async function run() {
       const profile = req.body;
       const options = { upsert: true };
       const updateDoc = { $set: profile };
-      // console.log(profile)
       const result = await usercollection.updateOne(filter, updateDoc, options);
       res.send(result);
     });
 
-    app.get("/tweets", async (req, res) => {
+    // Endpoint to fetch tweets for the chatbot
+    app.get("/chatbot/tweets", async (req, res) => {
       const query = req.query.q;
+      const cachedTweets = cache.get(query);
+      if (cachedTweets) {
+        return res.json(cachedTweets);
+      }
+
       const url = `https://api.twitter.com/2/tweets/search/recent?query=${encodeURIComponent(
         query
       )}`;
@@ -115,11 +125,10 @@ async function run() {
         res.json(response.data);
       } catch (error) {
         if (error.response && error.response.status === 429) {
-          // Handle rate limit error with exponential backoff
           const retryAfter = parseInt(
             error.response.headers["retry-after"] || "60",
             10
-          ); // Fallback to 60 seconds if not provided
+          );
           console.error(
             `Rate limit exceeded. Retrying after ${retryAfter} seconds`
           );
@@ -143,7 +152,7 @@ async function run() {
             }
           }, retryAfter * 1000);
         } else {
-          console.error("Error fetching tweets:", error); // Log the full error object
+          console.error("Error fetching tweets:", error);
           res.status(500).send({
             message: "Error fetching tweets",
             error: error.response ? error.response.data : error.message,
@@ -152,14 +161,12 @@ async function run() {
       }
     });
 
-    // Twitter Authentication Route
     app.get("/auth/twitter", passport.authenticate("twitter"));
-    // Twitter Callback Route
+
     app.get(
       "/auth/twitter/callback",
       passport.authenticate("twitter", { failureRedirect: "/" }),
       function (req, res) {
-        // Successful authentication, redirect home.
         res.redirect("/");
       }
     );
@@ -167,6 +174,7 @@ async function run() {
     console.log(error);
   }
 }
+
 run().catch(console.dir);
 
 app.get("/", (req, res) => {

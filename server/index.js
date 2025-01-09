@@ -112,52 +112,19 @@ async function run() {
         return res.json(cachedTweets);
       }
 
-      const url = `https://api.twitter.com/2/tweets/search/recent?query=${encodeURIComponent(
-        query
-      )}`;
+      const url = `https://cdn.syndication.twimg.com/tweet-result?id=${encodeURIComponent(query)}`;
       try {
         const response = await limiter.schedule(() =>
-          axios.get(url, {
-            headers: { Authorization: `Bearer ${BEARER_TOKEN}` },
-          })
+          axios.get(url)
         );
         cache.set(query, response.data);
         res.json(response.data);
       } catch (error) {
-        if (error.response && error.response.status === 429) {
-          const retryAfter = parseInt(
-            error.response.headers["retry-after"] || "60",
-            10
-          );
-          console.error(
-            `Rate limit exceeded. Retrying after ${retryAfter} seconds`
-          );
-          setTimeout(async () => {
-            try {
-              const response = await limiter.schedule(() =>
-                axios.get(url, {
-                  headers: { Authorization: `Bearer ${BEARER_TOKEN}` },
-                })
-              );
-              cache.set(query, response.data);
-              res.json(response.data);
-            } catch (retryError) {
-              console.error("Error fetching tweets after retry:", retryError);
-              res.status(500).send({
-                message: "Error fetching tweets after retry",
-                error: retryError.response
-                  ? retryError.response.data
-                  : retryError.message,
-              });
-            }
-          }, retryAfter * 1000);
-        } else {
-          console.error("Error fetching tweets:", error);
-          res.status(500).send({
-            message: "Error fetching tweets",
-            error: error.response ? error.response.data : error.message,
-          });
-        }
+        console.error("Error fetching tweets:", error);
+        res.status(500).send({
+          message: "Error fetching tweets",
+          error: error.response ? error.response.data : error.message,
+        });
       }
     });
 

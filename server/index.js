@@ -105,7 +105,7 @@ async function run() {
     });
 
     // Endpoint to fetch tweets for the chatbot
-    app.get("/chatbot/tweets", async (req, res) => {
+    app.get("/tweets", async (req, res) => {
       const query = req.query.q;
       const cachedTweets = cache.get(query);
       if (cachedTweets) {

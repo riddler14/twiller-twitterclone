@@ -17,11 +17,13 @@ const Chatbot = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    console.log("Fetching tweets for query:", query);
     try {
       const response = await axios.get(
         `https://twiller-twitterclone-ewhk.onrender.com/tweets?q=${query}`
       );
-      const tweetData = response.data.data || [];
+      console.log("Response data:", response.data);
+      const tweetData = response.data || [];
       if (Array.isArray(tweetData)) {
         setTweets(tweetData);
       } else {
@@ -33,6 +35,7 @@ const Chatbot = () => {
       setError("Failed to fetch tweets. Please try again later.");
     }
   };
+
   return (
     <div className="chatbot">
       <div className="chatbot__header">

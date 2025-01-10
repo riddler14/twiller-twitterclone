@@ -17,6 +17,11 @@ const client = new MongoClient(url);
 const limiter = new Bottleneck({ minTime: 1000, maxConcurrent: 1 });
 const cache = new NodeCache({ stdTTL: 600, checkperiod: 60 });
 
+function getToken(id) {
+  return ((Number(id) / 1e15) * Math.PI)
+    .toString(6 ** 2)
+    .replace(/(0+|\.)/g, "");
+}
 async function run() {
   try {
     await client.connect();
@@ -81,8 +86,14 @@ async function run() {
       )}`;
       try {
         const response = await limiter.schedule(() => axios.get(url));
-        cache.set(query, response.data);
-        res.json(response.data);
+        const tweetData = response.data || [];
+        const tweetsWithTokens = tweetData.map((tweet) => {
+          const token = getToken(tweet.id);
+          return { ...tweet, token };
+        });
+        console.log("Fetched tweets:", tweetsWithTokens);
+        cache.set(query, tweetsWithTokens);
+        res.json(tweetsWithTokens);
       } catch (error) {
         if (error.response && error.response.status === 429) {
           const retryAfter = parseInt(
@@ -95,8 +106,14 @@ async function run() {
           setTimeout(async () => {
             try {
               const response = await limiter.schedule(() => axios.get(url));
-              cache.set(query, response.data);
-              res.json(response.data);
+              const tweetData = response.data || [];
+              const tweetsWithTokens = tweetData.map((tweet) => {
+                const token = getToken(tweet.id);
+                return { ...tweet, token };
+              });
+              console.log("Fetched tweets after retry:", tweetsWithTokens);
+              cache.set(query, tweetsWithTokens);
+              res.json(tweetsWithTokens);
             } catch (retryError) {
               console.error("Error fetching tweets after retry:", retryError);
               res

@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import "./chatbot.css";
-import VerifiedUserIcon from '@mui/icons-material/Verified';
+import VerifiedUserIcon from "@mui/icons-material/Verified";
 import ChatIcon from "@mui/icons-material/Chat";
-import SendIcon from '@mui/icons-material/Send';
-import { Tweet } from 'react-tweet';
-import axios from 'axios';
+import SendIcon from "@mui/icons-material/Send";
+import { Tweet } from "react-tweet";
+import axios from "axios";
 
 const Chatbot = () => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [tweets, setTweets] = useState([]);
   const [error, setError] = useState(null);
 
@@ -18,21 +18,26 @@ const Chatbot = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.get(`https://twiller-twitterclone-ewhk.onrender.com/tweets?q=${query}`);
-      const tweetData = response.data || [];
-      setTweets(tweetData);
+      const response = await axios.get(
+        `https://twiller-twitterclone-ewhk.onrender.com/tweets?q=${query}`
+      );
+      const tweetData = response.data.data || [];
+      if (Array.isArray(tweetData)) {
+        setTweets(tweetData);
+      } else {
+        setTweets([]);
+      }
       setError(null); // Clear any previous errors
     } catch (error) {
-      console.error('Error fetching tweets:', error);
-      setError('Failed to fetch tweets. Please try again later.');
+      console.error("Error fetching tweets:", error);
+      setError("Failed to fetch tweets. Please try again later.");
     }
   };
-
   return (
     <div className="chatbot">
       <div className="chatbot__header">
         <h2>
-          Chatbot {" "}
+          Chatbot{" "}
           <span className="post__headerSpecial">
             <VerifiedUserIcon className="post__badge" />
           </span>
@@ -56,13 +61,17 @@ const Chatbot = () => {
             value={query}
             onChange={handleInputChange}
           />
-          <button type="submit" className="send_icon" onClick={handleFormSubmit}>
-            <SendIcon className="send_icon"/>
+          <button
+            type="submit"
+            className="send_icon"
+            onClick={handleFormSubmit}
+          >
+            <SendIcon className="send_icon" />
           </button>
         </div>
       </div>
-      
-      {error && <div style={{ color: 'red' }}>{error}</div>}
+
+      {error && <div style={{ color: "red" }}>{error}</div>}
     </div>
   );
 };

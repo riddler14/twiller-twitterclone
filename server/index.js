@@ -5,9 +5,8 @@ const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
 const axios = require("axios");
-
-
-
+const Bottleneck = require("bottleneck");
+const NodeCache = require("node-cache");
 
 const app = express();
 app.use(cors());
@@ -15,9 +14,8 @@ app.use(express.json());
 
 const client = new MongoClient(url);
 
-
-
-
+const limiter = new Bottleneck({ minTime: 1000, maxConcurrent: 1 });
+const cache = new NodeCache({ stdTTL: 600, checkperiod: 60 });
 
 async function run() {
   try {
@@ -74,19 +72,49 @@ async function run() {
     // Endpoint to fetch tweets for the chatbot
     app.get("/tweets", async (req, res) => {
       const query = req.query.q;
+      const cachedTweets = cache.get(query);
+      if (cachedTweets) {
+        return res.json(cachedTweets);
+      }
       const url = `https://cdn.syndication.twimg.com/tweet-result?id=${encodeURIComponent(
         query
       )}`;
       try {
-        const response = await axios.get(url);
+        const response = await limiter.schedule(() => axios.get(url));
+        cache.set(query, response.data);
         res.json(response.data);
       } catch (error) {
-        console.error("Error fetching tweets:", error);
-        res.status(500).send("Error fetching tweets");
+        if (error.response && error.response.status === 429) {
+          const retryAfter = parseInt(
+            error.response.headers["retry-after"] || "60",
+            10
+          );
+          console.error(
+            `Rate limit exceeded. Retrying after ${retryAfter} seconds`
+          );
+          setTimeout(async () => {
+            try {
+              const response = await limiter.schedule(() => axios.get(url));
+              cache.set(query, response.data);
+              res.json(response.data);
+            } catch (retryError) {
+              console.error("Error fetching tweets after retry:", retryError);
+              res
+                .status(500)
+                .send({
+                  message: "Error fetching tweets after retry",
+                  error: retryError.response
+                    ? retryError.response.data
+                    : retryError.message,
+                });
+            }
+          }, retryAfter * 1000);
+        } else {
+          console.error("Error fetching tweets:", error);
+          res.status(500).send("Error fetching tweets");
+        }
       }
     });
-
-    
   } catch (error) {
     console.log(error);
   }

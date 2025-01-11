@@ -91,6 +91,7 @@ async function run() {
         if (!Array.isArray(tweetData)) { 
           throw new Error("Invalid tweet data format");
          }
+         tweetData = tweetData.statuses;
         const tweetsWithTokens = tweetData.map((tweet) => {
           const token = getToken(tweet.id);
           return { ...tweet, token };

@@ -86,7 +86,7 @@ async function run() {
       )}`;
       try {
         const response = await limiter.schedule(() => axios.get(url));
-        const tweetData = response.data || [];
+        const tweetData = normalizeTweetData(response.data);
 
         if (!Array.isArray(tweetData)) { 
           throw new Error("Invalid tweet data format");
@@ -111,7 +111,7 @@ async function run() {
           setTimeout(async () => {
             try {
               const response = await limiter.schedule(() => axios.get(url));
-              const tweetData = response.data || [];
+              const tweetData = normalizeTweetData(response.data);
               const tweetsWithTokens = tweetData.map((tweet) => {
                 const token = getToken(tweet.id);
                 return { ...tweet, token };

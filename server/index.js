@@ -22,6 +22,18 @@ function getToken(id) {
     .toString(6 ** 2)
     .replace(/(0+|\.)/g, "");
 }
+
+function normalizeTweetData(responseData) {
+  if (Array.isArray(responseData)) {
+    return responseData;
+  } else if (responseData && Array.isArray(responseData.statuses)) {
+    return responseData.statuses;
+  } else if (responseData && Array.isArray(responseData.data)) {
+    return responseData.data;
+  } else {
+    throw new Error("Invalid tweet data format");
+  }
+}
 async function run() {
   try {
     await client.connect();
@@ -88,10 +100,10 @@ async function run() {
         const response = await limiter.schedule(() => axios.get(url));
         const tweetData = normalizeTweetData(response.data);
 
-        if (!Array.isArray(tweetData)) { 
+        if (!Array.isArray(tweetData)) {
           throw new Error("Invalid tweet data format");
-         }
-         tweetData = tweetData.statuses;
+        }
+        tweetData = tweetData.statuses;
         const tweetsWithTokens = tweetData.map((tweet) => {
           const token = getToken(tweet.id);
           return { ...tweet, token };
@@ -121,14 +133,12 @@ async function run() {
               res.json(tweetsWithTokens);
             } catch (retryError) {
               console.error("Error fetching tweets after retry:", retryError);
-              res
-                .status(500)
-                .send({
-                  message: "Error fetching tweets after retry",
-                  error: retryError.response
-                    ? retryError.response.data
-                    : retryError.message,
-                });
+              res.status(500).send({
+                message: "Error fetching tweets after retry",
+                error: retryError.response
+                  ? retryError.response.data
+                  : retryError.message,
+              });
             }
           }, retryAfter * 1000);
         } else {

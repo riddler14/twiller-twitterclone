@@ -7,6 +7,7 @@ const url =
 const port = 5000;
 const axios = require("axios");
 require("dotenv").config();
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const app = express();
 app.use(cors());
@@ -83,6 +84,7 @@ app.get("/tweets", async (req, res) => {
 
   try {
     // Fetch RSS feed from RSSHub
+    await delay(1000); // 1 second delay
     const rssUrl = `https://rsshub.app/twitter/keyword/${encodeURIComponent(query)}`;
     const feed = await parser.parseURL(rssUrl);
 

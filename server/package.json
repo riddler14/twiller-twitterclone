@@ -22,6 +22,8 @@
     "node-cache": "^5.1.2",
     "passport": "^0.7.0",
     "passport-twitter": "^1.0.4",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "rss-parser": "^3.13.0",
     "twitter-api-v2": "^1.19.0"
   }

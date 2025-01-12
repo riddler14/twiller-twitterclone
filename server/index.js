@@ -1,14 +1,16 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const Parser = require("rss-parser");
+const puppeteer = require("puppeteer-extra"); // Use puppeteer-extra for additional plugins
+const StealthPlugin = require("puppeteer-extra-plugin-stealth"); // Avoid detection
+// const Parser = require("rss-parser");
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
-const axios = require("axios");
+// const axios = require("axios");
 require("dotenv").config();
 // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
+puppeteer.use(StealthPlugin());
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -19,7 +21,47 @@ const client = new MongoClient(url);
 // const TAGGBOX_API_URL = "https://api.taggbox.com/v1/widget";
 // const TAGGBOX_API_KEY = process.env.TAGGBOX_API_KEY; // Store your Taggbox API key in .env
 // const TAGGBOX_WIDGET_ID = process.env.TAGGBOX_WIDGET_ID; // Store your Taggbox widget ID in .env
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
+// Function to scrape tweets using Puppeteer
+async function scrapeTweets(query) {
+  const browser = await puppeteer.launch({
+    headless: true, // Run in headless mode for production
+    args: ["--no-sandbox", "--disable-setuid-sandbox"], // Required for some environments
+  });
+  const page = await browser.newPage();
+
+  // Set a random user agent to avoid detection
+  const userAgents = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
+  ];
+  const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+  await page.setUserAgent(randomUserAgent);
+
+  // Navigate to Twitter search results
+  await page.goto(`https://twitter.com/search?q=${encodeURIComponent(query)}&src=typed_query`, {
+    waitUntil: "networkidle2",
+  });
+
+  // Add a random delay to mimic human behavior
+  await delay(Math.floor(Math.random() * 4000) + 1000);
+
+  // Scrape tweets
+  const tweets = await page.evaluate(() => {
+    const tweetElements = document.querySelectorAll("article[data-testid='tweet']");
+    return Array.from(tweetElements).map((tweet) => {
+      const text = tweet.querySelector("div[lang]")?.innerText || "No text";
+      const user = tweet.querySelector("div[data-testid='User-Name']")?.innerText || "Unknown user";
+      const url = tweet.querySelector("a[href*='/status/']")?.href || "#";
+      return { text, user, url };
+    });
+  });
+
+  await browser.close();
+  return tweets;
+}
 async function run() {
   try {
     await client.connect();
@@ -75,33 +117,22 @@ async function run() {
     console.log(error);
   }
 }
-// app.get("/tweets", async (req, res) => {
-//   const query = req.query.q; // User-entered query (e.g., "cricket")
+app.get("/tweets", async (req, res) => {
+  const query = req.query.q; // User-entered query (e.g., "cricket")
 
-//   if (!query) {
-//     return res.status(400).json({ error: "Query is required" });
-//   }
+  if (!query) {
+    return res.status(400).json({ error: "Query is required" });
+  }
 
-//   try {
-//     // Fetch RSS feed from RSSHub
-//     await delay(1000); // 1 second delay
-//     const rssUrl = `http://localhost:1200/twitter/keyword/${encodeURIComponent(query)}`;
-//     const feed = await parser.parseURL(rssUrl);
+  try {
+    const tweets = await scrapeTweets(query);
+    res.json({ tweets });
+  } catch (error) {
+    console.error("Error fetching tweets:", error);
+    res.status(500).json({ error: "Failed to fetch tweets" });
+  }
+});
 
-//     // Extract relevant data from the feed
-//     const tweets = feed.items.map((item) => ({
-//       text: item.title,
-//       user: item.author,
-//       url: item.link,
-//       date: item.pubDate,
-//     }));
-
-//     res.json({ tweets });
-//   } catch (error) {
-//     console.error("Error fetching tweets:", error);
-//     res.status(500).json({ error: "Failed to fetch tweets" });
-//   }
-// });
 run().catch(console.dir);
 
 app.get("/", (req, res) => {

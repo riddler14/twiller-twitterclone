@@ -1,39 +1,24 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
+const Parser = require("rss-parser");
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
 const axios = require("axios");
-const Bottleneck = require("bottleneck");
-const NodeCache = require("node-cache");
+require("dotenv").config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
+const parser = new Parser();
 
 const client = new MongoClient(url);
 
-const limiter = new Bottleneck({ minTime: 1000, maxConcurrent: 1 });
-const cache = new NodeCache({ stdTTL: 600, checkperiod: 60 });
+const TAGGBOX_API_URL = "https://api.taggbox.com/v1/widget";
+const TAGGBOX_API_KEY = process.env.TAGGBOX_API_KEY; // Store your Taggbox API key in .env
+const TAGGBOX_WIDGET_ID = process.env.TAGGBOX_WIDGET_ID; // Store your Taggbox widget ID in .env
 
-function getToken(id) {
-  return ((Number(id) / 1e15) * Math.PI)
-    .toString(6 ** 2)
-    .replace(/(0+|\.)/g, "");
-}
-
-function normalizeTweetData(responseData) {
-  if (Array.isArray(responseData)) {
-    return responseData;
-  } else if (responseData && Array.isArray(responseData.statuses)) {
-    return responseData.statuses;
-  } else if (responseData && Array.isArray(responseData.data)) {
-    return responseData.data;
-  } else {
-    throw new Error("Invalid tweet data format");
-  }
-}
 async function run() {
   try {
     await client.connect();
@@ -85,73 +70,36 @@ async function run() {
       const result = await usercollection.updateOne(filter, updateDoc, options);
       res.send(result);
     });
-
-    // Endpoint to fetch tweets for the chatbot
-    app.get("/tweets", async (req, res) => {
-      const query = req.query.q;
-      const cachedTweets = cache.get(query);
-      if (cachedTweets) {
-        return res.json(cachedTweets);
-      }
-      const url = `https://cdn.syndication.twimg.com/tweet-result?id=${encodeURIComponent(
-        query
-      )}`;
-      try {
-        const response = await limiter.schedule(() => axios.get(url));
-        const tweetData = normalizeTweetData(response.data);
-
-        if (!Array.isArray(tweetData)) {
-          throw new Error("Invalid tweet data format");
-        }
-        tweetData = tweetData.statuses;
-        const tweetsWithTokens = tweetData.map((tweet) => {
-          const token = getToken(tweet.id);
-          return { ...tweet, token };
-        });
-        console.log("Fetched tweets:", tweetsWithTokens);
-        cache.set(query, tweetsWithTokens);
-        res.json(tweetsWithTokens);
-      } catch (error) {
-        if (error.response && error.response.status === 429) {
-          const retryAfter = parseInt(
-            error.response.headers["retry-after"] || "60",
-            10
-          );
-          console.error(
-            `Rate limit exceeded. Retrying after ${retryAfter} seconds`
-          );
-          setTimeout(async () => {
-            try {
-              const response = await limiter.schedule(() => axios.get(url));
-              const tweetData = normalizeTweetData(response.data);
-              const tweetsWithTokens = tweetData.map((tweet) => {
-                const token = getToken(tweet.id);
-                return { ...tweet, token };
-              });
-              console.log("Fetched tweets after retry:", tweetsWithTokens);
-              cache.set(query, tweetsWithTokens);
-              res.json(tweetsWithTokens);
-            } catch (retryError) {
-              console.error("Error fetching tweets after retry:", retryError);
-              res.status(500).send({
-                message: "Error fetching tweets after retry",
-                error: retryError.response
-                  ? retryError.response.data
-                  : retryError.message,
-              });
-            }
-          }, retryAfter * 1000);
-        } else {
-          console.error("Error fetching tweets:", error);
-          res.status(500).send("Error fetching tweets");
-        }
-      }
-    });
   } catch (error) {
     console.log(error);
   }
 }
+app.get("/tweets", async (req, res) => {
+  const query = req.query.q; // User-entered query (e.g., "cricket")
 
+  if (!query) {
+    return res.status(400).json({ error: "Query is required" });
+  }
+
+  try {
+    // Fetch RSS feed from RSSHub
+    const rssUrl = `https://rsshub.app/twitter/keyword/${encodeURIComponent(query)}`;
+    const feed = await parser.parseURL(rssUrl);
+
+    // Extract relevant data from the feed
+    const tweets = feed.items.map((item) => ({
+      text: item.title,
+      user: item.author,
+      url: item.link,
+      date: item.pubDate,
+    }));
+
+    res.json({ tweets });
+  } catch (error) {
+    console.error("Error fetching tweets:", error);
+    res.status(500).json({ error: "Failed to fetch tweets" });
+  }
+});
 run().catch(console.dir);
 
 app.get("/", (req, res) => {

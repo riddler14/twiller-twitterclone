@@ -1,9 +1,10 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const puppeteer = require("puppeteer-extra"); // Use puppeteer-extra for additional plugins
+const puppeteer = require("puppeteer-core"); // Use puppeteer-extra for additional plugins
 const StealthPlugin = require("puppeteer-extra-plugin-stealth"); // Avoid detection
 // const Parser = require("rss-parser");
+
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;

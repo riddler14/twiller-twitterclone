@@ -15,9 +15,9 @@ const parser = new Parser();
 
 const client = new MongoClient(url);
 
-const TAGGBOX_API_URL = "https://api.taggbox.com/v1/widget";
-const TAGGBOX_API_KEY = process.env.TAGGBOX_API_KEY; // Store your Taggbox API key in .env
-const TAGGBOX_WIDGET_ID = process.env.TAGGBOX_WIDGET_ID; // Store your Taggbox widget ID in .env
+// const TAGGBOX_API_URL = "https://api.taggbox.com/v1/widget";
+// const TAGGBOX_API_KEY = process.env.TAGGBOX_API_KEY; // Store your Taggbox API key in .env
+// const TAGGBOX_WIDGET_ID = process.env.TAGGBOX_WIDGET_ID; // Store your Taggbox widget ID in .env
 
 async function run() {
   try {

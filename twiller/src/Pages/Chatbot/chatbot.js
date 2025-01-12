@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./chatbot.css";
 import VerifiedUserIcon from "@mui/icons-material/Verified";
 import ChatIcon from "@mui/icons-material/Chat";
 import SendIcon from "@mui/icons-material/Send";
-
 import axios from "axios";
 
 const Chatbot = () => {
@@ -19,17 +18,30 @@ const Chatbot = () => {
   const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!query) return;
-  
+
+    setIsLoading(true); // Start loading
+    setError(null); // Clear previous error
+    setTweets([]); // Clear previous tweets
+
     try {
+      // Fetch tweets from your backend
       const res = await axios.get(`https://twiller-twitterclone-ewhk.onrender.com/tweets?q=${query}`);
       const tweets = res.data.tweets;
+
+      // Set the fetched tweets
       setTweets(tweets);
+
+      // If no tweets are found, set an error message
+      if (tweets.length === 0) {
+        setError("No tweets found for this query.");
+      }
     } catch (error) {
       console.error("Error fetching tweets:", error);
       setError("Failed to fetch tweets. Please try again.");
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
-
 
   return (
     <div className="chatbot">
@@ -43,7 +55,7 @@ const Chatbot = () => {
       </div>
 
       <div className="result_container">
-      {isLoading ? (
+        {isLoading ? (
           <p>Loading tweets...</p>
         ) : tweets.length > 0 ? (
           tweets.map((tweet, index) => (
@@ -58,8 +70,8 @@ const Chatbot = () => {
           ))
         ) : (
           <div className="error_message">
-          {error || "No tweets found for this query."}
-        </div>
+            {error || "No tweets found for this query."}
+          </div>
         )}
       </div>
 
@@ -82,8 +94,6 @@ const Chatbot = () => {
           </button>
         </div>
       </div>
-
-    
     </div>
   );
 };

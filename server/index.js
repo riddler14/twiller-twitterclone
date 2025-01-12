@@ -27,6 +27,7 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function scrapeTweets(query) {
   const browser = await puppeteer.launch({
     headless: true, // Run in headless mode for production
+    executablePath: "/usr/bin/google-chrome-stable", // Path to the installed Chrome binary
     args: ["--no-sandbox", "--disable-setuid-sandbox"], // Required for some environments
   });
   const page = await browser.newPage();

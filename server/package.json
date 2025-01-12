@@ -15,6 +15,7 @@
     "axios": "^1.7.9",
     "bottleneck": "^2.19.5",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
     "express": "^4.20.0",
     "express-session": "^1.18.1",
     "mongodb": "^6.8.1",

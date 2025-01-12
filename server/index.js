@@ -1,7 +1,7 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const puppeteer = require("puppeteer-core"); // Use puppeteer-extra for additional plugins
+const puppeteer = require("puppeteer-extra"); // Use puppeteer-extra for additional plugins
 const StealthPlugin = require("puppeteer-extra-plugin-stealth"); // Avoid detection
 // const Parser = require("rss-parser");
 
@@ -28,38 +28,38 @@ const client = new MongoClient(url);
 // const TAGGBOX_WIDGET_ID = process.env.TAGGBOX_WIDGET_ID; // Store your Taggbox widget ID in .env
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function downloadChrome() {
-  const chromePath = path.join(__dirname, "chrome");
-  if (!fs.existsSync(chromePath)) {
-    fs.mkdirSync(chromePath);
-  }
+// async function downloadChrome() {
+//   const chromePath = path.join(__dirname, "chrome");
+//   if (!fs.existsSync(chromePath)) {
+//     fs.mkdirSync(chromePath);
+//   }
 
-  const chromeBinaryPath = path.join(chromePath, "chrome");
+//   const chromeBinaryPath = path.join(chromePath, "chrome");
 
-  if (!fs.existsSync(chromeBinaryPath)) {
-    console.log("Downloading Chrome...");
-    execSync(
-      `wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O ${chromePath}/chrome.deb`
-    );
-    execSync(`dpkg -x ${chromePath}/chrome.deb ${chromePath}`);
-    fs.renameSync(
-      path.join(chromePath, "opt", "google", "chrome", "chrome"),
-      chromeBinaryPath
-    );
-    fs.unlinkSync(path.join(chromePath, "chrome.deb"));
-    console.log("Chrome downloaded successfully.");
-  }
+//   if (!fs.existsSync(chromeBinaryPath)) {
+//     console.log("Downloading Chrome...");
+//     execSync(
+//       `wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O ${chromePath}/chrome.deb`
+//     );
+//     execSync(`dpkg -x ${chromePath}/chrome.deb ${chromePath}`);
+//     fs.renameSync(
+//       path.join(chromePath, "opt", "google", "chrome", "chrome"),
+//       chromeBinaryPath
+//     );
+//     fs.unlinkSync(path.join(chromePath, "chrome.deb"));
+//     console.log("Chrome downloaded successfully.");
+//   }
 
-  return chromeBinaryPath;
-}
+//   return chromeBinaryPath;
+// }
 
 
 // Function to scrape tweets using Puppeteer
 async function scrapeTweets(query) {
-  const chromePath = await downloadChrome();
+  // const chromePath = await downloadChrome();
   const browser = await puppeteer.launch({
     headless: true, // Run in headless mode for production
-    executablePath: chromePath, // Path to the installed Chrome binary
+    executablePath: "/usr/bin/google-chrome-stable", // Path to the installed Chrome binary
     args: ["--no-sandbox", "--disable-setuid-sandbox"], // Required for some environments
   });
   const page = await browser.newPage();

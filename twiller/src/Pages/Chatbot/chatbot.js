@@ -1,47 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./chatbot.css";
 import VerifiedUserIcon from "@mui/icons-material/Verified";
 import ChatIcon from "@mui/icons-material/Chat";
 import SendIcon from "@mui/icons-material/Send";
-import axios from "axios";
 
 const Chatbot = () => {
   const [query, setQuery] = useState("");
-  const [tweets, setTweets] = useState([]);
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showTimeline, setShowTimeline] = useState(false); // State to control timeline visibility
 
   const handleInputChange = (e) => {
     setQuery(e.target.value);
   };
 
-  const handleFormSubmit = async (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault();
     if (!query) return;
 
     setIsLoading(true); // Start loading
     setError(null); // Clear previous error
-    setTweets([]); // Clear previous tweets
+    setShowTimeline(false); // Hide timeline initially
 
-    try {
-      // Fetch tweets from your backend
-      const res = await axios.get(`https://twiller-twitterclone-ewhk.onrender.com/tweets?q=${query}`);
-      const tweets = res.data.tweets;
-
-      // Set the fetched tweets
-      setTweets(tweets);
-
-      // If no tweets are found, set an error message
-      if (tweets.length === 0) {
-        setError("No tweets found for this query.");
+    // Simulate a delay to show loading state
+    setTimeout(() => {
+      if (query.trim() === "") {
+        setError("Please enter a valid query.");
+      } else {
+        setShowTimeline(true); // Show timeline if query is valid
       }
-    } catch (error) {
-      console.error("Error fetching tweets:", error);
-      setError("Failed to fetch tweets. Please try again.");
-    } finally {
       setIsLoading(false); // Stop loading
-    }
+    }, 1000); // Simulate a 1-second delay
   };
+
+  // Load Twitter widgets.js script dynamically
+  useEffect(() => {
+    const script = document.createElement("script");
+    script.src = "https://platform.twitter.com/widgets.js";
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   return (
     <div className="chatbot">
@@ -57,20 +59,22 @@ const Chatbot = () => {
       <div className="result_container">
         {isLoading ? (
           <p>Loading tweets...</p>
-        ) : tweets.length > 0 ? (
-          tweets.map((tweet, index) => (
-            <div key={index} className="tweet">
-              <p>
-                <strong>{tweet.user}</strong>: {tweet.text}
-              </p>
-              <a href={tweet.url} target="_blank" rel="noopener noreferrer">
-                View Tweet
-              </a>
-            </div>
-          ))
+        ) : showTimeline ? (
+          // Render Twitter Timeline Embed
+          <div className="twitter-timeline-container">
+            <a
+              className="twitter-timeline"
+              href={`https://twitter.com/search?q=${encodeURIComponent(query)}`}
+              data-width="600"
+              data-height="800"
+              data-theme="light"
+            >
+              Tweets about {query}
+            </a>
+          </div>
         ) : (
           <div className="error_message">
-            {error || "No tweets found for this query."}
+            {error || "Enter a query to see tweets."}
           </div>
         )}
       </div>

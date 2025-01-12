@@ -7,12 +7,12 @@ const url =
 const port = 5000;
 const axios = require("axios");
 require("dotenv").config();
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-const parser = new Parser();
+// const parser = new Parser();
 
 const client = new MongoClient(url);
 
@@ -75,33 +75,33 @@ async function run() {
     console.log(error);
   }
 }
-app.get("/tweets", async (req, res) => {
-  const query = req.query.q; // User-entered query (e.g., "cricket")
+// app.get("/tweets", async (req, res) => {
+//   const query = req.query.q; // User-entered query (e.g., "cricket")
 
-  if (!query) {
-    return res.status(400).json({ error: "Query is required" });
-  }
+//   if (!query) {
+//     return res.status(400).json({ error: "Query is required" });
+//   }
 
-  try {
-    // Fetch RSS feed from RSSHub
-    await delay(1000); // 1 second delay
-    const rssUrl = `http://localhost:1200/twitter/keyword/${encodeURIComponent(query)}`;
-    const feed = await parser.parseURL(rssUrl);
+//   try {
+//     // Fetch RSS feed from RSSHub
+//     await delay(1000); // 1 second delay
+//     const rssUrl = `http://localhost:1200/twitter/keyword/${encodeURIComponent(query)}`;
+//     const feed = await parser.parseURL(rssUrl);
 
-    // Extract relevant data from the feed
-    const tweets = feed.items.map((item) => ({
-      text: item.title,
-      user: item.author,
-      url: item.link,
-      date: item.pubDate,
-    }));
+//     // Extract relevant data from the feed
+//     const tweets = feed.items.map((item) => ({
+//       text: item.title,
+//       user: item.author,
+//       url: item.link,
+//       date: item.pubDate,
+//     }));
 
-    res.json({ tweets });
-  } catch (error) {
-    console.error("Error fetching tweets:", error);
-    res.status(500).json({ error: "Failed to fetch tweets" });
-  }
-});
+//     res.json({ tweets });
+//   } catch (error) {
+//     console.error("Error fetching tweets:", error);
+//     res.status(500).json({ error: "Failed to fetch tweets" });
+//   }
+// });
 run().catch(console.dir);
 
 app.get("/", (req, res) => {

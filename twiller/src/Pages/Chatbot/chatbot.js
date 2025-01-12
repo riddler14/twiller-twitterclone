@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import "./chatbot.css";
 import VerifiedUserIcon from "@mui/icons-material/Verified";
 import ChatIcon from "@mui/icons-material/Chat";
@@ -9,7 +9,7 @@ const Chatbot = () => {
   const [query, setQuery] = useState("");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [tweetIds, setTweetIds] = useState([]); // Store tweet IDs for embedding
+  const [tweets, setTweets] = useState([]); // Store scraped tweets
 
   const handleInputChange = (e) => {
     setQuery(e.target.value);
@@ -21,18 +21,18 @@ const Chatbot = () => {
 
     setIsLoading(true); // Start loading
     setError(null); // Clear previous error
-    setTweetIds([]); // Clear previous tweet IDs
+    setTweets([]); // Clear previous tweets
 
     try {
-      // Fetch tweet IDs from the backend
+      // Fetch tweets from the backend (which uses Puppeteer)
       const res = await axios.get(`https://twiller-twitterclone-ewhk.onrender.com/tweets?q=${query}`);
-      const { tweetIds } = res.data;
+      const { tweets } = res.data;
 
-      // Set the fetched tweet IDs
-      setTweetIds(tweetIds);
+      // Set the fetched tweets
+      setTweets(tweets);
 
       // If no tweets are found, set an error message
-      if (tweetIds.length === 0) {
+      if (tweets.length === 0) {
         setError("No tweets found for this query.");
       }
     } catch (error) {
@@ -42,26 +42,6 @@ const Chatbot = () => {
       setIsLoading(false); // Stop loading
     }
   };
-
-  // Load Twitter widgets.js script dynamically
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://platform.twitter.com/widgets.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
-
-  // Render embedded tweets
-  useEffect(() => {
-    if (tweetIds.length > 0) {
-      // Re-render Twitter widgets to display embedded tweets
-      window.twttr?.widgets.load();
-    }
-  }, [tweetIds]);
 
   return (
     <div className="chatbot">
@@ -77,13 +57,19 @@ const Chatbot = () => {
       <div className="result_container">
         {isLoading ? (
           <p>Loading tweets...</p>
-        ) : tweetIds.length > 0 ? (
-          // Render embedded tweets
-          tweetIds.map((tweetId) => (
-            <div key={tweetId} className="tweet-embed">
-              <blockquote className="twitter-tweet">
-                <a href={`https://twitter.com/user/status/${tweetId}`}></a>
-              </blockquote>
+        ) : tweets.length > 0 ? (
+          // Render scraped tweets
+          tweets.map((tweet, index) => (
+            <div key={index} className="tweet-card">
+              <div className="tweet-user">
+                <strong>{tweet.user}</strong>
+              </div>
+              <div className="tweet-text">{tweet.text}</div>
+              <div className="tweet-url">
+                <a href={tweet.url} target="_blank" rel="noopener noreferrer">
+                  View on Twitter
+                </a>
+              </div>
             </div>
           ))
         ) : (
@@ -116,4 +102,4 @@ const Chatbot = () => {
   );
 };
 
-export default Chatbot
+export default Chatbot;

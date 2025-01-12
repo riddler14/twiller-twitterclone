@@ -85,7 +85,7 @@ app.get("/tweets", async (req, res) => {
   try {
     // Fetch RSS feed from RSSHub
     await delay(1000); // 1 second delay
-    const rssUrl = `https://rsshub.app/twitter/keyword/${encodeURIComponent(query)}`;
+    const rssUrl = `http://localhost:1200/twitter/keyword/${encodeURIComponent(query)}`;
     const feed = await parser.parseURL(rssUrl);
 
     // Extract relevant data from the feed

@@ -15,7 +15,7 @@ const { execSync } = require("child_process");
 // const axios = require("axios");
 require("dotenv").config();
 // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-puppeteer.use(StealthPlugin());
+
 const app = express();
 app.use(cors());
 app.use(express.json());

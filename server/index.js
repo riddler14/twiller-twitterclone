@@ -1,16 +1,16 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const puppeteer = require("puppeteer"); // Use puppeteer-extra for additional plugins
+const {chromium} = require("playwright"); // Use puppeteer-extra for additional plugins
 // const StealthPlugin = require("puppeteer-extra-plugin-stealth"); // Avoid detection
 // const Parser = require("rss-parser");
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
-const port = 5000;
-const fs = require("fs");
-const path = require("path");
-const { execSync } = require("child_process");
+const port = process.env.PORT || 5000;
+// const fs = require("fs");
+// const path = require("path");
+// const { execSync } = require("child_process");
 
 // const axios = require("axios");
 require("dotenv").config();
@@ -29,56 +29,15 @@ const client = new MongoClient(url);
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 
-function installChrome() {
-  const chromePath = path.join(__dirname, "local-chrome");
 
-  if (!fs.existsSync(chromePath)) {
-    fs.mkdirSync(chromePath, { recursive: true });
-  }
-
-  console.log("Downloading Chrome for Render environment...");
-  try {
-    // Download Chrome
-    execSync(
-      `wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb -O ${chromePath}/chrome.deb`
-    );
-
-    // Extract Chrome
-    execSync(`dpkg -x ${chromePath}/chrome.deb ${chromePath}`);
-
-    // Move the Chrome binary to the correct location
-    fs.renameSync(
-      path.join(chromePath, "opt", "google", "chrome", "chrome"),
-      path.join(chromePath, "chrome")
-    );
-
-    // Clean up
-    fs.unlinkSync(path.join(chromePath, "chrome.deb"));
-    console.log("Chrome downloaded and installed successfully.");
-  } catch (error) {
-    console.error("Error downloading or installing Chrome:", error);
-    process.exit(1); // Exit with an error code
-  }
-}
-if (process.env.NODE_ENV === "production") {
-  installChrome();
-}
 
 
 // Function to scrape tweets using Puppeteer
 async function scrapeTweets(query) {
-  let executablePath;
 
-  if (process.env.NODE_ENV === "production") {
-    // Use the downloaded Chrome binary in production
-    executablePath = path.join(__dirname, "local-chrome", "chrome");
-  } else {
-    // Use the default Chrome binary during development
-    executablePath = puppeteer.executablePath();
-  } 
-  const browser = await puppeteer.launch({
+  const browser = await chromium.launch({
     headless: true, // Run in headless mode for production
-    executablePath,
+    
     args: [
       "--no-sandbox",
       "--disable-setuid-sandbox",

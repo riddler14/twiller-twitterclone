@@ -6,7 +6,6 @@
     "start": "node index.js",
     "start-dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
-    
   },
   "keywords": [],
   "author": "",
@@ -23,6 +22,7 @@
     "node-cache": "^5.1.2",
     "passport": "^0.7.0",
     "passport-twitter": "^1.0.4",
+    "playwright": "^1.49.1",
     "puppeteer": "^24.0.0",
     "puppeteer-core": "^24.0.0",
     "puppeteer-extra": "^3.3.6",

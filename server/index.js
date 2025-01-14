@@ -1,7 +1,7 @@
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const {chromium} = require("playwright-core"); // Use puppeteer-extra for additional plugins
+const {chromium} = require("playwright"); // Use puppeteer-extra for additional plugins
 // const StealthPlugin = require("puppeteer-extra-plugin-stealth"); // Avoid detection
 // const Parser = require("rss-parser");
 

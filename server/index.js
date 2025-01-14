@@ -39,34 +39,10 @@ async function scrapeTweets(query) {
     headless: true, // Run in headless mode for production
     
     args: [
-      "--no-sandbox",
+     "--no-sandbox",
       "--disable-setuid-sandbox",
-      "--single-process", // Reduce memory usage
-      "--disable-dev-shm-usage", // Avoid /dev/shm usage (useful in limited memory environments)
-      "--disable-gpu", // Disable GPU hardware acceleration
-      "--no-zygote", // Disable zygote process
-      "--no-first-run", // Skip first run tasks
-      "--disable-extensions", // Disable extensions
-      "--disable-background-networking", // Disable background networking
-      "--disable-background-timer-throttling",
-      "--disable-backgrounding-occluded-windows",
-      "--disable-breakpad",
-      "--disable-component-update",
-      "--disable-default-apps",
-      "--disable-domain-reliability",
-      "--disable-features=AudioServiceOutOfProcess",
-      "--disable-hang-monitor",
-      "--disable-ipc-flooding-protection",
-      "--disable-popup-blocking",
-      "--disable-prompt-on-repost",
-      "--disable-renderer-backgrounding",
-      "--disable-sync",
-      "--force-color-profile=srgb",
-      "--metrics-recording-only",
-      "--safebrowsing-disable-auto-update",
-      "--enable-automation", // Indicate that the browser is controlled by automation
-      "--password-store=basic",
-      "--use-mock-keychain",
+     
+      "--single-process",
     ], // Required for some environments
   });
   const page = await browser.newPage();

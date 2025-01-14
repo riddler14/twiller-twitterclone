@@ -82,7 +82,7 @@ async function scrapeTweets(query) {
 
   // Navigate to Twitter search results
   await page.goto(`https://twitter.com/search?q=${encodeURIComponent(query)}&src=typed_query`, {
-    waitUntil: "networkidle2",
+    waitUntil: "networkidle",
   });
 
   // Add a random delay to mimic human behavior

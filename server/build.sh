@@ -1,5 +1,5 @@
 #!/bin/bash
-
+chmod +x build.sh
 # Install Node.js dependencies
 npm install
 

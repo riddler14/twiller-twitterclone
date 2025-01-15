@@ -1,0 +1,5 @@
+build:
+  os: ubuntu
+  commands:
+    - chmod +x build.sh
+    - ./build.sh

@@ -59,6 +59,7 @@ async function initializeRettiwt() {
 // Function to scrape tweets using Puppeteer
 async function fetchTweets(query) {
   try {
+    await initializeRettiwt(); // Ensure Rettiwt-API is initialized
     console.log(`Fetching tweets for query: ${query}`);
     const tweets = await rettiwt.tweet.search({
       words: query, // Search for tweets containing the query

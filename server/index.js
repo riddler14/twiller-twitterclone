@@ -2,7 +2,7 @@ const { MongoClient } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-const cheerio = require("cheerio");
+const { Rettiwt } = require("rettiwt-api"); // Import Rettiwt-API
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
@@ -14,7 +14,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 // const parser = new Parser();
-
+const rettiwt = new Rettiwt();
 const client = new MongoClient(url);
 
 // const TAGGBOX_API_URL = "https://api.taggbox.com/v1/widget";
@@ -23,29 +23,31 @@ const client = new MongoClient(url);
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Function to scrape tweets using Puppeteer
-async function scrapeTweets(query) {
+async function fetchTweets(query) {
   try {
-    console.log(`Scraping tweets for query: ${query}`);
-    const response = await axios.get(
-      `https://x.com/search?q=${encodeURIComponent(query)}&src=typed_query`
-    );
-    const $ = cheerio.load(response.data);
-    const tweets = [];
-    $("article[data-testid='tweet']").each((index, element) => {
-      const text = $(element).find("div[lang]").text() || "No text";
-      const user =
-        $(element).find("div[data-testid='User-Name']").text() ||
-        "Unknown user";
-      const url = $(element).find("a[href*='/status/']").attr("href") || "#";
-      tweets.push({ text, user, url: `https://x.com${url}` });
+    console.log(`Fetching tweets for query: ${query}`);
+    const tweets = await rettiwt.tweet.search({
+      words: query, // Search for tweets containing the query
+      count: 10,    // Number of tweets to fetch
     });
-    console.log(`Scraped ${tweets.length} tweets`);
-    return tweets;
+
+    // Format the tweets
+    const formattedTweets = tweets.list.map(tweet => ({
+      id: tweet.id,
+      text: tweet.fullText,
+      user: tweet.createdBy.fullName,
+      username: tweet.createdBy.userName,
+      date: tweet.createdAt,
+    }));
+
+    console.log(`Fetched ${formattedTweets.length} tweets`);
+    return formattedTweets;
   } catch (error) {
-    console.error("Error during scraping:", error);
+    console.error("Error fetching tweets:", error);
     throw error;
   }
 }
+
 async function run() {
   try {
     await client.connect();
@@ -107,7 +109,7 @@ app.get("/tweets", async (req, res) => {
     return res.status(400).json({ error: "Query is required" });
   }
   try {
-    const tweets = await scrapeTweets(query);
+    const tweets = await fetchTweets(query);
     res.json({ tweets });
   } catch (error) {
     console.error("Error fetching tweets:", error);

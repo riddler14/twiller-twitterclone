@@ -9,7 +9,7 @@ const Chatbot = () => {
   const [query, setQuery] = useState("");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [tweets, setTweets] = useState([]); // Store scraped tweets
+  const [tweets, setTweets] = useState([]); // Store fetched tweets
 
   const handleInputChange = (e) => {
     setQuery(e.target.value);
@@ -24,7 +24,7 @@ const Chatbot = () => {
     setTweets([]); // Clear previous tweets
 
     try {
-      // Fetch tweets from the backend (which uses Cheerio)
+      // Fetch tweets from the backend (which uses Rettiwt-API)
       const res = await axios.get(`https://twiller-twitterclone-ewhk.onrender.com/tweets?q=${query}`);
       const { tweets } = res.data;
 
@@ -58,17 +58,15 @@ const Chatbot = () => {
         {isLoading ? (
           <p>Loading tweets...</p>
         ) : tweets.length > 0 ? (
-          // Render scraped tweets
-          tweets.map((tweet, index) => (
-            <div key={index} className="tweet-card">
+          // Render fetched tweets
+          tweets.map((tweet) => (
+            <div key={tweet.id} className="tweet-card">
               <div className="tweet-user">
-                <strong>{tweet.user}</strong>
+                <strong>{tweet.user}</strong> (@{tweet.username})
               </div>
               <div className="tweet-text">{tweet.text}</div>
-              <div className="tweet-url">
-                <a href={tweet.url} target="_blank" rel="noopener noreferrer">
-                  View on X
-                </a>
+              <div className="tweet-date">
+                <small>{new Date(tweet.date).toLocaleString()}</small>
               </div>
             </div>
           ))

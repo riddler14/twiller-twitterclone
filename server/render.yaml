@@ -1,8 +1,0 @@
-build:
-  os: ubuntu
-  commands:
-    - mkdir -p .cache/ms-playwright
-    - chmod -R 755 .cache/ms-playwright
-    - chmod -R 755 node_modules
-    - npm install
-    - npx playwright install chromium

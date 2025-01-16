@@ -1,17 +1,14 @@
-const { MongoClient} = require("mongodb");
+const { MongoClient } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const axios=require("axios");
-const cheerio=require("cheerio");
+const axios = require("axios");
+const cheerio = require("cheerio");
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
 
-
-
 require("dotenv").config();
-
 
 const app = express();
 app.use(cors());
@@ -27,19 +24,27 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Function to scrape tweets using Puppeteer
 async function scrapeTweets(query) {
-  const response = await axios.get(
-    `https://x.com/search?q=${encodeURIComponent(query)}&src=typed_query`
-  );
-  const $ = cheerio.load(response.data);
-  const tweets = [];
-  $("article[data-testid='tweet']").each((index, element) => {
-    const text = $(element).find("div[lang]").text() || "No text";
-    const user =
-      $(element).find("div[data-testid='User-Name']").text() || "Unknown user";
-    const url = $(element).find("a[href*='/status/']").attr("href") || "#";
-    tweets.push({ text, user, url: `https://x.com${url}` });
-  });
-  return tweets;
+  try {
+    console.log(`Scraping tweets for query: ${query}`);
+    const response = await axios.get(
+      `https://x.com/search?q=${encodeURIComponent(query)}&src=typed_query`
+    );
+    const $ = cheerio.load(response.data);
+    const tweets = [];
+    $("article[data-testid='tweet']").each((index, element) => {
+      const text = $(element).find("div[lang]").text() || "No text";
+      const user =
+        $(element).find("div[data-testid='User-Name']").text() ||
+        "Unknown user";
+      const url = $(element).find("a[href*='/status/']").attr("href") || "#";
+      tweets.push({ text, user, url: `https://x.com${url}` });
+    });
+    console.log(`Scraped ${tweets.length} tweets`);
+    return tweets;
+  } catch (error) {
+    console.error("Error during scraping:", error);
+    throw error;
+  }
 }
 async function run() {
   try {

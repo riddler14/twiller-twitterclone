@@ -3,6 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const { Rettiwt } = require("rettiwt-api"); // Import Rettiwt-API
+const puppeteer=require("puppeteer");
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
@@ -14,14 +15,47 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 // const parser = new Parser();
-const rettiwt = new Rettiwt();
+
 const client = new MongoClient(url);
 
 // const TAGGBOX_API_URL = "https://api.taggbox.com/v1/widget";
 // const TAGGBOX_API_KEY = process.env.TAGGBOX_API_KEY; // Store your Taggbox API key in .env
 // const TAGGBOX_WIDGET_ID = process.env.TAGGBOX_WIDGET_ID; // Store your Taggbox widget ID in .env
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+async function getTwitterCookies() {
+  const browser = await puppeteer.launch({ headless: false }); // Run in non-headless mode for debugging
+  const page = await browser.newPage();
 
+  // Go to Twitter login page
+  await page.goto("https://twitter.com/login");
+
+  // Wait for manual login
+  console.log("Please log in to Twitter in the browser...");
+  await page.waitForNavigation({ waitUntil: "networkidle2" });
+
+  // Extract cookies
+  const cookies = await page.cookies("https://twitter.com");
+  const authToken = cookies.find((cookie) => cookie.name === "auth_token").value;
+  const ct0Token = cookies.find((cookie) => cookie.name === "ct0").value;
+
+  console.log("auth_token:", authToken);
+  console.log("ct0:", ct0Token);
+
+  await browser.close();
+
+  return { authToken, ct0Token };
+}
+
+// Initialize Rettiwt-API with cookies
+let rettiwt;
+
+async function initializeRettiwt() {
+  const { authToken, ct0Token } = await getTwitterCookies();
+  rettiwt = new Rettiwt({
+    auth_token: authToken,
+    ct0: ct0Token,
+  });
+}
 // Function to scrape tweets using Puppeteer
 async function fetchTweets(query) {
   try {

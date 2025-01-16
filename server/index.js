@@ -1,20 +1,17 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient} = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const {chromium} = require("playwright"); // Use puppeteer-extra for additional plugins
-// const StealthPlugin = require("puppeteer-extra-plugin-stealth"); // Avoid detection
-// const Parser = require("rss-parser");
+const axios=require("axios");
+const cheerio=require("cheerio");
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
-// const fs = require("fs");
-// const path = require("path");
-// const { execSync } = require("child_process");
 
-// const axios = require("axios");
+
+
 require("dotenv").config();
-// const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 
 const app = express();
 app.use(cors());
@@ -28,54 +25,20 @@ const client = new MongoClient(url);
 // const TAGGBOX_WIDGET_ID = process.env.TAGGBOX_WIDGET_ID; // Store your Taggbox widget ID in .env
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-
-
-
-
 // Function to scrape tweets using Puppeteer
 async function scrapeTweets(query) {
-
-  const browser = await chromium.launch({
-    headless: true, // Run in headless mode for production
-    
-    args: [
-     "--no-sandbox",
-      "--disable-setuid-sandbox",
-     
-      "--single-process",
-    ], // Required for some environments
+  const response = await axios.get(
+    `https://x.com/search?q=${encodeURIComponent(query)}&src=typed_query`
+  );
+  const $ = cheerio.load(response.data);
+  const tweets = [];
+  $("article[data-testid='tweet']").each((index, element) => {
+    const text = $(element).find("div[lang]").text() || "No text";
+    const user =
+      $(element).find("div[data-testid='User-Name']").text() || "Unknown user";
+    const url = $(element).find("a[href*='/status/']").attr("href") || "#";
+    tweets.push({ text, user, url: `https://x.com${url}` });
   });
-  const page = await browser.newPage();
-
-  // Set a random user agent to avoid detection
-  const userAgents = [
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0",
-  ];
-  const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
-  await page.setUserAgent(randomUserAgent);
-
-  // Navigate to Twitter search results
-  await page.goto(`https://twitter.com/search?q=${encodeURIComponent(query)}&src=typed_query`, {
-    waitUntil: "networkidle",
-  });
-
-  // Add a random delay to mimic human behavior
-  await delay(Math.floor(Math.random() * 4000) + 1000);
-
-  // Scrape tweets
-  const tweets = await page.evaluate(() => {
-    const tweetElements = document.querySelectorAll("article[data-testid='tweet']");
-    return Array.from(tweetElements).map((tweet) => {
-      const text = tweet.querySelector("div[lang]")?.innerText || "No text";
-      const user = tweet.querySelector("div[data-testid='User-Name']")?.innerText || "Unknown user";
-      const url = tweet.querySelector("a[href*='/status/']")?.href || "#";
-      return { text, user, url };
-    });
-  });
-  await page.close();
-  await browser.close();
   return tweets;
 }
 async function run() {
@@ -134,12 +97,10 @@ async function run() {
   }
 }
 app.get("/tweets", async (req, res) => {
-  const query = req.query.q; // User-entered query (e.g., "cricket")
-
+  const query = req.query.q;
   if (!query) {
     return res.status(400).json({ error: "Query is required" });
   }
-
   try {
     const tweets = await scrapeTweets(query);
     res.json({ tweets });
@@ -148,7 +109,6 @@ app.get("/tweets", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch tweets" });
   }
 });
-
 run().catch(console.dir);
 
 app.get("/", (req, res) => {

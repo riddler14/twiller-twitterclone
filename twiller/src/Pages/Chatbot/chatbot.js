@@ -24,7 +24,7 @@ const Chatbot = () => {
     setTweets([]); // Clear previous tweets
 
     try {
-      // Fetch tweets from the backend (which uses Puppeteer)
+      // Fetch tweets from the backend (which uses Cheerio)
       const res = await axios.get(`https://twiller-twitterclone-ewhk.onrender.com/tweets?q=${query}`);
       const { tweets } = res.data;
 
@@ -67,7 +67,7 @@ const Chatbot = () => {
               <div className="tweet-text">{tweet.text}</div>
               <div className="tweet-url">
                 <a href={tweet.url} target="_blank" rel="noopener noreferrer">
-                  View on Twitter
+                  View on X
                 </a>
               </div>
             </div>

@@ -39,11 +39,15 @@ async function getTwitterCookies() {
   await page.waitForNavigation({ waitUntil: "networkidle2" });
 
   // Extract cookies
-  const cookies = await page.cookies("https://twitter.com");
-  const authToken = cookies.find(
-    (cookie) => cookie.name === "auth_token"
-  ).value;
-  const ct0Token = cookies.find((cookie) => cookie.name === "ct0").value;
+  const client = await page.target().createCDPSession();
+  const { cookies } = await client.send("Network.getAllCookies");
+
+  const authToken = cookies.find((cookie) => cookie.name === "auth_token")?.value;
+  const ct0Token = cookies.find((cookie) => cookie.name === "ct0")?.value;
+
+  if (!authToken || !ct0Token) {
+    throw new Error("Failed to extract auth_token or ct0 cookies.");
+  }
 
   console.log("auth_token:", authToken);
   console.log("ct0:", ct0Token);

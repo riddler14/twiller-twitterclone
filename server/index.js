@@ -4,7 +4,7 @@ const cors = require("cors");
 // const axios = require("axios");
 const { Rettiwt } = require("rettiwt-api"); // Import Rettiwt-API
 const chromium = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
@@ -26,7 +26,7 @@ const client = new MongoClient(url);
 async function getTwitterCookies() {
   const browser = await puppeteer.launch({
     executablePath: await chromium.executablePath(), // Use the custom Chrome binary
-     headless: true, 
+     headless: chromium.headless, 
         args: chromium.args,
         }); // Run in non-headless mode for debugging
   const page = await browser.newPage();
@@ -42,8 +42,8 @@ async function getTwitterCookies() {
     // Enter username
     await page.type('input[name="text"]', process.env.TWITTER_USERNAME);
 
-    // Find and click the "Next" button using XPath
-    const [nextButton] = await page.$x("//div[@role='button']//span[contains(text(), 'Next')]");
+    // Click the "Next" button
+    const [nextButton] = await page.$x("//span[contains(text(), 'Next')]");
     if (nextButton) {
       await nextButton.click();
     } else {
@@ -56,8 +56,8 @@ async function getTwitterCookies() {
     // Enter password
     await page.type('input[name="password"]', process.env.TWITTER_PASSWORD);
 
-    // Find and click the "Log in" button using XPath
-    const [loginButton] = await page.$x("//div[@role='button']//span[contains(text(), 'Log in')]");
+    // Click the "Log in" button
+    const [loginButton] = await page.$x("//span[contains(text(), 'Log in')]");
     if (loginButton) {
       await loginButton.click();
     } else {
@@ -67,15 +67,9 @@ async function getTwitterCookies() {
     // Wait for navigation to complete
     await page.waitForNavigation({ waitUntil: "networkidle2" });
 
-    // Take a screenshot for debugging
-    await page.screenshot({ path: "login.png" });
-
-    // Create a CDP session directly from the page
-    const client = await page.createCDPSession();
+    // Fetch cookies using CDP (Chrome DevTools Protocol)
+    const client = await page.target().createCDPSession();
     const { cookies } = await client.send("Network.getAllCookies");
-
-    // Log all cookies for debugging
-    console.log("All cookies:", cookies);
 
     // Find the auth_token and ct0 cookies
     const authToken = cookies.find((cookie) => cookie.name === "auth_token")?.value;
@@ -92,8 +86,6 @@ async function getTwitterCookies() {
 
     return { authToken, ct0Token };
   } catch (error) {
-    // Take a screenshot if an error occurs
-    await page.screenshot({ path: "error.png" });
     console.error("Error during login or cookie extraction:", error);
     await browser.close();
     throw error;

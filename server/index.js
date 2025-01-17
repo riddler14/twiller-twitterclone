@@ -27,34 +27,67 @@ async function getTwitterCookies() {
   const browser = await puppeteer.launch({
     executablePath: await chromium.executablePath(), // Use the custom Chrome binary
      headless: true, 
-        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        args: chromium.args,
         }); // Run in non-headless mode for debugging
   const page = await browser.newPage();
 
   // Go to Twitter login page
-  await page.goto("https://twitter.com/login");
+  try {
+    // Go to Twitter login page
+    await page.goto("https://twitter.com/login", { waitUntil: "networkidle2" });
 
-  // Wait for manual login
-  console.log("Please log in to Twitter in the browser...");
-  await page.waitForNavigation({ waitUntil: "networkidle2" });
+    // Wait for the username input field
+    await page.waitForSelector('input[name="text"]', { visible: true });
 
-  // Extract cookies
-  const client = await page.target().createCDPSession();
-  const { cookies } = await client.send("Network.getAllCookies");
+    // Enter username
+    await page.type('input[name="text"]', process.env.TWITTER_USERNAME);
 
-  const authToken = cookies.find((cookie) => cookie.name === "auth_token")?.value;
-  const ct0Token = cookies.find((cookie) => cookie.name === "ct0")?.value;
+    // Click "Next" button
+    await page.click('div[role="button"]:has-text("Next")');
 
-  if (!authToken || !ct0Token) {
-    throw new Error("Failed to extract auth_token or ct0 cookies.");
+    // Wait for the password input field
+    await page.waitForSelector('input[name="password"]', { visible: true });
+
+    // Enter password
+    await page.type('input[name="password"]', process.env.TWITTER_PASSWORD);
+
+    // Click "Log in" button
+    await page.click('div[role="button"]:has-text("Log in")');
+
+    // Wait for navigation to complete
+    await page.waitForNavigation({ waitUntil: "networkidle2" });
+
+    // Take a screenshot for debugging
+    await page.screenshot({ path: "login.png" });
+
+    // Extract cookies using Chrome DevTools Protocol (CDP)
+    const client = await page.createCDPSession();
+    const { cookies } = await client.send("Network.getAllCookies");
+
+    // Log all cookies for debugging
+    console.log("All cookies:", cookies);
+
+    // Find the auth_token and ct0 cookies
+    const authToken = cookies.find((cookie) => cookie.name === "auth_token")?.value;
+    const ct0Token = cookies.find((cookie) => cookie.name === "ct0")?.value;
+
+    if (!authToken || !ct0Token) {
+      throw new Error("Failed to extract auth_token or ct0 cookies.");
+    }
+
+    console.log("auth_token:", authToken);
+    console.log("ct0:", ct0Token);
+
+    await browser.close();
+
+    return { authToken, ct0Token };
+  } catch (error) {
+    // Take a screenshot if an error occurs
+    await page.screenshot({ path: "error.png" });
+    console.error("Error during login or cookie extraction:", error);
+    await browser.close();
+    throw error;
   }
-
-  console.log("auth_token:", authToken);
-  console.log("ct0:", ct0Token);
-
-  await browser.close();
-
-  return { authToken, ct0Token };
 }
 
 // Initialize Rettiwt-API with cookies

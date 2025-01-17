@@ -4,7 +4,7 @@ const cors = require("cors");
 // const axios = require("axios");
 const { Rettiwt } = require("rettiwt-api"); // Import Rettiwt-API
 const chromium = require('@sparticuz/chromium');
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";

@@ -1,9 +1,10 @@
 const { MongoClient } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const axios = require("axios");
+// const axios = require("axios");
 const { Rettiwt } = require("rettiwt-api"); // Import Rettiwt-API
-const puppeteer=require("puppeteer");
+const chromium = require('@sparticuz/chromium');
+const puppeteer = require('puppeteer-core');
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
@@ -21,9 +22,13 @@ const client = new MongoClient(url);
 // const TAGGBOX_API_URL = "https://api.taggbox.com/v1/widget";
 // const TAGGBOX_API_KEY = process.env.TAGGBOX_API_KEY; // Store your Taggbox API key in .env
 // const TAGGBOX_WIDGET_ID = process.env.TAGGBOX_WIDGET_ID; // Store your Taggbox widget ID in .env
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+// const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 async function getTwitterCookies() {
-  const browser = await puppeteer.launch({ headless: false }); // Run in non-headless mode for debugging
+  const browser = await puppeteer.launch({
+    executablePath: await chromium.executablePath(), // Use the custom Chrome binary
+     headless: true, 
+        args: ["--no-sandbox", "--disable-setuid-sandbox"],
+        }); // Run in non-headless mode for debugging
   const page = await browser.newPage();
 
   // Go to Twitter login page
@@ -35,7 +40,9 @@ async function getTwitterCookies() {
 
   // Extract cookies
   const cookies = await page.cookies("https://twitter.com");
-  const authToken = cookies.find((cookie) => cookie.name === "auth_token").value;
+  const authToken = cookies.find(
+    (cookie) => cookie.name === "auth_token"
+  ).value;
   const ct0Token = cookies.find((cookie) => cookie.name === "ct0").value;
 
   console.log("auth_token:", authToken);
@@ -63,11 +70,11 @@ async function fetchTweets(query) {
     console.log(`Fetching tweets for query: ${query}`);
     const tweets = await rettiwt.tweet.search({
       words: query, // Search for tweets containing the query
-      count: 10,    // Number of tweets to fetch
+      count: 10, // Number of tweets to fetch
     });
 
     // Format the tweets
-    const formattedTweets = tweets.list.map(tweet => ({
+    const formattedTweets = tweets.list.map((tweet) => ({
       id: tweet.id,
       text: tweet.fullText,
       user: tweet.createdBy.fullName,

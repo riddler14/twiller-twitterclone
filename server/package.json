@@ -12,6 +12,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@sparticuz/chromium": "^131.0.1",
     "axios": "^1.7.9",
     "bottleneck": "^2.19.5",
     "cheerio": "^1.0.0",
@@ -25,7 +26,7 @@
     "passport-twitter": "^1.0.4",
     "playwright": "^1.49.1",
     "puppeteer": "^24.0.0",
-    "puppeteer-core": "^24.0.0",
+    "puppeteer-core": "^24.1.0",
     "puppeteer-extra": "^3.3.6",
     "puppeteer-extra-plugin-stealth": "^2.11.2",
     "rettiwt-api": "^4.1.4",

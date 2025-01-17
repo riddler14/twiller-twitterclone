@@ -42,8 +42,13 @@ async function getTwitterCookies() {
     // Enter username
     await page.type('input[name="text"]', process.env.TWITTER_USERNAME);
 
-    // Click "Next" button
-    await page.click('div[role="button"]:has-text("Next")');
+    // Find and click the "Next" button using XPath
+    const [nextButton] = await page.$x("//div[@role='button']//span[contains(text(), 'Next')]");
+    if (nextButton) {
+      await nextButton.click();
+    } else {
+      throw new Error("Next button not found.");
+    }
 
     // Wait for the password input field
     await page.waitForSelector('input[name="password"]', { visible: true });
@@ -51,8 +56,13 @@ async function getTwitterCookies() {
     // Enter password
     await page.type('input[name="password"]', process.env.TWITTER_PASSWORD);
 
-    // Click "Log in" button
-    await page.click('div[role="button"]:has-text("Log in")');
+    // Find and click the "Log in" button using XPath
+    const [loginButton] = await page.$x("//div[@role='button']//span[contains(text(), 'Log in')]");
+    if (loginButton) {
+      await loginButton.click();
+    } else {
+      throw new Error("Log in button not found.");
+    }
 
     // Wait for navigation to complete
     await page.waitForNavigation({ waitUntil: "networkidle2" });
@@ -60,7 +70,7 @@ async function getTwitterCookies() {
     // Take a screenshot for debugging
     await page.screenshot({ path: "login.png" });
 
-    // Extract cookies using Chrome DevTools Protocol (CDP)
+    // Create a CDP session directly from the page
     const client = await page.createCDPSession();
     const { cookies } = await client.send("Network.getAllCookies");
 

@@ -9,6 +9,7 @@ const Chatbot = () => {
   const [query, setQuery] = useState("");
   const [error, setError] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [response, setResponse] = useState(""); // Store chatbot response
   const [tweets, setTweets] = useState([]); // Store fetched tweets
 
   const handleInputChange = (e) => {
@@ -21,23 +22,26 @@ const Chatbot = () => {
 
     setIsLoading(true); // Start loading
     setError(null); // Clear previous error
+    setResponse(""); // Clear previous chatbot response
     setTweets([]); // Clear previous tweets
 
     try {
-      // Fetch tweets from the backend (which uses Rettiwt-API)
-      const res = await axios.get(`https://twiller-twitterclone-ewhk.onrender.com/tweets?q=${query}`);
-      const { tweets } = res.data;
+      // Send query to the backend (which uses Twitter API v2 and OpenAI API)
+      const res = await axios.post("https://twiller-twitterclone-ewhk.onrender.com/chatbot", {
+        query,
+      });
 
-      // Set the fetched tweets
-      setTweets(tweets);
+      // Set the chatbot response and tweets
+      setResponse(res.data.response);
+      setTweets(res.data.tweets);
 
       // If no tweets are found, set an error message
-      if (tweets.length === 0) {
+      if (res.data.tweets.length === 0) {
         setError("No tweets found for this query.");
       }
     } catch (error) {
-      console.error("Error fetching tweets:", error);
-      setError("Failed to fetch tweets. Please try again.");
+      console.error("Error fetching data:", error);
+      setError("Failed to fetch data. Please try again.");
     } finally {
       setIsLoading(false); // Stop loading
     }
@@ -56,24 +60,35 @@ const Chatbot = () => {
 
       <div className="result_container">
         {isLoading ? (
-          <p>Loading tweets...</p>
-        ) : tweets.length > 0 ? (
-          // Render fetched tweets
-          tweets.map((tweet) => (
-            <div key={tweet.id} className="tweet-card">
-              <div className="tweet-user">
-                <strong>{tweet.user}</strong> (@{tweet.username})
-              </div>
-              <div className="tweet-text">{tweet.text}</div>
-              <div className="tweet-date">
-                <small>{new Date(tweet.date).toLocaleString()}</small>
-              </div>
-            </div>
-          ))
+          <p>Loading...</p>
+        ) : error ? (
+          <div className="error_message">{error}</div>
         ) : (
-          <div className="error_message">
-            {error || "Enter a query to see tweets."}
-          </div>
+          <>
+            {/* Display chatbot response */}
+            {response && (
+              <div className="chatbot_response">
+                <strong>Chatbot:</strong> {response}
+              </div>
+            )}
+
+            {/* Display fetched tweets */}
+            {tweets.length > 0 && (
+              <div className="tweets_container">
+                {tweets.map((tweet) => (
+                  <div key={tweet.id} className="tweet-card">
+                    <div className="tweet-user">
+                      <strong>User ID: {tweet.author_id}</strong>
+                    </div>
+                    <div className="tweet-text">{tweet.text}</div>
+                    <div className="tweet-date">
+                      <small>{new Date(tweet.date).toLocaleString()}</small>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
       </div>
 

@@ -22,6 +22,7 @@
     "express-session": "^1.18.1",
     "mongodb": "^6.8.1",
     "node-cache": "^5.1.2",
+    "openai": "^4.79.1",
     "passport": "^0.7.0",
     "passport-twitter": "^1.0.4",
     "playwright": "^1.49.1",

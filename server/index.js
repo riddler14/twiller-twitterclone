@@ -108,7 +108,7 @@ async function fetchTweets(query) {
 async function generateChatbotResponse(query) {
   try {
     const response = await openai.completions.create({
-      model: "gpt-3.5-turbo-instruct", // Use the new model
+      model: "gpt-3.5-turbo-instruct",
       prompt: `You are a helpful chatbot. Answer the following question: ${query}`,
       max_tokens: 100,
       temperature: 0.7,
@@ -116,6 +116,9 @@ async function generateChatbotResponse(query) {
 
     return response.choices[0].text.trim();
   } catch (error) {
+    if (error.code === "insufficient_quota") {
+      return "Sorry, the chatbot is currently unavailable due to quota limits. Please try again later.";
+    }
     console.error("Error generating chatbot response:", error);
     throw error;
   }

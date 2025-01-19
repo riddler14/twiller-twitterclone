@@ -61,7 +61,7 @@ async function fetchTweets(query) {
   try {
     // Step 1: Fetch tweets based on the query
     const tweetsResponse = await appOnlyClient.v2.search(query, {
-      max_results: 1, // Fetch up to 10 tweets
+      max_results: 10, // Fetch up to 10 tweets
       "tweet.fields": "created_at,author_id,public_metrics", // Include additional fields
       "user.fields": "name,username,profile_image_url", // Include user details
       expansions: "author_id", // Expand author_id to include user details

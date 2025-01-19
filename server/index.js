@@ -61,7 +61,7 @@ async function fetchTweets(query) {
   try {
     // Step 1: Fetch tweets based on the query
     const tweetsResponse = await appOnlyClient.v2.search(query, {
-      max_results: 10, // Fetch up to 10 tweets
+      max_results: 1, // Fetch up to 10 tweets
       "tweet.fields": "created_at,author_id,public_metrics", // Include additional fields
       "user.fields": "name,username,profile_image_url", // Include user details
       expansions: "author_id", // Expand author_id to include user details
@@ -103,16 +103,18 @@ async function fetchTweets(query) {
 
 
 // Function to generate a chatbot response using OpenAI API
+// Function to generate chatbot response using OpenAI API (GPT-4)
+// Function to generate chatbot response using OpenAI API
 async function generateChatbotResponse(query) {
   try {
     const response = await openai.completions.create({
-      model: "text-davinci-003", // Use GPT-3.5 model
+      model: "gpt-3.5-turbo-instruct", // Use the new model
       prompt: `You are a helpful chatbot. Answer the following question: ${query}`,
-      max_tokens: 100, // Limit the response length
-      temperature: 0.7, // Control creativity
+      max_tokens: 100,
+      temperature: 0.7,
     });
 
-    return response.data.choices[0].text.trim();
+    return response.choices[0].text.trim();
   } catch (error) {
     console.error("Error generating chatbot response:", error);
     throw error;
@@ -184,18 +186,15 @@ async function run() {
       }
     });
 
+    // Endpoint for chatbot interaction with user-specific rate limiting
     app.post("/chatbot", userLimiter, async (req, res) => {
       const { query } = req.body;
       if (!query) {
         return res.status(400).json({ error: "Query is required" });
       }
       try {
-        // Generate a chatbot response using OpenAI
         const chatbotResponse = await generateChatbotResponse(query);
-
-        // Fetch relevant tweets using Twitter API
         const tweets = await fetchTweets(query);
-
         res.json({ response: chatbotResponse, tweets });
       } catch (error) {
         console.error("Error in chatbot endpoint:", error);

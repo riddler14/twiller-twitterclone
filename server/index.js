@@ -3,7 +3,8 @@ const express = require("express");
 const cors = require("cors");
 // const axios = require("axios");
 const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
-const { Configuration, OpenAIApi } = require("openai"); // OpenAI API
+const { Configuration, OpenAIApi } = require("openai");
+const rateLimit = require("express-rate-limit"); // OpenAI API
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
@@ -22,32 +23,77 @@ const client = new MongoClient(url);
 // const TAGGBOX_API_KEY = process.env.TAGGBOX_API_KEY; // Store your Taggbox API key in .env
 // const TAGGBOX_WIDGET_ID = process.env.TAGGBOX_WIDGET_ID; // Store your Taggbox widget ID in .env
 // const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const twitterClient = new TwitterApi({
+const userClient = new TwitterApi({
   appKey: process.env.TWITTER_API_KEY,
   appSecret: process.env.TWITTER_API_SECRET,
   accessToken: process.env.TWITTER_ACCESS_TOKEN,
   accessSecret: process.env.TWITTER_ACCESS_SECRET,
 });
 
+// Initialize Bearer Token client (for app-only actions)
+const appOnlyClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN);
+
+
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 const openai = new OpenAIApi(configuration);
+
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1, // Limit each IP to 1 request per windowMs
+  message: "Too many requests from this IP, please try again after 15 minutes",
+});
+
+// User-specific rate limiter (1 request per 15 minutes per user)
+const userLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1, // Limit each user to 1 request per windowMs
+  keyGenerator: (req) => {
+    // Use the user's IP address or a unique identifier (e.g., email or user ID)
+    return req.ip || req.query.email || "anonymous";
+  },
+  message: "Too many requests from this user, please try again after 15 minutes",
+});
+
+app.use(globalLimiter);
 // Function to scrape tweets using Puppeteer
 async function fetchTweets(query) {
   try {
-    const tweets = await twitterClient.v2.search(query, {
+    // Step 1: Fetch tweets based on the query
+    const tweetsResponse = await appOnlyClient.v2.search(query, {
       max_results: 10, // Fetch up to 10 tweets
-      "tweet.fields": "created_at,author_id", // Include additional fields
+      "tweet.fields": "created_at,author_id,public_metrics", // Include additional fields
+      "user.fields": "name,username,profile_image_url", // Include user details
+      expansions: "author_id", // Expand author_id to include user details
     });
 
-    // Format the tweets
-    const formattedTweets = tweets.data.data.map((tweet) => ({
-      id: tweet.id,
-      text: tweet.text,
-      author_id: tweet.author_id,
-      date: tweet.created_at,
-    }));
+    // Step 2: Extract tweets and included users
+    const tweets = tweetsResponse.data.data;
+    const users = tweetsResponse.includes.users;
+
+    // Step 3: Format tweets in traditional format
+    const formattedTweets = tweets.map((tweet) => {
+      // Find the author details for this tweet
+      const author = users.find((user) => user.id === tweet.author_id);
+
+      return {
+        id: tweet.id,
+        text: tweet.text,
+        author: {
+          id: author.id,
+          name: author.name,
+          username: author.username,
+          profile_image_url: author.profile_image_url,
+        },
+        date: tweet.created_at,
+        metrics: {
+          retweets: tweet.public_metrics.retweet_count,
+          likes: tweet.public_metrics.like_count,
+          replies: tweet.public_metrics.reply_count,
+        },
+      };
+    });
 
     return formattedTweets;
   } catch (error) {
@@ -55,6 +101,7 @@ async function fetchTweets(query) {
     throw error;
   }
 }
+
 
 // Function to generate a chatbot response using OpenAI API
 async function generateChatbotResponse(query) {
@@ -124,7 +171,7 @@ async function run() {
       const result = await usercollection.updateOne(filter, updateDoc, options);
       res.send(result);
     });
-    app.get("/tweets", async (req, res) => {
+    app.get("/tweets", userLimiter, async (req, res) => {
       const query = req.query.q;
       if (!query) {
         return res.status(400).json({ error: "Query is required" });
@@ -138,7 +185,7 @@ async function run() {
       }
     });
 
-    app.post("/chatbot", async (req, res) => {
+    app.post("/chatbot", userLimiter, async (req, res) => {
       const { query } = req.body;
       if (!query) {
         return res.status(400).json({ error: "Query is required" });
@@ -156,6 +203,7 @@ async function run() {
         res.status(500).json({ error: "Failed to process request" });
       }
     });
+
   } catch (error) {
     console.log(error);
   }

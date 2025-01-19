@@ -108,7 +108,7 @@ async function fetchTweets(query) {
 async function generateChatbotResponse(query) {
   try {
     const response = await openai.completions.create({
-      model: "text-embedding-3-small",
+      model: "gpt-4o-mini",
       prompt: `You are a helpful chatbot. Answer the following question: ${query}`,
       max_tokens: 100,
       temperature: 0.7,

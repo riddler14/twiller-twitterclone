@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 // const axios = require("axios");
 const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
-const { Configuration, OpenAIApi } = require("openai");
+const  OpenAI = require("openai");
 const rateLimit = require("express-rate-limit"); // OpenAI API
 
 const url =
@@ -34,10 +34,9 @@ const userClient = new TwitterApi({
 const appOnlyClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN);
 
 
-const configuration = new Configuration({
+const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
-const openai = new OpenAIApi(configuration);
 
 const globalLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -106,7 +105,7 @@ async function fetchTweets(query) {
 // Function to generate a chatbot response using OpenAI API
 async function generateChatbotResponse(query) {
   try {
-    const response = await openai.createCompletion({
+    const response = await openai.completions.create({
       model: "text-davinci-003", // Use GPT-3.5 model
       prompt: `You are a helpful chatbot. Answer the following question: ${query}`,
       max_tokens: 100, // Limit the response length

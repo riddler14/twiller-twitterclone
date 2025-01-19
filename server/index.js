@@ -38,11 +38,11 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-const globalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1, // Limit each IP to 1 request per windowMs
-  message: "Too many requests from this IP, please try again after 15 minutes",
-});
+// const globalLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 minutes
+//   max: 1, // Limit each IP to 1 request per windowMs
+//   message: "Too many requests from this IP, please try again after 15 minutes",
+// });
 
 // User-specific rate limiter (1 request per 15 minutes per user)
 const userLimiter = rateLimit({
@@ -55,7 +55,7 @@ const userLimiter = rateLimit({
   message: "Too many requests from this user, please try again after 15 minutes",
 });
 
-app.use(globalLimiter);
+// app.use(globalLimiter);
 // Function to scrape tweets using Puppeteer
 async function fetchTweets(query) {
   try {

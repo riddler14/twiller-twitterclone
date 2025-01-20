@@ -129,7 +129,13 @@ async function fetchDeepSeekResponse(query) {
     const response = await axios.post(
       "https://api.deepseek.com/v1/chat/completions", // Replace with the actual DeepSeek API endpoint
       {
-        prompt: query,
+        model: "deepseek-chat", // Specify the model you want to use
+        messages: [
+          {
+            role: "user",
+            content: query,
+          },
+        ],
         max_tokens: 100,
         temperature: 0.7,
       },
@@ -141,12 +147,13 @@ async function fetchDeepSeekResponse(query) {
       }
     );
 
-    return response.data.choices[0].text.trim();
+    return response.data.choices[0].message.content.trim();
   } catch (error) {
     console.error("Error fetching DeepSeek response:", error);
     throw error;
   }
 }
+
 
 async function run() {
   try {

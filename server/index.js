@@ -1,9 +1,9 @@
 const { MongoClient } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-// const axios = require("axios");
+const axios = require("axios");
 const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
-const  OpenAI = require("openai");
+// const  OpenAI = require("openai");
 const rateLimit = require("express-rate-limit"); // OpenAI API
 
 const url =
@@ -34,9 +34,9 @@ const userClient = new TwitterApi({
 const appOnlyClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN);
 
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
 
 // const globalLimiter = rateLimit({
 //   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -105,21 +105,45 @@ async function fetchTweets(query) {
 // Function to generate a chatbot response using OpenAI API
 // Function to generate chatbot response using OpenAI API (GPT-4)
 // Function to generate chatbot response using OpenAI API
-async function generateChatbotResponse(query) {
-  try {
-    const response = await openai.completions.create({
-      model: "gpt-4o-mini",
-      prompt: `You are a helpful chatbot. Answer the following question: ${query}`,
-      max_tokens: 100,
-      temperature: 0.7,
-    });
+// async function generateChatbotResponse(query) {
+//   try {
+//     const response = await openai.completions.create({
+//       model: "gpt-4o-mini",
+//       prompt: `You are a helpful chatbot. Answer the following question: ${query}`,
+//       max_tokens: 100,
+//       temperature: 0.7,
+//     });
 
-    return response.choices[0].text.trim();
+//     return response.choices[0].text.trim();
+//   } catch (error) {
+//     if (error.code === "insufficient_quota") {
+//       return "Sorry, the chatbot is currently unavailable due to quota limits. Please try again later.";
+//     }
+//     console.error("Error generating chatbot response:", error);
+//     throw error;
+//   }
+// }
+
+async function fetchDeepSeekResponse(query) {
+  try {
+    const response = await axios.post(
+      "https://api.deepseek.com/v1/chat/completions", // Replace with the actual DeepSeek API endpoint
+      {
+        prompt: query,
+        max_tokens: 100,
+        temperature: 0.7,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data.choices[0].text.trim();
   } catch (error) {
-    if (error.code === "insufficient_quota") {
-      return "Sorry, the chatbot is currently unavailable due to quota limits. Please try again later.";
-    }
-    console.error("Error generating chatbot response:", error);
+    console.error("Error fetching DeepSeek response:", error);
     throw error;
   }
 }
@@ -190,20 +214,35 @@ async function run() {
     });
 
     // Endpoint for chatbot interaction with user-specific rate limiting
-    app.post("/chatbot", userLimiter, async (req, res) => {
+    // app.post("/chatbot", userLimiter, async (req, res) => {
+    //   const { query } = req.body;
+    //   if (!query) {
+    //     return res.status(400).json({ error: "Query is required" });
+    //   }
+    //   try {
+    //     const chatbotResponse = await generateChatbotResponse(query);
+    //     const tweets = await fetchTweets(query);
+    //     res.json({ response: chatbotResponse, tweets });
+    //   } catch (error) {
+    //     console.error("Error in chatbot endpoint:", error);
+    //     res.status(500).json({ error: "Failed to process request" });
+    //   }
+    // });
+
+    app.post("/deepseek", userLimiter, async (req, res) => {
       const { query } = req.body;
       if (!query) {
         return res.status(400).json({ error: "Query is required" });
       }
       try {
-        const chatbotResponse = await generateChatbotResponse(query);
-        const tweets = await fetchTweets(query);
-        res.json({ response: chatbotResponse, tweets });
+        const deepSeekResponse = await fetchDeepSeekResponse(query);
+        res.json({ response: deepSeekResponse });
       } catch (error) {
-        console.error("Error in chatbot endpoint:", error);
+        console.error("Error in DeepSeek endpoint:", error);
         res.status(500).json({ error: "Failed to process request" });
       }
     });
+
 
   } catch (error) {
     console.log(error);

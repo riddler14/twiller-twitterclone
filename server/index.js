@@ -5,6 +5,7 @@ const axios = require("axios");
 const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
 // const  OpenAI = require("openai");
 const rateLimit = require("express-rate-limit"); // OpenAI API
+const { pipeline } = require('@huggingface/transformers'); // Hugging Face Transformers
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
@@ -124,32 +125,16 @@ async function fetchTweets(query) {
 //   }
 // }
 
-async function fetchDeepSeekResponse(query) {
+async function generateHuggingFaceResponse(query) {
   try {
-    const response = await axios.post(
-      "https://api.deepseek.com/v1/chat/completions", // Replace with the actual DeepSeek API endpoint
-      {
-        model: "deepseek-chat", // Specify the model you want to use
-        messages: [
-          {
-            role: "user",
-            content: query,
-          },
-        ],
-        max_tokens: 100,
-        temperature: 0.7,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return response.data.choices[0].message.content.trim();
+    const generator = pipeline('text-generation', 'gpt2'); // Use GPT-2 model
+    const response = await generator(query, {
+      max_length: 100, // Limit the response length
+      num_return_sequences: 1, // Generate only one response
+    });
+    return response[0].generated_text.trim();
   } catch (error) {
-    console.error("Error fetching DeepSeek response:", error);
+    console.error("Error generating Hugging Face response:", error);
     throw error;
   }
 }
@@ -236,16 +221,16 @@ async function run() {
     //   }
     // });
 
-    app.post("/deepseek", userLimiter, async (req, res) => {
+    app.post("/huggingface", userLimiter, async (req, res) => {
       const { query } = req.body;
       if (!query) {
         return res.status(400).json({ error: "Query is required" });
       }
       try {
-        const deepSeekResponse = await fetchDeepSeekResponse(query);
-        res.json({ response: deepSeekResponse });
+        const huggingFaceResponse = await generateHuggingFaceResponse(query);
+        res.json({ response: huggingFaceResponse });
       } catch (error) {
-        console.error("Error in DeepSeek endpoint:", error);
+        console.error("Error in Hugging Face endpoint:", error);
         res.status(500).json({ error: "Failed to process request" });
       }
     });

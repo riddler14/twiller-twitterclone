@@ -6,7 +6,7 @@ const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
 // const  OpenAI = require("openai");
 const rateLimit = require("express-rate-limit"); // OpenAI API
 const { OpenAI } = require("openai"); // OpenAI library
-
+const { GoogleGenerativeAI } = require("@google/generative-ai");
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
@@ -39,6 +39,8 @@ const appOnlyClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN);
 // const openai = new OpenAI({
 //   apiKey: process.env.OPENAI_API_KEY,
 // });
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); // Add your API key in .env
 
 // const globalLimiter = rateLimit({
 //   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -127,48 +129,16 @@ async function fetchTweets(query) {
 //   }
 // }
 
-async function generateHuggingFaceResponse(query) {
-  const maxRetries = 3; // Maximum number of retries
-  let retryCount = 0;
-
-  while (retryCount < maxRetries) {
-    try {
-      const response = await axios.post(
-        "https://api-inference.huggingface.co/models/distilgpt2", // Use distilgpt2
-        {
-          inputs: query,
-          parameters: {
-            max_length: 100, // Limit the response length
-          },
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      return response.data[0].generated_text.trim();
-    } catch (error) {
-      if (error.response?.status === 503 && error.response?.data?.error === "Model is loading") {
-        // Model is still loading, wait and retry
-        console.log("Model is loading. Retrying in 5 seconds...");
-        await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds
-        retryCount++;
-      } else if (error.response?.status === 429) {
-        // Rate limit exceeded, wait and retry
-        console.log("Rate limit exceeded. Retrying in 10 seconds...");
-        await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds
-        retryCount++;
-      } else {
-        // Other errors, throw the error
-        console.error("Error generating Hugging Face response:", error.response?.data || error.message);
-        throw error;
-      }
-    }
+async function generateResponse(query) {
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" }); // Use the Gemini Pro model
+    const result = await model.generateContent(query);
+    const response = await result.response;
+    return response.text();
+  } catch (error) {
+    console.error("Error generating response:", error);
+    throw error;
   }
-
-  throw new Error("Max retries reached. Unable to generate response.");
 }
 
 
@@ -257,16 +227,16 @@ async function run() {
     //   }
     // });
 
-    app.post("/huggingface", userLimiter, async (req, res) => {
+    app.post("/gemini", userLimiter, async (req, res) => {
       const { query } = req.body;
       if (!query) {
         return res.status(400).json({ error: "Query is required" });
       }
       try {
-        const huggingFaceResponse = await generateHuggingFaceResponse(query);
-        res.json({ response: huggingFaceResponse });
+        const geminiResponse = await generateResponse(query);
+        res.json({ response: geminiResponse });
       } catch (error) {
-        console.error("Error in Hugging Face endpoint:", error);
+        console.error("Error in Gemini endpoint:", error);
         res.status(500).json({ error: "Failed to process request" });
       }
     });

@@ -5,7 +5,7 @@ const axios = require("axios");
 const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
 // const  OpenAI = require("openai");
 const rateLimit = require("express-rate-limit"); // OpenAI API
-const { pipeline } = require('@huggingface/transformers'); // Hugging Face Transformers
+
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
@@ -127,17 +127,28 @@ async function fetchTweets(query) {
 
 async function generateHuggingFaceResponse(query) {
   try {
-    const generator = pipeline('text-generation', 'gpt2'); // Use GPT-2 model
-    const response = await generator(query, {
-      max_length: 100, // Limit the response length
-      num_return_sequences: 1, // Generate only one response
-    });
-    return response[0].generated_text.trim();
+    const response = await axios.post(
+      "https://api-inference.huggingface.co/models/gpt2", // GPT-2 model
+      {
+        inputs: query,
+        parameters: {
+          max_length: 100, // Limit the response length
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data[0].generated_text.trim();
   } catch (error) {
     console.error("Error generating Hugging Face response:", error);
     throw error;
   }
 }
+
 
 
 async function run() {

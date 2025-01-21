@@ -106,7 +106,7 @@ async function fetchTweets(query) {
 // Function to generate a chatbot response using OpenAI API
 // Function to generate chatbot response using OpenAI API (GPT-4)
 // Function to generate chatbot response using OpenAI API
-async function generateOpenAIResponse(query) {
+async function generateChatbotResponse(query) {
   try {
     const response = await openai.chat.completions.create({
       model: "gpt-3.5-turbo", // Use GPT-3.5-turbo (free tier)
@@ -182,7 +182,7 @@ async function run() {
       const result = await usercollection.updateOne(filter, updateDoc, options);
       res.send(result);
     });
-    
+
     app.get("/tweets", userLimiter, async (req, res) => {
       const query = req.query.q;
       if (!query) {
@@ -223,7 +223,7 @@ async function run() {
 
 run().catch(console.dir);
 
-app.get("/", (req, res) => {
+app.get("/", (res) => {
   res.send("Twiller is working");
 });
 

@@ -1,10 +1,11 @@
 const { MongoClient } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-// const axios = require("axios");
+const axios = require("axios");
 const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
-const  OpenAI = require("openai");
+// const  OpenAI = require("openai");
 const rateLimit = require("express-rate-limit"); // OpenAI API
+
 
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
@@ -34,9 +35,9 @@ const userClient = new TwitterApi({
 const appOnlyClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN);
 
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
 
 // const globalLimiter = rateLimit({
 //   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -105,24 +106,50 @@ async function fetchTweets(query) {
 // Function to generate a chatbot response using OpenAI API
 // Function to generate chatbot response using OpenAI API (GPT-4)
 // Function to generate chatbot response using OpenAI API
-async function generateChatbotResponse(query) {
-  try {
-    const response = await openai.completions.create({
-      model: "gpt-4o-mini",
-      prompt: `You are a helpful chatbot. Answer the following question: ${query}`,
-      max_tokens: 100,
-      temperature: 0.7,
-    });
+// async function generateChatbotResponse(query) {
+//   try {
+//     const response = await openai.completions.create({
+//       model: "gpt-4o-mini",
+//       prompt: `You are a helpful chatbot. Answer the following question: ${query}`,
+//       max_tokens: 100,
+//       temperature: 0.7,
+//     });
 
-    return response.choices[0].text.trim();
+//     return response.choices[0].text.trim();
+//   } catch (error) {
+//     if (error.code === "insufficient_quota") {
+//       return "Sorry, the chatbot is currently unavailable due to quota limits. Please try again later.";
+//     }
+//     console.error("Error generating chatbot response:", error);
+//     throw error;
+//   }
+// }
+
+async function generateHuggingFaceResponse(query) {
+  try {
+    const response = await axios.post(
+      "https://api-inference.huggingface.co/models/gpt2", // GPT-2 model
+      {
+        inputs: query,
+        parameters: {
+          max_length: 100, // Limit the response length
+        },
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    return response.data[0].generated_text.trim();
   } catch (error) {
-    if (error.code === "insufficient_quota") {
-      return "Sorry, the chatbot is currently unavailable due to quota limits. Please try again later.";
-    }
-    console.error("Error generating chatbot response:", error);
+    console.error("Error generating Hugging Face response:", error);
     throw error;
   }
 }
+
+
 
 async function run() {
   try {
@@ -190,20 +217,35 @@ async function run() {
     });
 
     // Endpoint for chatbot interaction with user-specific rate limiting
-    app.post("/chatbot", userLimiter, async (req, res) => {
+    // app.post("/chatbot", userLimiter, async (req, res) => {
+    //   const { query } = req.body;
+    //   if (!query) {
+    //     return res.status(400).json({ error: "Query is required" });
+    //   }
+    //   try {
+    //     const chatbotResponse = await generateChatbotResponse(query);
+    //     const tweets = await fetchTweets(query);
+    //     res.json({ response: chatbotResponse, tweets });
+    //   } catch (error) {
+    //     console.error("Error in chatbot endpoint:", error);
+    //     res.status(500).json({ error: "Failed to process request" });
+    //   }
+    // });
+
+    app.post("/huggingface", userLimiter, async (req, res) => {
       const { query } = req.body;
       if (!query) {
         return res.status(400).json({ error: "Query is required" });
       }
       try {
-        const chatbotResponse = await generateChatbotResponse(query);
-        const tweets = await fetchTweets(query);
-        res.json({ response: chatbotResponse, tweets });
+        const huggingFaceResponse = await generateHuggingFaceResponse(query);
+        res.json({ response: huggingFaceResponse });
       } catch (error) {
-        console.error("Error in chatbot endpoint:", error);
+        console.error("Error in Hugging Face endpoint:", error);
         res.status(500).json({ error: "Failed to process request" });
       }
     });
+
 
   } catch (error) {
     console.log(error);

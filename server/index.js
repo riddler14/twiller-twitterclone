@@ -7,6 +7,7 @@ const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
 const rateLimit = require("express-rate-limit"); // OpenAI API
 const { OpenAI } = require("openai"); // OpenAI library
 
+
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
@@ -35,9 +36,9 @@ const userClient = new TwitterApi({
 const appOnlyClient = new TwitterApi(process.env.TWITTER_BEARER_TOKEN);
 
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// const openai = new OpenAI({
+//   apiKey: process.env.OPENAI_API_KEY,
+// });
 
 // const globalLimiter = rateLimit({
 //   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -106,26 +107,69 @@ async function fetchTweets(query) {
 // Function to generate a chatbot response using OpenAI API
 // Function to generate chatbot response using OpenAI API (GPT-4)
 // Function to generate chatbot response using OpenAI API
-async function generateChatbotResponse(query) {
-  try {
-    const response = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo", // Use GPT-3.5-turbo (free tier)
-      messages: [
+// async function generateChatbotResponse(query) {
+//   try {
+//     const response = await openai.chat.completions.create({
+//       model: "gpt-3.5-turbo", // Use GPT-3.5-turbo (free tier)
+//       messages: [
+//         {
+//           role: "user",
+//           content: query,
+//         },
+//       ],
+//       max_tokens: 100, // Limit the response length
+//     });
+
+//     return response.choices[0].message.content.trim();
+//   } catch (error) {
+//     console.error("Error generating OpenAI response:", error);
+//     throw error;
+//   }
+// }
+
+async function generateHuggingFaceResponse(query) {
+  const maxRetries = 3; // Maximum number of retries
+  let retryCount = 0;
+
+  while (retryCount < maxRetries) {
+    try {
+      const response = await axios.post(
+        "https://api-inference.huggingface.co/models/distilgpt2", // Use distilgpt2
         {
-          role: "user",
-          content: query,
+          inputs: query,
+          parameters: {
+            max_length: 100, // Limit the response length
+          },
         },
-      ],
-      max_tokens: 100, // Limit the response length
-    });
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-    return response.choices[0].message.content.trim();
-  } catch (error) {
-    console.error("Error generating OpenAI response:", error);
-    throw error;
+      return response.data[0].generated_text.trim();
+    } catch (error) {
+      if (error.response?.status === 503 && error.response?.data?.error === "Model is loading") {
+        // Model is still loading, wait and retry
+        console.log("Model is loading. Retrying in 5 seconds...");
+        await new Promise((resolve) => setTimeout(resolve, 5000)); // Wait 5 seconds
+        retryCount++;
+      } else if (error.response?.status === 429) {
+        // Rate limit exceeded, wait and retry
+        console.log("Rate limit exceeded. Retrying in 10 seconds...");
+        await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait 10 seconds
+        retryCount++;
+      } else {
+        // Other errors, throw the error
+        console.error("Error generating Hugging Face response:", error.response?.data || error.message);
+        throw error;
+      }
+    }
   }
-}
 
+  throw new Error("Max retries reached. Unable to generate response.");
+}
 
 
 
@@ -198,22 +242,34 @@ async function run() {
     });
 
     // Endpoint for chatbot interaction with user-specific rate limiting
-    app.post("/chatbot", userLimiter, async (req, res) => {
+    // app.post("/chatbot", userLimiter, async (req, res) => {
+    //   const { query } = req.body;
+    //   if (!query) {
+    //     return res.status(400).json({ error: "Query is required" });
+    //   }
+    //   try {
+    //     const chatbotResponse = await generateChatbotResponse(query);
+    //     const tweets = await fetchTweets(query);
+    //     res.json({ response: chatbotResponse, tweets });
+    //   } catch (error) {
+    //     console.error("Error in chatbot endpoint:", error);
+    //     res.status(500).json({ error: "Failed to process request" });
+    //   }
+    // });
+
+    app.post("/huggingface", userLimiter, async (req, res) => {
       const { query } = req.body;
       if (!query) {
         return res.status(400).json({ error: "Query is required" });
       }
       try {
-        const chatbotResponse = await generateChatbotResponse(query);
-        const tweets = await fetchTweets(query);
-        res.json({ response: chatbotResponse, tweets });
+        const huggingFaceResponse = await generateHuggingFaceResponse(query);
+        res.json({ response: huggingFaceResponse });
       } catch (error) {
-        console.error("Error in chatbot endpoint:", error);
+        console.error("Error in Hugging Face endpoint:", error);
         res.status(500).json({ error: "Failed to process request" });
       }
     });
-
-    
 
 
   } catch (error) {

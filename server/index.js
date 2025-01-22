@@ -234,7 +234,11 @@ async function run() {
       }
       try {
         const geminiResponse = await generateResponse(query);
-        res.json({ response: geminiResponse });
+        const tweets = await fetchTweets(query);
+        res.json({
+          response: geminiResponse,
+          tweets: tweets || [],
+        });
       } catch (error) {
         console.error("Error in Gemini endpoint:", error);
         res.status(500).json({ error: "Failed to process request" });

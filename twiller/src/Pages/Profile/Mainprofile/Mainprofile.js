@@ -231,7 +231,7 @@ const Mainprofile = ({ user }) => {
 
 
   const generateAvatarUrl = (
-    seed,
+    username,
     top,
     accessories,
     hairColor,
@@ -247,7 +247,7 @@ const Mainprofile = ({ user }) => {
   };
 
   const handleChooseAvatar = () => {
-    const url = generateAvatarUrl(top, accessories, hairColor, facialHair, clothing, skinColor, eyes, eyebrow, mouth, background);
+    const url = generateAvatarUrl(username,top, accessories, hairColor, facialHair, clothing, skinColor, eyes, eyebrow, mouth, background);
     setAvatarUrl(url);
     setIsPopupVisible(true);
   };
@@ -431,7 +431,7 @@ const Mainprofile = ({ user }) => {
             onClick={() => {
               const newTop = top === "shortHairShortFlat" ? "longHairBigHair" : "shortHairShortFlat";
               setTop(newTop);
-              setAvatarUrl(generateAvatarUrl( newTop, accessories, hairColor, facialHair, clothing, skinColor, eyes, eyebrow, mouth, background));
+              setAvatarUrl(generateAvatarUrl( username,newTop, accessories, hairColor, facialHair, clothing, skinColor, eyes, eyebrow, mouth, background));
             }}
           >
             Toggle Top ({top})
@@ -442,7 +442,7 @@ const Mainprofile = ({ user }) => {
             setAccessories(newAccessories);
             setAvatarUrl(
               generateAvatarUrl(
-              
+                username,
                 top,
                 newAccessories,
                 hairColor,
@@ -467,7 +467,7 @@ const Mainprofile = ({ user }) => {
             setHairColor(newHairColor);
             setAvatarUrl(
               generateAvatarUrl(
-            
+                username,
                 top,
                 accessories,
                 newHairColor,
@@ -492,7 +492,7 @@ const Mainprofile = ({ user }) => {
             setFacialHair(newFacialHair);
             setAvatarUrl(
               generateAvatarUrl(
-               
+                username,
                 top,
                 accessories,
                 hairColor,
@@ -517,7 +517,7 @@ const Mainprofile = ({ user }) => {
             setClothing(newClothing);
             setAvatarUrl(
               generateAvatarUrl(
-          
+                username,
                 top,
                 accessories,
                 hairColor,
@@ -542,7 +542,7 @@ const Mainprofile = ({ user }) => {
             setSkinColor(newSkinColor);
             setAvatarUrl(
               generateAvatarUrl(
-            
+                username,
                 top,
                 accessories,
                 hairColor,
@@ -567,7 +567,7 @@ const Mainprofile = ({ user }) => {
             setEyes(newEyes);
             setAvatarUrl(
               generateAvatarUrl(
-           
+                username,
                 top,
                 accessories,
                 hairColor,
@@ -592,7 +592,7 @@ const Mainprofile = ({ user }) => {
             setEyebrow(newEyebrow);
             setAvatarUrl(
               generateAvatarUrl(
-        
+                username,
                 top,
                 accessories,
                 hairColor,
@@ -617,7 +617,7 @@ const Mainprofile = ({ user }) => {
             setMouth(newMouth);
             setAvatarUrl(
               generateAvatarUrl(
-           
+                username,
                 top,
                 accessories,
                 hairColor,
@@ -642,7 +642,7 @@ const Mainprofile = ({ user }) => {
             setBackground(newBackground);
             setAvatarUrl(
               generateAvatarUrl(
-                
+                username,
                 top,
                 accessories,
                 hairColor,

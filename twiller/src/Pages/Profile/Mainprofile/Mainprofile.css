@@ -186,3 +186,39 @@
   .getLocationButton:hover {
     background-color: #0056b3;
   }
+
+  .avatarCustomizationPopup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    z-index: 999;
+  }
+  
+  .customizationButtons button {
+    margin: 10px;
+  }
+  
+  .popupButtons button {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #1da1f2;
+    color: white;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .popupButtons button:hover {
+    background-color: #0d95e8;
+  }
+  .avatar-preview img {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 20px;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+  }  

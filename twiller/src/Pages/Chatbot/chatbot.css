@@ -26,9 +26,12 @@
 
 .searchbox {
   display: flex;
+  
   align-items: center;
   margin-bottom: 20px;
-  width: 708px;
+  width: 100%; /* Make it fit within the chatbot container */
+  padding: 10px; /* Add padding for spacing */
+  box-sizing: border-box; 
 }
 
 .searchbox__Icon {
@@ -48,16 +51,19 @@
 
 .result_container {
   margin-top: 15px;
-  margin-left: 20px;
   padding: 20px;
   background-color: #f5f8fa;
   border-radius: 20px;
+  width: 705px; /* Make it fit within the chatbot container */
+  box-sizing: border-box;
 }
 
 .tweets_container {
   display: flex;
   flex-direction: column;
   gap: 15px;
+  width: 100%; /* Make it fit within the chatbot container */
+  box-sizing: border-box
 }
 
 .tweet-card {
@@ -65,6 +71,8 @@
   border: 1px solid #e1e8ed;
   border-radius: 10px;
   background-color: white;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .tweet-header {
@@ -114,21 +122,20 @@
 
 .searchbox__input {
   display: flex;
+  
   align-items: center;
   background-color: var(--twitter-background);
   padding: 10px 20px;
   border-radius: 50px;
   margin-top: 10px;
-  margin-left: 10px;
-  width: 708px;
-  margin-right: 10px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .searchbox__input > input {
   border: none;
-  margin-top: 0px;
   background-color: var(--twitter-background);
-  width: 570px;
+  width: 100%;
   outline: none;
 }
 

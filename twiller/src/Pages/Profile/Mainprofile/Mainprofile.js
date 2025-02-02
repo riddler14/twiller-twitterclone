@@ -24,8 +24,7 @@ const Mainprofile = ({ user }) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
 
   const [avatarUrl, setAvatarUrl] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [editor, setEditor] = useState(null);
+
   // useEffect(() => {
   //   if (user?.email) {
   //     fetch(
@@ -43,16 +42,58 @@ const Mainprofile = ({ user }) => {
   //   }
   // }, [user.email]);
   // const [seed,setSeed]=useState("Aneka");
-  const [top, setTop] = useState("shortHairShortFlat");
-  const [accessories, setAccessories] = useState("prescription02");
-  const [hairColor, setHairColor] = useState("brown");
-  const [facialHair, setFacialHair] = useState("none");
-  const [clothing, setClothing] = useState("blazerSweater");
-  const [skinColor, setSkinColor] = useState("light");
-  const [eyes, setEyes] = useState("default");
-  const [eyebrow, setEyebrow] = useState("default");
-  const [mouth, setMouth] = useState("default");
-  const [background, setBackground] = useState("blue");
+  const predefinedSeeds = ["Valentina", "Christian", "Aneka", "Felix"];
+  const [currentSeed, setCurrentSeed] = useState(predefinedSeeds[0]);
+
+  const seedParameters = {
+    Valentina: {
+      top: ["bigHair","bob","bun","curly","curvy","dreads","dreads01","dreads02","frida","frizzle","fro","longButNotTooLong","shaggy"],
+      accessories: ["prescription02", "round","sunglasses","wayfarers","kurt","eyepatch","prescription01"],
+      hairColor: ["2c1b18","4a312c","724133","a55728","b58143","c93305","d6b370","e8e1e1","ecdcbf","f59797"],
+      clothing: ["blazerAndSweater", "hoodie","blazerAndShirt","collarAndSweater","graphicShirt","shirtCrewNeck"],
+      skinColor: ["614335","ae5d29","d08b5b","edb98a","f8d25c","fd9841","ffdbb4"],
+      backgroundColor: ["b6e3f4","c0aede","d1d4f9","ffd5dc","ffdfbf"],
+    },
+    Christian: {
+      top: ["bigHair","bob","bun","curly","curvy","dreads","dreads01","dreads02","frida","frizzle","fro","longButNotTooLong","shaggy"],
+      accessories: ["prescription02", "round","sunglasses","wayfarers","kurt","eyepatch","prescription01"],
+      hairColor: ["2c1b18","4a312c","724133","a55728","b58143","c93305","d6b370","e8e1e1","ecdcbf","f59797"],
+      clothing: ["blazerAndSweater", "hoodie","blazerAndShirt","collarAndSweater","graphicShirt","shirtCrewNeck"],
+      skinColor: ["614335","ae5d29","d08b5b","edb98a","f8d25c","fd9841","ffdbb4"],
+      backgroundColor: ["b6e3f4","c0aede","d1d4f9","ffd5dc","ffdfbf"],
+    },
+    Aneka: {
+      top: ["bigHair","bob","bun","curly","curvy","dreads","dreads01","dreads02","frida","frizzle","fro","longButNotTooLong","shaggy"],
+      accessories: ["prescription02", "round","sunglasses","wayfarers","kurt","eyepatch","prescription01"],
+      hairColor: ["2c1b18","4a312c","724133","a55728","b58143","c93305","d6b370","e8e1e1","ecdcbf","f59797"],
+      clothing: ["blazerAndSweater", "hoodie","blazerAndShirt","collarAndSweater","graphicShirt","shirtCrewNeck"],
+      skinColor: ["614335","ae5d29","d08b5b","edb98a","f8d25c","fd9841","ffdbb4"],
+      backgroundColor: ["b6e3f4","c0aede","d1d4f9","ffd5dc","ffdfbf"],
+    },
+    Felix: {
+      top: ["bigHair","bob","bun","curly","curvy","dreads","dreads01","dreads02","frida","frizzle","fro","longButNotTooLong","shaggy"],
+      accessories: ["prescription02", "round","sunglasses","wayfarers","kurt","eyepatch","prescription01"],
+      hairColor: ["2c1b18","4a312c","724133","a55728","b58143","c93305","d6b370","e8e1e1","ecdcbf","f59797"],
+      clothing: ["blazerAndSweater", "hoodie","blazerAndShirt","collarAndSweater","graphicShirt","shirtCrewNeck"],
+      skinColor: ["614335","ae5d29","d08b5b","edb98a","f8d25c","fd9841","ffdbb4"],
+      backgroundColor: ["b6e3f4","c0aede","d1d4f9","ffd5dc","ffdfbf"],
+    },
+  };
+
+  const [top, setTop] = useState(seedParameters[currentSeed].top[0]);
+  const [accessories, setAccessories] = useState(seedParameters[currentSeed].accessories[0]);
+  const [hairColor, setHairColor] = useState(seedParameters[currentSeed].hairColor[0]);
+  const [clothing, setClothing] = useState(seedParameters[currentSeed].clothing[0]);
+  const [skinColor, setSkinColor] = useState(seedParameters[currentSeed].skinColor[0]);
+  const [backgroundColor, setBackground] = useState(seedParameters[currentSeed].backgroundColor[0]);
+
+  const [topOptions, setTopOptions] = useState(seedParameters[currentSeed].top);
+  const [accessoriesOptions, setAccessoriesOptions] = useState(seedParameters[currentSeed].accessories);
+  const [hairColorOptions, setHairColorOptions] = useState(seedParameters[currentSeed].hairColor);
+  const [clothingOptions, setClothingOptions] = useState(seedParameters[currentSeed].clothing);
+  const [skinColorOptions, setSkinColorOptions] = useState(seedParameters[currentSeed].skinColor);
+  const [backgroundOptions, setBackgroundOptions] = useState(seedParameters[currentSeed].backgroundColor);
+
 
   const [isPopupVisible, setIsPopupVisible] = useState(false);
  
@@ -230,27 +271,33 @@ const Mainprofile = ({ user }) => {
 
 
 
-  const generateAvatarUrl = (
-    username,
-    top,
-    accessories,
-    hairColor,
-    facialHair,
-    clothing,
-    skinColor,
-    eyes,
-    eyebrow,
-    mouth,
-    background
-  ) => {
-    return `https://api.dicebear.com/9.x/avataaars/svg?seed=${username},top=${top},accessories=${accessories},hairColor=${hairColor},facialHair=${facialHair},clothing=${clothing},skinColor=${skinColor},eyes=${eyes},eyebrow=${eyebrow},mouth=${mouth},backgroundColor=${background}`;
+  useEffect(() => {
+    setTopOptions(seedParameters[currentSeed].top);
+    setAccessoriesOptions(seedParameters[currentSeed].accessories);
+    setHairColorOptions(seedParameters[currentSeed].hairColor);
+    setClothingOptions(seedParameters[currentSeed].clothing);
+    setSkinColorOptions(seedParameters[currentSeed].skinColor);
+    setBackgroundOptions(seedParameters[currentSeed].backgroundColor);
+  }, [currentSeed]);
+
+  const generateAvatarUrl = () => {
+    const params = [];
+    if (seedParameters[currentSeed].top) params.push(`top=${top}`);
+    if (seedParameters[currentSeed].accessories) params.push(`accessories=${accessories}`);
+    if (seedParameters[currentSeed].hairColor) params.push(`hairColor=${hairColor}`);
+    if (seedParameters[currentSeed].clothing) params.push(`clothing=${clothing}`);
+    if (seedParameters[currentSeed].skinColor) params.push(`skinColor=${skinColor}`);
+    if (seedParameters[currentSeed].backgroundColor) params.push(`backgroundColor=${backgroundColor}`);
+
+    return `https://api.dicebear.com/9.x/avataaars/svg?seed=${currentSeed},${params.join(",")}`;
   };
 
   const handleChooseAvatar = () => {
-    const url = generateAvatarUrl(username,top, accessories, hairColor, facialHair, clothing, skinColor, eyes, eyebrow, mouth, background);
+    const url = generateAvatarUrl();
     setAvatarUrl(url);
     setIsPopupVisible(true);
   };
+
 
   const handleAvatarUpload = async () => {
     setisloading(true);
@@ -427,238 +474,158 @@ const Mainprofile = ({ user }) => {
       <div className="customizationButtons">
       
 
-         <button
-            onClick={() => {
-              const newTop = top === "shortHairShortFlat" ? "longHairBigHair" : "shortHairShortFlat";
-              setTop(newTop);
-              setAvatarUrl(generateAvatarUrl( username,newTop, accessories, hairColor, facialHair, clothing, skinColor, eyes, eyebrow, mouth, background));
+      <label>
+          <b>Select Seed</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:
+          <select
+            value={currentSeed}
+            onChange={(e) => {
+              const newSeed = e.target.value;
+              setCurrentSeed(newSeed);
+              setAvatarUrl(
+                generateAvatarUrl(newSeed, top, accessories, hairColor,  clothing, skinColor, backgroundColor)
+              );
             }}
           >
-            Toggle Top ({top})
-          </button>
-      <button
-          onClick={() => {
-            const newAccessories = accessories === "prescription02" ? "round" : "prescription02";
-            setAccessories(newAccessories);
-            setAvatarUrl(
-              generateAvatarUrl(
-                username,
-                top,
-                newAccessories,
-                hairColor,
-                facialHair,
-                clothing,
-                skinColor,
-                eyes,
-                eyebrow,
-                mouth,
-                background
-              )
-            );
-          }}
-        >
-          Toggle Accessories ({accessories})
-        </button>
-
-        {/* Toggle Hair Color */}
-        <button
-          onClick={() => {
-            const newHairColor = hairColor === "brown" ? "blonde" : "brown";
-            setHairColor(newHairColor);
-            setAvatarUrl(
-              generateAvatarUrl(
-                username,
-                top,
-                accessories,
-                newHairColor,
-                facialHair,
-                clothing,
-                skinColor,
-                eyes,
-                eyebrow,
-                mouth,
-                background
-              )
-            );
-          }}
-        >
-          Toggle Hair Color ({hairColor})
-        </button>
-
-        {/* Toggle Facial Hair */}
-        <button
-          onClick={() => {
-            const newFacialHair = facialHair === "none" ? "beardLight" : "none";
-            setFacialHair(newFacialHair);
-            setAvatarUrl(
-              generateAvatarUrl(
-                username,
-                top,
-                accessories,
-                hairColor,
-                newFacialHair,
-                clothing,
-                skinColor,
-                eyes,
-                eyebrow,
-                mouth,
-                background
-              )
-            );
-          }}
-        >
-          Toggle Facial Hair ({facialHair})
-        </button>
-
-        {/* Toggle Clothing */}
-        <button
-          onClick={() => {
-            const newClothing = clothing === "blazerSweater" ? "hoodie" : "blazerSweater";
-            setClothing(newClothing);
-            setAvatarUrl(
-              generateAvatarUrl(
-                username,
-                top,
-                accessories,
-                hairColor,
-                facialHair,
-                newClothing,
-                skinColor,
-                eyes,
-                eyebrow,
-                mouth,
-                background
-              )
-            );
-          }}
-        >
-          Toggle Clothing ({clothing})
-        </button>
-
-        {/* Toggle Skin Color */}
-        <button
-          onClick={() => {
-            const newSkinColor = skinColor === "light" ? "dark" : "light";
-            setSkinColor(newSkinColor);
-            setAvatarUrl(
-              generateAvatarUrl(
-                username,
-                top,
-                accessories,
-                hairColor,
-                facialHair,
-                clothing,
-                newSkinColor,
-                eyes,
-                eyebrow,
-                mouth,
-                background
-              )
-            );
-          }}
-        >
-          Toggle Skin Color ({skinColor})
-        </button>
-
-        {/* Toggle Eyes */}
-        <button
-          onClick={() => {
-            const newEyes = eyes === "default" ? "happy" : "default";
-            setEyes(newEyes);
-            setAvatarUrl(
-              generateAvatarUrl(
-                username,
-                top,
-                accessories,
-                hairColor,
-                facialHair,
-                clothing,
-                skinColor,
-                newEyes,
-                eyebrow,
-                mouth,
-                background
-              )
-            );
-          }}
-        >
-          Toggle Eyes ({eyes})
-        </button>
-
-        {/* Toggle Eyebrow */}
-        <button
-          onClick={() => {
-            const newEyebrow = eyebrow === "default" ? "angry" : "default";
-            setEyebrow(newEyebrow);
-            setAvatarUrl(
-              generateAvatarUrl(
-                username,
-                top,
-                accessories,
-                hairColor,
-                facialHair,
-                clothing,
-                skinColor,
-                eyes,
-                newEyebrow,
-                mouth,
-                background
-              )
-            );
-          }}
-        >
-          Toggle Eyebrow ({eyebrow})
-        </button>
-
-        {/* Toggle Mouth */}
-        <button
-          onClick={() => {
-            const newMouth = mouth === "default" ? "smile" : "default";
-            setMouth(newMouth);
-            setAvatarUrl(
-              generateAvatarUrl(
-                username,
-                top,
-                accessories,
-                hairColor,
-                facialHair,
-                clothing,
-                skinColor,
-                eyes,
-                eyebrow,
-                newMouth,
-                background
-              )
-            );
-          }}
-        >
-          Toggle Mouth ({mouth})
-        </button>
-
-        {/* Toggle Background */}
-        <button
-          onClick={() => {
-            const newBackground = background === "blue" ? "green" : "blue";
-            setBackground(newBackground);
-            setAvatarUrl(
-              generateAvatarUrl(
-                username,
-                top,
-                accessories,
-                hairColor,
-                facialHair,
-                clothing,
-                skinColor,
-                eyes,
-                eyebrow,
-                mouth,
-                newBackground
-              )
-            );
-          }}
-        >
-          Toggle Background ({background})
-        </button>
+            {predefinedSeeds.map((seed) => (
+              <option key={seed} value={seed}>
+                {seed.charAt(0).toUpperCase() + seed.slice(1)}
+              </option>
+            ))}
+          </select>
+        </label>
+            <br/>
+        {/* Dropdown for Top */}
+        {seedParameters[currentSeed].top && (
+          <label>
+            <b>Top</b>   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;: 
+            <select
+              value={top}
+              onChange={(e) => {
+                const newTop = e.target.value;
+                setTop(newTop);
+                setAvatarUrl(
+                  generateAvatarUrl(currentSeed, newTop, accessories, hairColor,  clothing, skinColor,  backgroundColor)
+                );
+              }}
+            >
+              {topOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <br/>
+        {/* Dropdown for Accessories */}
+        {seedParameters[currentSeed].accessories && (
+          <label>
+            <b>Accessories</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:
+            <select
+              value={accessories}
+              onChange={(e) => {
+                const newAccessories = e.target.value;
+                setAccessories(newAccessories);
+                setAvatarUrl(
+                  generateAvatarUrl(currentSeed, top, newAccessories, hairColor, clothing, skinColor,  backgroundColor)
+                );
+              }}
+            >
+              {accessoriesOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <br/>
+         {seedParameters[currentSeed].hairColor && (
+          <label>
+            <b>Hair Color</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:
+            <select
+              value={hairColor}
+              onChange={(e) => {
+                const newHariColor = e.target.value;
+                setHairColor(newHariColor);
+                setAvatarUrl(
+                  generateAvatarUrl(currentSeed, top, accessories, newHariColor, clothing, skinColor,  backgroundColor)
+                );
+              }}
+            >
+              {hairColorOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <br/>
+           {seedParameters[currentSeed].clothing && (
+          <label>
+            <b>Clothing</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:
+            <select
+              value={clothing}
+              onChange={(e) => {
+                const newClothing = e.target.value;
+                setClothing(newClothing);
+                setAvatarUrl(
+                  generateAvatarUrl(currentSeed, top, accessories, hairColor, newClothing, skinColor,  backgroundColor)
+                );
+              }}
+            >
+              {clothingOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}<br/>
+        {seedParameters[currentSeed].skinColor && (
+          <label>
+            <b>Skin Color</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:
+            <select
+              value={skinColor}
+              onChange={(e) => {
+                const newSkinColor = e.target.value;
+                setSkinColor(newSkinColor);
+                setAvatarUrl(
+                  generateAvatarUrl(currentSeed, top, accessories, hairColor, clothing, newSkinColor,  backgroundColor)
+                );
+              }}
+            >
+              {skinColorOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+        <br/>
+         {seedParameters[currentSeed].backgroundColor && (
+          <label>
+            <b>Background Color:</b>
+            <select
+              value={backgroundColor}
+              onChange={(e) => {
+                const newBackground = e.target.value;
+                setBackground(newBackground);
+                setAvatarUrl(
+                  generateAvatarUrl(currentSeed, top, accessories, hairColor, clothing, skinColor,  newBackground)
+                );
+              }}
+            >
+              {backgroundOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option.charAt(0).toUpperCase() + option.slice(1)}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
       </div>
       <div className="popupButtons">
         <button onClick={handleAvatarUpload}>Save</button>

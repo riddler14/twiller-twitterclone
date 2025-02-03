@@ -279,7 +279,6 @@ const Mainprofile = ({ user }) => {
     setSkinColorOptions(seedParameters[currentSeed].skinColor);
     setBackgroundOptions(seedParameters[currentSeed].backgroundColor);
       // eslint-disable-next-line react-hooks/exhaustive-deps
-
   }, [currentSeed]);
 
   const generateAvatarUrl = () => {

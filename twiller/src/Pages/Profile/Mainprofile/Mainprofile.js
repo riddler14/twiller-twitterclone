@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Post from "../Posts/posts";
 import { useNavigate } from "react-router-dom";
 import "./Mainprofile.css";
@@ -45,7 +45,7 @@ const Mainprofile = ({ user }) => {
   const predefinedSeeds = ["Valentina", "Christian", "Aneka", "Felix"];
   const [currentSeed, setCurrentSeed] = useState(predefinedSeeds[0]);
 
-  const seedParameters = {
+  const seedParameters = useMemo(()=>({
     Valentina: {
       top: ["bigHair","bob","bun","curly","curvy","dreads","dreads01","dreads02","frida","frizzle","fro","longButNotTooLong","shaggy"],
       accessories: ["prescription02", "round","sunglasses","wayfarers","kurt","eyepatch","prescription01"],
@@ -78,7 +78,7 @@ const Mainprofile = ({ user }) => {
       skinColor: ["614335","ae5d29","d08b5b","edb98a","f8d25c","fd9841","ffdbb4"],
       backgroundColor: ["b6e3f4","c0aede","d1d4f9","ffd5dc","ffdfbf"],
     },
-  };
+  }),[]);
 
   const [top, setTop] = useState(seedParameters[currentSeed].top[0]);
   const [accessories, setAccessories] = useState(seedParameters[currentSeed].accessories[0]);

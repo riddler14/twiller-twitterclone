@@ -279,7 +279,7 @@ const Mainprofile = ({ user }) => {
     setSkinColorOptions(seedParameters[currentSeed].skinColor);
     setBackgroundOptions(seedParameters[currentSeed].backgroundColor);
       
-  }, [seedParameters]);
+  });
 
   const generateAvatarUrl = () => {
     const params = [];

@@ -3,10 +3,11 @@ import { useUserAuth } from "../context/UserAuthContext";
 const useLoggedinuser = () => {
   const { user } = useUserAuth();
   const email = user?.email;
+  
   const [loggedinuser, setloggedinuser] = useState({});
 
   useEffect(() => {
-    fetch(`https://twiller-twitterclone-ewhk.onrender.com/loggedinuser?email=${email}`)
+    fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/loggedinuser?email=${email}`)
       .then((res) => res.json())
       .then((data) => {
         //console.log(data)

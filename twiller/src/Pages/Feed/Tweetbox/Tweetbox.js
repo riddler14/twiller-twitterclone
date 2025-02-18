@@ -38,7 +38,7 @@ const Tweetbox=()=>{
       const handletweet = (e) => {
         e.preventDefault();
         if (user?.providerData[0]?.providerId === "password") {
-          fetch(`https://twiller-twitterclone-ewhk.onrender.com/loggedinuser?email=${email}`)
+          fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/loggedinuser?email=${email}`)
             .then((res) => res.json())
             .then((data) => {
               //console.log(data[0].name);
@@ -62,7 +62,7 @@ const Tweetbox=()=>{
           //console.log(userpost);
           setpost("");
           setimageurl("");
-          fetch("https://twiller-twitterclone-ewhk.onrender.com/post", {
+          fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
             method: "POST",
             headers: {
               "content-type": "application/json",

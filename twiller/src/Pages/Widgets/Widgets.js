@@ -1,10 +1,24 @@
-import React from 'react'
+import React,{useState} from 'react'
 import "./widget.css";
 import SearchIcon from "@mui/icons-material/Search";
+import IconButton from "@mui/material/IconButton";
+import WidgetsIcon from '@mui/icons-material/Widgets';
 import { TwitterTimelineEmbed, TwitterTweetEmbed } from "react-twitter-embed";
 const Widgets=()=>{
+  const [isWidgetsOpen, setIsWidgetsOpen] = useState(false);
+
+  const toggleWidgets = () => {
+    setIsWidgetsOpen(!isWidgetsOpen);
+  };
     return(
-        <div className="widgets">
+      <>
+      {/* Toggle Button for Mobile */}
+      <div className="toggle-widgets">
+        <IconButton onClick={toggleWidgets}>
+          <WidgetsIcon style={{ fontSize: "30px", cursor: "pointer" }} />
+        </IconButton>
+      </div>
+        <div className={`widgets ${isWidgetsOpen ? "active" : ""}`}>
         <div className="widgets__input">
           <SearchIcon className="widget__searchIcon" />
           <input placeholder="Search Twitter" type="text" />
@@ -19,6 +33,7 @@ const Widgets=()=>{
           />
         </div>
       </div>
+      </>
     );
 };
 export default Widgets;

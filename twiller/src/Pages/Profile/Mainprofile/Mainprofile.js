@@ -17,7 +17,7 @@ const Mainprofile = ({ user }) => {
   const [isloading, setisloading] = useState(false);
   //const loggedinuser = []
   const [loggedinuser] = useLoggedinuser();
-  const username = user?.email?.split("@")[0];
+  const username = loggedinuser[0]?.username || user?.email?.split("@")[0];
   const [post, setpost] = useState([]);
   const [location, setLocation] = useState("");
   const [weather, setWeather] = useState("");
@@ -101,7 +101,7 @@ const Mainprofile = ({ user }) => {
 
   useEffect(() => {
     fetch(
-      `https://twiller-twitterclone-ewhk.onrender.com/userpost?email=${user?.email}`
+      `https://twiller-twitterclone-1-j9kj.onrender.com/userpost?email=${user?.email}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -201,7 +201,7 @@ const Mainprofile = ({ user }) => {
         setisloading(false);
         if (url) {
           fetch(
-            `https://twiller-twitterclone-ewhk.onrender.com/userupdate/${user?.email}`,
+            `https://twiller-twitterclone-1-j9kj.onrender.com/userupdate/${user?.email}`,
             {
               method: "PATCH",
               headers: {
@@ -243,7 +243,7 @@ const Mainprofile = ({ user }) => {
         setisloading(false);
         if (url) {
           fetch(
-            `https://twiller-twitterclone-ewhk.onrender.com/userupdate/${user?.email}`,
+            `https://twiller-twitterclone-1-j9kj.onrender.com/userupdate/${user?.email}`,
             {
               method: "PATCH",
               headers: {
@@ -326,7 +326,7 @@ const Mainprofile = ({ user }) => {
         email: user?.email,
         profileImage: imgUrl,
       };
-      await fetch(`https://twiller-twitterclone-ewhk.onrender.com/userupdate/${user?.email}`, {
+      await fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/userupdate/${user?.email}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(userProfileUpdate),

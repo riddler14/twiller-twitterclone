@@ -1,33 +1,55 @@
+/* SidebarOption Base Styles */
 .sidebarOptions {
-    display: flex;
-    align-items: center;
-    padding-bottom: 5px;
-    cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 5px 10px; /* Reduced padding for compactness */
+  cursor: pointer;
+  border-radius: 30px; /* Rounded corners for a modern look */
+  transition: background-color 200ms ease, color 200ms ease; /* Smooth hover effect */
+}
+
+.sidebarOptions:hover {
+  background-color: #e8f5fe; /* Light blue background on hover */
+  color: var(--twitter-color); /* Twitter blue text color */
+}
+
+.sidebarOptions > .MuiSvgIcon-root {
+  padding: 10px; /* Padding around icons */
+  font-size: 24px; /* Icon size */
+}
+
+.sidebarOptions > h2 {
+  font-weight: 600; /* Bold text for labels */
+  font-size: 16px; /* Font size for desktop */
+  margin-left: 10px; /* Space between icon and text */
+}
+
+.done__icon {
+  color: var(--twitter-color) !important; /* Highlight color for active icons */
+}
+
+/* Tablet Styles */
+@media screen and (max-width: 768px) {
+  .sidebarOptions > h2 {
+    font-size: 14px; /* Slightly smaller font for tablets */
   }
-  
-  .sidebarOptions:hover {
-    background-color: #e8f5fe;
-    border-radius: 30px;
-    color: var(--twitter-color);
-    transition: color 100ms ease-out;
+
+  .sidebarOptions > .MuiSvgIcon-root {
+    font-size: 20px; /* Smaller icons for tablets */
   }
-  
-  .sidebarOptions>.MuiSvgIcon-root {
-    padding: 10px 15px;
+}
+
+/* Mobile Styles */
+@media screen and (max-width: 480px) {
+  .sidebarOptions > h2 {
+    font-size: 12px; /* Even smaller font for mobile */
   }
-  
-  .sidebarOptions>h2 {
-    font-weight: 600;
-    font-size: 18px;
-    margin-right: 20px;
+
+  .sidebarOptions > .MuiSvgIcon-root {
+    font-size: 18px; /* Compact icons for mobile */
   }
-  
-  .done__icon {
-    color: var(--twitter-color) !important;
+
+  .sidebarOptions {
+    padding: 5px; /* Minimal padding for mobile */
   }
-  
-  @media screen and (max-width:688px) {
-    .sidebar__tweet {
-      display: none;
-    }
-  }
+}

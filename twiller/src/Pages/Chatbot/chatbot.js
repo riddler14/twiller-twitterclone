@@ -30,7 +30,7 @@ const Chatbot = () => {
 
     try {
       // Send query to the backend (which uses Twitter API v2 and OpenAI API)
-      const res = await axios.post("https://twiller-twitterclone-ewhk.onrender.com/gemini", {
+      const res = await axios.post("https://twiller-twitterclone-1-j9kj.onrender.com/gemini", {
         query,
       });
 

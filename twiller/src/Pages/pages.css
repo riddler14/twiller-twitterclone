@@ -1,29 +1,64 @@
+/* Base Styles for Pages */
 .page {
-    flex: 0.4;
-    border-right: 1px solid var(--twitter-background);
-    width: 100vw;
-    padding: 0 180px;
-    height: 100vh;
-    display: flex;
-    align-items: center;
+  flex: 0.4; /* Match the Feed page's flex value */
+  border-right: 1px solid var(--twitter-background);
+  min-width: fit-content;
+  width: 709px; /* Default width for desktop */
+  overflow-y: auto; /* Enable vertical scrolling if needed */
+  background-color: white;
+}
+
+.page::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for a cleaner look */
 }
 
 .profilePage {
-    flex: 0.4;
-    border-right: 1px solid var(--twitter-background);
-    min-width: fit-content;
-    overflow-y: scroll;
-    width: 709px;
-    width: 100vw;
+  flex: 0.4;
+  border-right: 1px solid var(--twitter-background);
+  min-width: fit-content;
+  overflow-y: scroll;
+  width: 100%; /* Ensure full width on all devices */
 }
 
 .profilePage::-webkit-scrollbar {
-    display: none;
+  display: none; /* Hide scrollbar for a cleaner look */
 }
 
-
 .pageTitle {
-    color: var(--twitter-color);
-    text-align: center;
-    font-size: 30px;
+  color: var(--twitter-color);
+  text-align: center;
+  font-size: 30px;
+  margin: 0; /* Remove default margin for better alignment */
+}
+
+/* Tablet Styles */
+@media screen and (max-width: 768px) {
+  .page {
+    flex: 1; /* Full width on tablets */
+    width: 100%;
+    padding: 10px; /* Reduce padding for tablets */
+  }
+
+  .pageTitle {
+    font-size: 24px; /* Slightly smaller font size for tablets */
+  }
+}
+
+/* Mobile Styles */
+@media screen and (max-width: 480px) {
+  .page {
+    flex: 1; /* Full width on mobile */
+    width: 100%;
+    padding: 5px; /* Minimal padding for mobile */
+  }
+
+  .pageTitle {
+    font-size: 20px; /* Compact font size for mobile */
+  }
+
+  .profilePage {
+    flex: 1; /* Full width on mobile */
+    width: 100%;
+    padding: 5px; /* Minimal padding for mobile */
+  }
 }

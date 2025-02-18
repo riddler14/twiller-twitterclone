@@ -1,51 +1,109 @@
+/* Widgets Base Styles */
 .widgets {
+  border-right: 1px solid var(--twitter-background);
+  
+  flex: 0.3;
+  min-width: fit-content;
+  overflow-y: auto;
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 250px; /* Width of the sidebar */
+  height: 100vh;
+  background-color: white;
+  z-index: 1000; /* Ensure it's above other content */
+  transform: translateX(-100%); /* Hide sidebar by default */
+  transition: transform 0.3s ease;
+}
+
+.widgets::-webkit-scrollbar {
+  display: none;
+}
+
+.widgets.active{
+  transform: translateX(0); /* Show sidebar when active */
+
+}
+
+.widgets__input {
+  display: flex;
+  align-items: center;
+  background-color: var(--twitter-background);
+  padding: 10px 20px;
+  border-radius: 50px;
+  margin-top: 10px;
+  margin-left: 20px;
+}
+
+.widgets__input > input {
+  border: none;
+  margin-top: 0px;
+  background-color: var(--twitter-background);
+  border: none;
+  outline: none;
+}
+
+.widgets__searchIcon {
+  color: gray;
+}
+
+.widgets__widgetContainer {
+  margin-top: 15px;
+  margin-left: 20px;
+  padding: 20px;
+  background-color: #f5f8fa;
+  border-radius: 20px;
+}
+
+.widgets__widgetContainer > h2 {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+/* Toggle Button for Mobile */
+.toggle-widgets {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 10px; /* Position near the top */
+  right: 10px; /* Position on the right */
+  z-index: 1001; /* Above other content */
+}
+
+.toggle-widgets > button {
+  background-color: white;
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  border-radius: 50%;
+}
+/* desktop */
+@media screen and (min-width: 768px) {
+  .widgets {
+    position: relative; /* Reset position for tablets/desktop */
+    transform: translateX(0); /* Always visible */
     flex: 0.3;
-    min-width: fit-content;
-    overflow-y: scroll;
+    width: auto;
+  }
+
+  .toggle-widgets {
+    display: none; /* Hide hamburger menu on larger screens */
   }
   
-  
-  .widgets::-webkit-scrollbar {
+}
+
+/* Mobile */
+@media screen and (max-width: 768px) {
+  .widgets {
+    display: none; /* Hide widgets by default on mobile */
+  }
+  .widgets__input{
     display: none;
   }
-  
-  .widgets__input {
-    display: flex;
-    align-items: center;
-    background-color: var(--twitter-background);
-    padding: 10px 20px;
-    border-radius: 50px;
-    margin-top: 10px;
-    margin-left: 20px;
+  .widgets.active {
+    display: block; 
   }
-  
-  .widgets__input>input {
-    border: none;
-    margin-top: 0px;
-    background-color: var(--twitter-background);
-    border: none;
-    outline: none;
+
+  .toggle-widgets {
+    display: block; /* Show toggle button on mobile */
   }
-  
-  .widgets__searchIcon {
-    color: gray;
-  }
-  
-  .widgets__widgetContainer {
-    margin-top: 15px;
-    margin-left: 20px;
-    padding: 20px;
-    background-color: #f5f8fa;
-    border-radius: 20px;
-  }
-  
-  .widgets__widgetContainer>h2 {
-    font-size: 18px;
-    font-weight: 800;
-  }
-  
-  @media screen and (max-width:688px) {
-    .widgets {
-      display: none;
-    }
-  }
+}

@@ -5,7 +5,7 @@ import Tweetbox from './Tweetbox/Tweetbox';
 const Feed=()=>{
     const [post, setpost] = useState([]);
     useEffect(() => {
-      fetch("https://twiller-twitterclone-ewhk.onrender.com/post")
+      fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post")
         .then((res) => res.json())
         .then((data) => {
           setpost(data);

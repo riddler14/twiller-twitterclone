@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import HomeIcon from "@mui/icons-material/Home";
 import SearchIcon from "@mui/icons-material/Search";
@@ -6,7 +6,7 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import MailOutlineIcon from "@mui/icons-material/MailOutline";
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 import ListAltIcon from "@mui/icons-material/ListAlt";
-import ChatBubbleIcon from "@mui/icons-material/ChatBubbleTwoTone"
+import ChatBubbleIcon from "@mui/icons-material/ChatBubbleTwoTone";
 import PermIdentityIcon from "@mui/icons-material/PermIdentity";
 import MoreIcon from "@mui/icons-material/More";
 import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
@@ -23,24 +23,41 @@ import "./sidebar.css";
 import Customlink from "./Customlink";
 import Sidebaroption from "./Sidebaroption";
 import { useNavigate } from "react-router-dom";
-import useLoggedinuser from "../../hooks/useLoggedinuser"
+import useLoggedinuser from "../../hooks/useLoggedinuser";
 
 const Sidebar = ({ handlelogout, user }) => {
-    const [anchorE1, setanchorE1] = useState(null);
-    const openmenu = Boolean(anchorE1);
-    //const {loggedinuser}=[]
-    const [ loggedinuser] = useLoggedinuser();
-    const navigate = useNavigate();
-    const handleclick = (e) => {
-      setanchorE1(e.currentTarget);
-      // console.log(e.currentTarget);
-    };
-    const handleclose = () => {
-      setanchorE1(null);
-    };
-    const result = user?.email?.split("@")[0];
-    return(
-        <div className="sidebar">
+  const [anchorE1, setanchorE1] = useState(null);
+  const openmenu = Boolean(anchorE1);
+  //const {loggedinuser}=[]
+  
+  const [loggedinuser] = useLoggedinuser();
+  const username=loggedinuser[0]?.username;
+  const navigate = useNavigate();
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+  const handleclick = (e) => {
+    setanchorE1(e.currentTarget);
+    // console.log(e.currentTarget);
+  };
+  const handleclose = () => {
+    setanchorE1(null);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+  const result = username || user?.email?.split("@")[0];
+  return (
+    <>
+      {/* Hamburger Menu for Mobile */}
+      <div className="hamburger-menu">
+        <IconButton onClick={toggleSidebar}>
+          <MoreHorizIcon style={{ fontSize: "30px", cursor: "pointer" }} />
+        </IconButton>
+      </div>
+
+      <div className={`sidebar ${isSidebarOpen ? "active" : ""}`}>
         <TwitterIcon className="sidebar__twitterIcon" />
         <Customlink to="/home/feed">
           <Sidebaroption active Icon={HomeIcon} text="Home" />
@@ -74,10 +91,11 @@ const Sidebar = ({ handlelogout, user }) => {
         </Button>
         <div className="Profile__info">
           <Avatar
-            src={loggedinuser[0]?.profileImage
+            src={
+              loggedinuser[0]?.profileImage
                 ? loggedinuser[0].profileImage
                 : user && user.photoURL
-                //: "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png"
+              //: "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png"
             }
           />
           <div className="user__info">
@@ -110,10 +128,11 @@ const Sidebar = ({ handlelogout, user }) => {
               onClick={() => navigate("/home/profile")}
             >
               <Avatar
-                src={loggedinuser[0]?.profileImage
+                src={
+                  loggedinuser[0]?.profileImage
                     ? loggedinuser[0].profileImage
-                     : user && user.photoURL
-                     //: "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png"
+                    : user && user.photoURL
+                  //: "https://cdn.pixabay.com/photo/2016/08/08/09/17/avatar-1577909_960_720.png"
                 }
               />
               <div className="user__info subUser__info">
@@ -136,6 +155,7 @@ const Sidebar = ({ handlelogout, user }) => {
           </Menu>
         </div>
       </div>
-    );
+    </>
+  );
 };
 export default Sidebar;

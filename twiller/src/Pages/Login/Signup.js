@@ -25,7 +25,7 @@ const Signup=()=>{
         name: name,
         email: email,
       };
-      fetch("https://twiller-twitterclone-ewhk.onrender.com/register", {
+      fetch("https://twiller-twitterclone-1-j9kj.onrender.com/register", {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -64,7 +64,7 @@ const Signup=()=>{
           <div className="form-container">
             <div className="">
               <TwitterIcon className="Twittericon" style={{ color: "skyblue" }} />
-              <h2 className="heading">Happening now</h2>
+              <h2 className="heading">Happening Now</h2>
               <div class="d-flex align-items-sm-center">
                 <h3 className="heading1"> Join twiller today</h3>
               </div>
@@ -75,24 +75,31 @@ const Signup=()=>{
                   type="username"
                   placeholder="@username"
                   onChange={(e) => setusername(e.target.value)}
+                  required
                 />
                 <input
                   className="display-name"
                   type="name"
                   placeholder="Enter Full Name"
                   onChange={(e) => setname(e.target.value)}
+                  required
                 />
                 <input
                   className="email"
                   type="email"
                   placeholder="Email Address"
                   onChange={(e) => setemail(e.target.value)}
+                  required
                 />
                 <input
                   className="password"
                   type="password"
-                  placeholder="Password"
+                  placeholder="Password (at least 8 Characters)"
                   onChange={(e) => setpassword(e.target.value)}
+                  pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                  // Enforce minimum 8 characters
+
+                  required
                 />
                 <div className="btn-login">
                   <button type="submit" className="btn">

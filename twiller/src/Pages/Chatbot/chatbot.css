@@ -1,10 +1,15 @@
+/* Chatbot Base Styles */
 .chatbot {
-  flex: 0.4;
+  flex: 0.4; /* Match the Feed page's flex value */
   border-right: 1px solid var(--twitter-background);
   min-width: fit-content;
-  width: 709px;
-  width: 100vw;
-  overflow-y: scroll;
+  width: 100vw; /* Match the Feed page's width */
+  overflow-y: auto; /* Enable vertical scrolling if needed */
+  background-color: white;
+}
+
+.chatbot::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for a cleaner look */
 }
 
 .chatbot__header {
@@ -13,25 +18,25 @@
   background-color: white;
   z-index: 100;
   border: 1px solid var(--twitter-background);
-  width: 708px;
-  font-family: Arial, Helvetica, sans-serif;
-  font-weight: 500;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the header text */
 }
 
 .chatbot__header > h2 {
   font-size: 20px;
   font-weight: 800;
-  margin-left: 300px;
+  margin: 0; /* Remove default margin for better alignment */
 }
 
 .searchbox {
   display: flex;
-  
   align-items: center;
   margin-bottom: 20px;
   width: 100%; /* Make it fit within the chatbot container */
   padding: 10px; /* Add padding for spacing */
-  box-sizing: border-box; 
+  box-sizing: border-box;
 }
 
 .searchbox__Icon {
@@ -39,95 +44,12 @@
   color: black;
 }
 
-.send_icon {
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.send_icon:hover {
-  color: gray;
-}
-
-.result_container {
-  margin-top: 15px;
-  padding: 20px;
-  background-color: #f5f8fa;
-  border-radius: 20px;
-  width: 705px; /* Make it fit within the chatbot container */
-  box-sizing: border-box;
-}
-
-.tweets_container {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  width: 100%; /* Make it fit within the chatbot container */
-  box-sizing: border-box
-}
-
-.tweet-card {
-  padding: 15px;
-  border: 1px solid #e1e8ed;
-  border-radius: 10px;
-  background-color: white;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.tweet-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.profile-image {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  margin-right: 10px;
-}
-
-.author-details {
-  display: flex;
-  flex-direction: column;
-}
-
-.author-details strong {
-  font-size: 1em;
-  font-weight: bold;
-}
-
-.author-details span {
-  font-size: 0.9em;
-  color: #657786;
-}
-
-.tweet-text {
-  font-size: 16px;
-  margin-bottom: 10px;
-}
-
-.tweet-metrics {
-  display: flex;
-  gap: 15px;
-  font-size: 0.9em;
-  color: #657786;
-}
-
-.tweet-date {
-  font-size: 0.8em;
-  color: #657786;
-}
-
 .searchbox__input {
   display: flex;
-  
   align-items: center;
   background-color: var(--twitter-background);
   padding: 10px 20px;
   border-radius: 50px;
-  margin-top: 10px;
   width: 100%;
   box-sizing: border-box;
 }
@@ -137,6 +59,32 @@
   background-color: var(--twitter-background);
   width: 100%;
   outline: none;
+}
+
+.result_container {
+  margin-top: 15px;
+  padding: 20px;
+  background-color: #f5f8fa;
+  border-radius: 20px;
+  width: 100%; /* Make it fit within the chatbot container */
+  box-sizing: border-box;
+}
+
+.tweets_container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  width: 100%; /* Make it fit within the chatbot container */
+  box-sizing: border-box;
+}
+
+.tweet-card {
+  padding: 15px;
+  border: 1px solid #e1e8ed;
+  border-radius: 10px;
+  background-color: white;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .loading_spinner {
@@ -152,8 +100,36 @@
   margin: 20px 0;
 }
 
-.error_message p {
-  margin-top: 10px;
-  font-size: 0.9em;
-  color: #666;
+/* Tablet Styles */
+@media screen and (max-width: 768px) {
+  .chatbot {
+    flex: 1; /* Full width on tablets */
+    width: 100%;
+    border-right: none;
+  }
+
+  .chatbot__header {
+    padding: 10px; /* Reduce padding for tablets */
+  }
+
+  .chatbot__header > h2 {
+    font-size: 18px; /* Slightly smaller font size for tablets */
+  }
+}
+
+/* Mobile Styles */
+@media screen and (max-width: 480px) {
+  .chatbot {
+    flex: 1; /* Full width on mobile */
+    width: 100%;
+    border-right: none;
+  }
+
+  .chatbot__header {
+    padding: 5px; /* Minimal padding for mobile */
+  }
+
+  .chatbot__header > h2 {
+    font-size: 16px; /* Compact font size for mobile */
+  }
 }

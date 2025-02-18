@@ -10,12 +10,13 @@ const Login=()=>{
     const [password, setpassword] = useState("");
     const [error, seterror] = useState("");
     const navigate = useNavigate();
-    const { googleSignin ,login} = useUserAuth();
+    const { googleSignin ,logIn} = useUserAuth();
+
     const handlesubmit = async (e) => {
         e.preventDefault();
         seterror("");
     try {
-      await login(email,password)
+      await logIn(email,password)
       navigate("/");
     } catch (error) {
       seterror(error.message);
@@ -40,7 +41,7 @@ const Login=()=>{
         <div className="form-container">
           <div className="form-box">
             <TwitterIcon style={{ color: "skyblue" }} />
-            <h2 className="heading">Happening now</h2>
+            <h2 className="heading">Happening Now</h2>
             {error && <p>{error.message}</p>}
             <form onSubmit={handlesubmit}>
               <input
@@ -48,12 +49,14 @@ const Login=()=>{
                 className="email"
                 placeholder="Email address"
                 onChange={(e) => seteamil(e.target.value)}
+                required
               />
               <input
                 type="password"
                 className="password"
                 placeholder="Password"
                 onChange={(e) => setpassword(e.target.value)}
+                required
               />
               <div className="btn-login">
                 <button type="submit" className="btn">

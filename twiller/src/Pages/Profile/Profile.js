@@ -9,7 +9,7 @@ const Profile = () => {
   //   email: "bithead@gmail.com",
   // };
   return (
-    <div className="profilePage">
+    <div className="page">
         <Mainprofile user={user} />
     </div>
   );

@@ -1,9 +1,10 @@
 /* Base Styles for Pages */
+/* Base Styles for Pages */
 .page {
   flex: 0.4; /* Match the Feed page's flex value */
   border-right: 1px solid var(--twitter-background);
   min-width: fit-content;
-  width: 709px; /* Default width for desktop */
+  width: 100vw; /* Default width for desktop */
   overflow-y: auto; /* Enable vertical scrolling if needed */
   background-color: white;
 }

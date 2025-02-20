@@ -131,51 +131,65 @@ const Tweetbox=()=>{
       // Function to handle tweet submission
       const handletweet = (e) => {
         e.preventDefault();
+        console.log("Tweet submission started");
+      
+        // Fetch user details if logged in with email/password
         if (user?.providerData[0]?.providerId === "password") {
+          console.log("Fetching logged-in user data...");
           fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/loggedinuser?email=${email}`)
             .then((res) => res.json())
             .then((data) => {
-              //console.log(data[0].name);
+              console.log("Fetched user data:", data);
               setname(data[0]?.name);
               setusername(data[0]?.username);
+            })
+            .catch((error) => {
+              console.error("Error fetching logged-in user data:", error);
             });
         } else {
+          console.log("Setting username and name from user object...");
           setname(user?.displayName);
           setusername(email?.split("@")[0]);
         }
-        // If audio is present, ensure OTP is verified
+      
+        // Ensure OTP is verified if audio is present
         if (audioBlob && !otpVerified) {
+          console.log("OTP not verified. Exiting...");
           alert("Please verify OTP before posting.");
           return;
         }
-    
+      
         // Validate audio constraints if audio is present
         if (audioBlob && !validateAudio(audioBlob)) {
+          console.log("Audio validation failed. Exiting...");
           alert("Audio must be less than 5 minutes and 100MB.");
           return;
         }
-    
+      
         // Validate time range if audio is present
         if (audioBlob && !isWithinTimeRange()) {
+          console.log("Time range validation failed. Exiting...");
           alert("You can only upload audio between 2 PM and 7 PM IST.");
           return;
         }
-    
+      
         // Prepare tweet data
         const formData = new FormData();
         if (audioBlob) {
           formData.append("audio", audioBlob);
         }
-    
+      
         // Upload audio if present
         if (audioBlob) {
+          console.log("Uploading audio...");
           axios
             .post("https://twiller-twitterclone-1-j9kj.onrender.com/upload-audio", formData, {
               headers: { "Content-Type": "multipart/form-data" },
             })
             .then((res) => {
+              console.log("Audio uploaded successfully:", res.data.url);
               const audioUrl = res.data.url;
-    
+      
               const userPost = {
                 profilephoto: userprofilepic,
                 post: post,
@@ -185,8 +199,9 @@ const Tweetbox=()=>{
                 name: name,
                 email: email,
               };
-    
+      
               // Post the tweet
+              console.log("Posting tweet...");
               fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
                 method: "POST",
                 headers: { "content-type": "application/json" },
@@ -194,12 +209,15 @@ const Tweetbox=()=>{
               })
                 .then((res) => res.json())
                 .then((data) => {
-                  console.log(data);
+                  console.log("Tweet posted successfully:", data);
                   setpost("");
                   setimageurl("");
                   setAudioBlob(null);
                   setOpenPopup(false); // Close popup after successful post
                   setOtpVerified(false); // Reset OTP verification
+                })
+                .catch((error) => {
+                  console.error("Error posting tweet:", error);
                 });
             })
             .catch((error) => {
@@ -207,6 +225,7 @@ const Tweetbox=()=>{
             });
         } else {
           // Post without audio
+          console.log("Posting tweet without audio...");
           const userPost = {
             profilephoto: userprofilepic,
             post: post,
@@ -216,7 +235,7 @@ const Tweetbox=()=>{
             name: name,
             email: email,
           };
-    
+      
           fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
             method: "POST",
             headers: { "content-type": "application/json" },
@@ -224,10 +243,12 @@ const Tweetbox=()=>{
           })
             .then((res) => res.json())
             .then((data) => {
-              console.log(data);
-              
+              console.log("Tweet posted successfully:", data);
               setpost("");
               setimageurl("");
+            })
+            .catch((error) => {
+              console.error("Error posting tweet:", error);
             });
         }
       };

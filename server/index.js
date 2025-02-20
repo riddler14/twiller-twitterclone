@@ -225,7 +225,7 @@ async function run() {
       });
 
       const mailOptions = {
-        from: process.env.EMAIL_USER,
+        from: "Twiller-Support",
         to: email,
         subject: "Your OTP for Audio Upload",
         text: `Your OTP is: ${otp}. Please use this to verify your email.`,

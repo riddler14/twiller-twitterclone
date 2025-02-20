@@ -102,9 +102,20 @@ const Tweetbox=()=>{
       };
     
       // Function to verify OTP
-      const verifyOtp = async (otp) => {
+      const verifyOtp = async () => {
+        const otp = document.querySelector("input").value.trim(); // Get OTP from input field
+        if (!otp) {
+          alert("Please provide the OTP.");
+          return;
+        }
+    
+        if (!email) {
+          alert("Email not found. Please log in again.");
+          return;
+        }
+    
         try {
-          const response = await axios.post("https://twiller-twitterclone-1-j9kj.onrender.com/verify-otp", { otp });
+          const response = await axios.post("https://twiller-twitterclone-1-j9kj.onrender.com/verify-otp", { email, otp });
           if (response.data.success) {
             setOtpVerified(true);
             alert("OTP verified successfully!");

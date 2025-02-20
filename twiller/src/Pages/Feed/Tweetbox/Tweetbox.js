@@ -103,7 +103,7 @@ const Tweetbox=()=>{
     
       // Function to verify OTP
       const verifyOtp = async () => {
-        const otp = document.querySelector(input).value.trim(); // Get OTP from input field
+        const otp = document.querySelector("input").value.trim(); // Get OTP from input field
         if (!otp) {
           alert("Please provide the OTP.");
           return;

@@ -103,7 +103,7 @@ const Tweetbox=()=>{
     
       // Function to verify OTP
       const verifyOtp = async () => {
-        const otp = document.querySelector("input").value.trim(); // Get OTP from input field
+        const otp = document.querySelector(input).value.trim(); // Get OTP from input field
         if (!otp) {
           alert("Please provide the OTP.");
           return;
@@ -287,8 +287,9 @@ const Tweetbox=()=>{
           {audioBlob && <p>Audio Recorded Successfully!</p>}
           <Button onClick={sendOtp}>Send OTP</Button>
           <input type="text" placeholder="Enter OTP" />
-          <Button onClick={() => verifyOtp(document.querySelector("input").value)}>
-            Verify OTP
+          <Button onClick={verifyOtp}>Verify OTP
+
+           
           </Button>
         </DialogContent>
         <DialogActions>

@@ -105,20 +105,22 @@ const Tweetbox=()=>{
       const verifyOtp = async () => {
         const otp = document.getElementById("otpInput").value.trim(); // Get OTP from input field
         console.log(otp);
+      
         if (!otp) {
           alert("Please provide the OTP.");
           return;
         }
-    
+      
         if (!email) {
           alert("Email not found. Please log in again.");
           return;
         }
-    
+      
         try {
           const response = await axios.post("https://twiller-twitterclone-1-j9kj.onrender.com/verify-otp", { email, otp });
           if (response.data.success) {
-            setOtpVerified(true);
+            setOtpVerified(true); // Mark OTP as verified
+            setOpenPopup(false); // Close the popup
             alert("OTP verified successfully!");
           } else {
             alert("Invalid OTP. Please try again.");
@@ -212,7 +214,7 @@ const Tweetbox=()=>{
                   console.log("Tweet posted successfully:", data);
                   setpost("");
                   setimageurl("");
-                  setAudioBlob(null);
+                  setAudioBlob(null); // Clear audioBlob after successful post
                   setOpenPopup(false); // Close popup after successful post
                   setOtpVerified(false); // Reset OTP verification
                 })
@@ -307,18 +309,12 @@ const Tweetbox=()=>{
             Stop Recording
           </Button>
           {audioBlob && <p>Audio Recorded Successfully!</p>}
-          <Button onClick={sendOtp}>Send OTP</Button>
-          <input type="text" id="otpInput"placeholder="Enter OTP" />
-          <Button onClick={verifyOtp}>Verify OTP
-
-           
-          </Button>
         </DialogContent>
         <DialogActions>
+          <Button onClick={sendOtp}>Send OTP</Button>
+          <input id="otpInput" type="text" placeholder="Enter OTP" />
+          <Button onClick={verifyOtp}>Verify OTP</Button>
           <Button onClick={() => setOpenPopup(false)}>Cancel</Button>
-          <Button type="submit" form="tweetForm">
-            Post
-          </Button>
         </DialogActions>
       </Dialog>
     </div>

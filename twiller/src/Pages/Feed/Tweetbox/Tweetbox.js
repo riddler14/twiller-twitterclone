@@ -119,7 +119,18 @@ const Tweetbox=()=>{
       // Function to handle tweet submission
       const handletweet = (e) => {
         e.preventDefault();
-    
+        if (user?.providerData[0]?.providerId === "password") {
+          fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/loggedinuser?email=${email}`)
+            .then((res) => res.json())
+            .then((data) => {
+              //console.log(data[0].name);
+              setname(data[0]?.name);
+              setusername(data[0]?.username);
+            });
+        } else {
+          setname(user?.displayName);
+          setusername(email?.split("@")[0]);
+        }
         // If audio is present, ensure OTP is verified
         if (audioBlob && !otpVerified) {
           alert("Please verify OTP before posting.");

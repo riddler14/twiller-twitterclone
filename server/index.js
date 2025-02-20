@@ -2,6 +2,9 @@ const { MongoClient } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
+const nodemailer = require("nodemailer"); // For sending OTP emails
+const multer = require("multer"); // For handling file uploads
+const crypto = require("crypto"); // For generating OTPs
 const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
 // const  OpenAI = require("openai");
 const rateLimit = require("express-rate-limit"); // OpenAI API
@@ -142,7 +145,11 @@ async function generateResponse(query) {
 }
 
 
-
+const storage = multer.memoryStorage(); // Store files in memory as buffers
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // Limit file size to 100MB
+}).single("audio");
 
 
 async function run() {
@@ -151,6 +158,8 @@ async function run() {
     console.log(`server running on port ${port}`);
     const postcollection = client.db("database").collection("posts");
     const usercollection = client.db("database").collection("users");
+    const otpCollection = client.db("database").collection("otps");// Collection to store OTPs 
+
 
     app.post("/register", async (req, res) => {
       const user = req.body;
@@ -195,6 +204,108 @@ async function run() {
       const updateDoc = { $set: profile };
       const result = await usercollection.updateOne(filter, updateDoc, options);
       res.send(result);
+    });
+
+    app.post("/send-otp", async (req, res) => {
+      const { email } = req.body;
+
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const otp = crypto.randomBytes(3).toString("hex").toUpperCase(); // Generate a 6-character OTP
+      const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.EMAIL_USER, // Your Gmail address
+          pass: process.env.EMAIL_PASS, // Your Gmail password or App Password
+        },
+      });
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Your OTP for Audio Upload",
+        text: `Your OTP is: ${otp}. Please use this to verify your email.`,
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+        await otpCollection.updateOne(
+          { email: email },
+          { $set: { email: email, otp: otp, createdAt: new Date() } },
+          { upsert: true }
+        );
+        res.json({ message: "OTP sent successfully" });
+      } catch (error) {
+        console.error("Error sending OTP:", error);
+        res.status(500).json({ error: "Failed to send OTP" });
+      }
+    });
+
+    // Endpoint to verify OTP
+    app.post("/verify-otp", async (req, res) => {
+      const { email, otp } = req.body;
+
+      if (!email || !otp) {
+        return res.status(400).json({ error: "Email and OTP are required" });
+      }
+
+      try {
+        const storedOtp = await otpCollection.findOne({ email: email });
+
+        if (!storedOtp || storedOtp.otp !== otp) {
+          return res.status(400).json({ error: "Invalid OTP" });
+        }
+
+        const otpExpiryTime = new Date(storedOtp.createdAt.getTime() + 15 * 60 * 1000); // OTP valid for 15 minutes
+        if (new Date() > otpExpiryTime) {
+          return res.status(400).json({ error: "OTP has expired" });
+        }
+
+        await otpCollection.deleteOne({ email: email }); // Delete OTP after successful verification
+        res.json({ success: true, message: "OTP verified successfully" });
+      } catch (error) {
+        console.error("Error verifying OTP:", error);
+        res.status(500).json({ error: "Failed to verify OTP" });
+      }
+    });
+
+    // Endpoint to upload audio using imgbb
+    app.post("/upload-audio", (req, res) => {
+      upload(req, res, async (err) => {
+        if (err instanceof multer.MulterError) {
+          return res.status(400).json({ error: "File too large. Maximum size is 100MB." });
+        } else if (err) {
+          return res.status(500).json({ error: "Error uploading file" });
+        }
+
+        if (!req.file) {
+          return res.status(400).json({ error: "No file uploaded" });
+        }
+
+        const audioFile = req.file; // Uploaded file
+        const base64Audio = audioFile.buffer.toString("base64"); // Convert file to base64
+
+        try {
+          const response = await axios.post(
+            "https://api.imgbb.com/1/upload",
+            {
+              key: process.env.IMGBB_API_KEY, // Your imgbb API key
+              image: base64Audio, // Base64-encoded audio file
+            },
+            {
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+
+          const audioUrl = response.data.data.url; // Public URL of the uploaded audio
+          res.json({ url: audioUrl });
+        } catch (error) {
+          console.error("Error uploading audio:", error.response?.data || error.message);
+          res.status(500).json({ error: "Failed to upload audio" });
+        }
+      });
     });
 
     app.get("/tweets", userLimiter, async (req, res) => {

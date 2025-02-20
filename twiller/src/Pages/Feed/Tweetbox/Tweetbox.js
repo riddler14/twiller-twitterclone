@@ -102,9 +102,9 @@ const Tweetbox=()=>{
       };
     
       // Function to verify OTP
-      const verifyOtp = async (email,otp) => {
+      const verifyOtp = async (otp) => {
         try {
-          const response = await axios.post("https://twiller-twitterclone-1-j9kj.onrender.com/verify-otp", { email, otp });
+          const response = await axios.post("https://twiller-twitterclone-1-j9kj.onrender.com/verify-otp", { otp });
           if (response.data.success) {
             setOtpVerified(true);
             alert("OTP verified successfully!");

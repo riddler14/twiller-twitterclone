@@ -108,10 +108,15 @@ const Tweetbox=()=>{
       // Function to check if current time is within 2 PM to 7 PM IST
       const isWithinTimeRange = () => {
         const now = new Date();
-        const istOffset = 330; // IST offset in minutes
+        const istOffset = 330; // IST offset in minutes (UTC+5:30)
         const istTime = new Date(now.getTime() + istOffset * 60 * 1000);
         const hours = istTime.getUTCHours();
-        return hours >= 14 && hours < 19; // 2 PM to 7 PM IST
+      
+        // Allow posting between 2 PM (14:00) and 4 AM (04:00 IST)
+        if (hours >= 14 || hours < 4) {
+          return true;
+        }
+        return false;
       };
     
       // Function to send OTP to email

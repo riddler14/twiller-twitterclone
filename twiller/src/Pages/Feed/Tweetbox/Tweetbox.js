@@ -131,127 +131,103 @@ const Tweetbox=()=>{
       };
     
       // Function to handle tweet submission
-      const handletweet = (e) => {
+      const handletweet = async (e) => {
         e.preventDefault();
         console.log("Tweet submission started");
       
-        // Fetch user details if logged in with email/password
-        if (user?.providerData[0]?.providerId === "password") {
-          console.log("Fetching logged-in user data...");
-          fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/loggedinuser?email=${email}`)
-            .then((res) => res.json())
-            .then((data) => {
-              console.log("Fetched user data:", data);
-              setname(data[0]?.name);
-              setusername(data[0]?.username);
-            })
-            .catch((error) => {
-              console.error("Error fetching logged-in user data:", error);
-            });
-        } else {
-          console.log("Setting username and name from user object...");
-          setname(user?.displayName);
-          setusername(email?.split("@")[0]);
-        }
+        try {
+          // Fetch user details if logged in with email/password
+          if (user?.providerData[0]?.providerId === "password") {
+            console.log("Fetching logged-in user data...");
+            const response = await fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/loggedinuser?email=${email}`);
+            const data = await response.json();
       
-        // Ensure OTP is verified if audio is present
-        if (audioBlob && !otpVerified) {
-          console.log("OTP not verified. Exiting...");
-          alert("Please verify OTP before posting.");
-          return;
-        }
+            if (!data || !data[0]) {
+              console.error("No user data found for email:", email);
+              alert("Unable to fetch user details. Please try again.");
+              return;
+            }
       
-        // Validate audio constraints if audio is present
-        if (audioBlob && !validateAudio(audioBlob)) {
-          console.log("Audio validation failed. Exiting...");
-          alert("Audio must be less than 5 minutes and 100MB.");
-          return;
-        }
+            console.log("Fetched user data:", data);
+            setname(data[0]?.name);
+            setusername(data[0]?.username);
+          } else {
+            console.log("Setting username and name from user object...");
+            setname(user?.displayName);
+            setusername(email?.split("@")[0]);
+          }
       
-        // Validate time range if audio is present
-        if (audioBlob && !isWithinTimeRange()) {
-          console.log("Time range validation failed. Exiting...");
-          alert("You can only upload audio between 2 PM and 7 PM IST.");
-          return;
-        }
+          // Ensure OTP is verified if audio is present
+          if (audioBlob && !otpVerified) {
+            console.log("OTP not verified. Exiting...");
+            alert("Please verify OTP before posting.");
+            return;
+          }
       
-        // Prepare tweet data
-        const formData = new FormData();
-        if (audioBlob) {
-          formData.append("audio", audioBlob);
-        }
+          // Validate audio constraints if audio is present
+          if (audioBlob && !validateAudio(audioBlob)) {
+            console.log("Audio validation failed. Exiting...");
+            alert("Audio must be less than 5 minutes and 100MB.");
+            return;
+          }
       
-        // Upload audio if present
-        if (audioBlob) {
-          console.log("Uploading audio...");
-          axios
-            .post("https://twiller-twitterclone-1-j9kj.onrender.com/upload-audio", formData, {
-              headers: { "Content-Type": "multipart/form-data" },
-            })
-            .then((res) => {
-              console.log("Audio uploaded successfully:", res.data.url);
-              const audioUrl = res.data.url;
+          // Validate time range if audio is present
+          if (audioBlob && !isWithinTimeRange()) {
+            console.log("Time range validation failed. Exiting...");
+            alert("You can only upload audio between 2 PM and 7 PM IST.");
+            return;
+          }
       
-              const userPost = {
-                profilephoto: userprofilepic,
-                post: post,
-                photo: imageurl,
-                audio: audioUrl || null,
-                username: username,
-                name: name,
-                email: email,
-              };
+          // Prepare tweet data
+          const formData = new FormData();
+          if (audioBlob) {
+            formData.append("audio", audioBlob);
+          }
       
-              // Post the tweet
-              console.log("Posting tweet...");
-              fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(userPost),
-              })
-                .then((res) => res.json())
-                .then((data) => {
-                  console.log("Tweet posted successfully:", data);
-                  setpost("");
-                  setimageurl("");
-                  setAudioBlob(null); // Clear audioBlob after successful post
-                  setOpenPopup(false); // Close popup after successful post
-                  setOtpVerified(false); // Reset OTP verification
-                })
-                .catch((error) => {
-                  console.error("Error posting tweet:", error);
-                });
-            })
-            .catch((error) => {
-              console.error("Error uploading audio:", error);
-            });
-        } else {
-          // Post without audio
-          console.log("Posting tweet without audio...");
+          let audioUrl = null;
+      
+          // Upload audio if present
+          if (audioBlob) {
+            console.log("Uploading audio...");
+            const uploadResponse = await axios.post(
+              "https://twiller-twitterclone-1-j9kj.onrender.com/upload-audio",
+              formData,
+              { headers: { "Content-Type": "multipart/form-data" } }
+            );
+            audioUrl = uploadResponse.data.url;
+            console.log("Audio uploaded successfully:", audioUrl);
+          }
+      
+          // Post the tweet
+          console.log("Posting tweet...");
           const userPost = {
             profilephoto: userprofilepic,
             post: post,
             photo: imageurl,
-            audio: null,
-            username: username,
-            name: name,
+            audio: audioUrl || null,
+            username: username, // Ensure username is set
+            name: name, // Ensure name is set
             email: email,
           };
       
-          fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
+          const postResponse = await fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify(userPost),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              console.log("Tweet posted successfully:", data);
-              setpost("");
-              setimageurl("");
-            })
-            .catch((error) => {
-              console.error("Error posting tweet:", error);
-            });
+          });
+      
+          const postData = await postResponse.json();
+          console.log("Tweet posted successfully:", postData);
+      
+          // Reset state after successful post
+          setpost("");
+          setimageurl("");
+          setAudioBlob(null);
+          setOpenPopup(false); // Close popup after successful post
+          setOtpVerified(false); // Reset OTP verification
+        } catch (error) {
+          console.error("Error during tweet submission:", error);
+          alert("An error occurred while posting the tweet. Please try again.");
         }
       };
     

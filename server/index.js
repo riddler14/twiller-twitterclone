@@ -175,8 +175,19 @@ async function run() {
 
     app.post("/post", async (req, res) => {
       const post = req.body;
-      const result = await postcollection.insertOne(post);
-      res.send(result);
+    
+      // Validate required fields
+      if (!post.name || !post.username || !post.email || !post.post) {
+        return res.status(400).json({ error: "Missing required fields" });
+      }
+    
+      try {
+        const result = await postcollection.insertOne(post);
+        res.send(result);
+      } catch (error) {
+        console.error("Error inserting post:", error);
+        res.status(500).json({ error: "Failed to post tweet" });
+      }
     });
 
     app.get("/post", async (req, res) => {

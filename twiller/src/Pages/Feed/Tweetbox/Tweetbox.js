@@ -17,6 +17,8 @@ const Tweetbox=()=>{
   const [isRecording, setIsRecording] = useState(false); // Track recording state
   const [otpVerified, setOtpVerified] = useState(false); // Track OTP verification
   const [openPopup, setOpenPopup] = useState(false); // Control audio popup
+  const [isAudioAttached, setIsAudioAttached] = useState(false); // Track if audio is attached
+
   const mediaRecorderRef = useRef(null); // Reference for MediaRecorder
   const chunksRef = useRef([]); // Store recorded audio chunks
     const { user } = useUserAuth();
@@ -120,6 +122,8 @@ const Tweetbox=()=>{
           const response = await axios.post("https://twiller-twitterclone-1-j9kj.onrender.com/verify-otp", { email, otp });
           if (response.data.success) {
             setOtpVerified(true); // Mark OTP as verified
+            setIsAudioAttached(true); // Mark audio as attached
+
             setOpenPopup(false); // Close the popup
             alert("OTP verified successfully!");
           } else {
@@ -267,6 +271,8 @@ const Tweetbox=()=>{
           <Button onClick={() => setOpenPopup(true)}>
             <MicIcon />
           </Button>
+          {isAudioAttached && <p style={{ color: "green" }}>Audio Attached</p>}
+
 
           <Button className="tweetBox__tweetButton" type="submit">
             Post

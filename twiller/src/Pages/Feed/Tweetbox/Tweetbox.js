@@ -292,7 +292,32 @@ const Tweetbox=()=>{
           <Button onClick={() => setOpenPopup(true)}>
             <MicIcon />
           </Button>
-          {isAudioAttached && <p style={{ color: "green" }}>Audio Attached</p>}
+          {isAudioAttached && (
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <p style={{ margin: "0 10px" }}>Audio Attached</p>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => {
+                const audio = new Audio(URL.createObjectURL(audioBlob));
+                audio.play();
+              }}
+            >
+              Play
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => {
+                setAudioBlob(null);
+                setIsAudioAttached(false);
+              }}
+            >
+              Clear
+            </Button>
+          </div>
+        )}
+
 
 
           <Button className="tweetBox__tweetButton" type="submit">

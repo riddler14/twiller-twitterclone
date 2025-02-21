@@ -77,11 +77,32 @@ const Tweetbox=()=>{
       };
     
       // Function to validate audio size and duration
-      const validateAudio = (blob) => {
-        const fileSizeInMB = blob.size / (1024 * 1024); // Convert bytes to MB
-        const durationInSeconds = Math.floor(blob.duration); // Duration in seconds
-    
-        return fileSizeInMB <= 100 && durationInSeconds <= 300; // 100MB and 5 minutes
+      const validateAudio = async (blob) => {
+        try {
+          // Validate file size (less than 100MB)
+          const fileSizeInMB = blob.size / (1024 * 1024); // Convert bytes to MB
+          if (fileSizeInMB >= 100) {
+            console.error("Audio file size exceeds 100MB");
+            return false;
+          }
+      
+          // Validate duration using AudioContext (less than 5 minutes)
+          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+          const arrayBuffer = await blob.arrayBuffer();
+          const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+          const durationInSeconds = audioBuffer.duration;
+      
+          if (durationInSeconds >= 300) { // 5 minutes = 300 seconds
+            console.error("Audio duration exceeds 5 minutes");
+            return false;
+          }
+      
+          // Both validations passed
+          return true;
+        } catch (error) {
+          console.error("Error validating audio:", error);
+          return false;
+        }
       };
     
       // Function to check if current time is within 2 PM to 7 PM IST

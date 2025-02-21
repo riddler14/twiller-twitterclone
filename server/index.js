@@ -1,4 +1,4 @@
-const { MongoClient } = require("mongodb");
+const { MongoClient,GridFSBucket } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -15,6 +15,7 @@ const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
 
+
 require("dotenv").config();
 
 const app = express();
@@ -23,6 +24,8 @@ app.use(express.json());
 // const parser = new Parser();
 
 const client = new MongoClient(url);
+
+
 
 // const TAGGBOX_API_URL = "https://api.taggbox.com/v1/widget";
 // const TAGGBOX_API_KEY = process.env.TAGGBOX_API_KEY; // Store your Taggbox API key in .env
@@ -156,10 +159,14 @@ async function run() {
   try {
     await client.connect();
     console.log(`server running on port ${port}`);
+    const database = client.db("database");
+
     const postcollection = client.db("database").collection("posts");
     const usercollection = client.db("database").collection("users");
     const otpCollection = client.db("database").collection("otps");// Collection to store OTPs 
-
+    const bucket = new GridFSBucket(database, {
+      bucketName: "audios", // Collection name for GridFS
+    });
 
     app.post("/register", async (req, res) => {
       const user = req.body;
@@ -298,27 +305,46 @@ async function run() {
         }
 
         const audioFile = req.file; // Uploaded file
-        const base64Audio = audioFile.buffer.toString("base64"); // Convert file to base64
 
         try {
-          const response = await axios.post(
-            "https://api.imgbb.com/1/upload",
-            {
-              key: process.env.IMGBB_API_KEY, // Your imgbb API key
-              image: base64Audio, // Base64-encoded audio file
-            },
-            {
-              headers: { "Content-Type": "application/json" },
-            }
-          );
+          // Upload the file to GridFS
+          const uploadStream = bucket.openUploadStream(audioFile.originalname, {
+            contentType: audioFile.mimetype,
+          });
 
-          const audioUrl = response.data.data.url; // Public URL of the uploaded audio
-          res.json({ url: audioUrl });
+          uploadStream.end(audioFile.buffer);
+
+          // Wait for the upload to complete
+          uploadStream.once("finish", () => {
+            const audioId = uploadStream.id; // The ID of the uploaded file in GridFS
+            const audioUrl = `https://twiller-twitterclone-1-j9kj.onrender.com/audio/${audioId}`; // Construct a URL to access the file
+            res.json({ url: audioUrl, id: audioId });
+          });
+
+          uploadStream.on("error", (error) => {
+            console.error("Error uploading audio to GridFS:", error);
+            res.status(500).json({ error: "Failed to upload audio" });
+          });
         } catch (error) {
-          console.error("Error uploading audio:", error.response?.data || error.message);
+          console.error("Error uploading audio:", error);
           res.status(500).json({ error: "Failed to upload audio" });
         }
       });
+    });
+
+    // Endpoint to retrieve audio from GridFS
+    app.get("/audio/:id", async (req, res) => {
+      const fileId = req.params.id;
+
+      try {
+        const downloadStream = bucket.openDownloadStream(new ObjectId(fileId));
+
+        res.set("Content-Type", "audio/wav"); // Set the appropriate content type
+        downloadStream.pipe(res);
+      } catch (error) {
+        console.error("Error retrieving audio from GridFS:", error);
+        res.status(404).json({ error: "Audio not found" });
+      }
     });
 
     app.get("/tweets", userLimiter, async (req, res) => {

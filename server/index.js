@@ -299,28 +299,29 @@ async function run() {
         } else if (err) {
           return res.status(500).json({ error: "Error uploading file" });
         }
-
+    
         if (!req.file) {
           return res.status(400).json({ error: "No file uploaded" });
         }
-
+    
         const audioFile = req.file; // Uploaded file
-
+    
         try {
           // Upload the file to GridFS
           const uploadStream = bucket.openUploadStream(audioFile.originalname, {
             contentType: audioFile.mimetype,
           });
-
+    
           uploadStream.end(audioFile.buffer);
-
+    
           // Wait for the upload to complete
           uploadStream.once("finish", () => {
             const audioId = uploadStream.id; // The ID of the uploaded file in GridFS
-            const audioUrl = `https://twiller-twitterclone-1-j9kj.onrender.com/audio/${audioId}`; // Construct a URL to access the file
+            console.log("Uploaded audio file with ID:", audioId); // Log the ID
+            const audioUrl = `https://twiller-twitterclone-1-j9kj.onrender.com/audio/${audioId}`;
             res.json({ url: audioUrl, id: audioId });
           });
-
+    
           uploadStream.on("error", (error) => {
             console.error("Error uploading audio to GridFS:", error);
             res.status(500).json({ error: "Failed to upload audio" });
@@ -335,12 +336,25 @@ async function run() {
     // Endpoint to retrieve audio from GridFS
     app.get("/audio/:id", async (req, res) => {
       const fileId = req.params.id;
-
+    
       try {
+        console.log("Attempting to retrieve audio file with ID:", fileId); // Log the ID
+    
+        // Validate the file ID
+        if (!fileId || !ObjectId.isValid(fileId)) {
+          console.error("Invalid file ID:", fileId);
+          return res.status(400).json({ error: "Invalid file ID" });
+        }
+    
         const downloadStream = bucket.openDownloadStream(new ObjectId(fileId));
-
+    
         res.set("Content-Type", "audio/wav"); // Set the appropriate content type
         downloadStream.pipe(res);
+    
+        downloadStream.on("error", (error) => {
+          console.error("Error retrieving audio from GridFS:", error);
+          res.status(404).json({ error: "Audio not found" });
+        });
       } catch (error) {
         console.error("Error retrieving audio from GridFS:", error);
         res.status(404).json({ error: "Audio not found" });

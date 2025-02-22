@@ -234,7 +234,7 @@ const Tweetbox=()=>{
             profilephoto: userprofilepic,
             post: post,
             photo: imageurl,
-            audio: audioBlob || null,
+            audio: audioUrl,
             username: username, // Ensure username is set
             name: name, // Ensure name is set
             email: email,
@@ -252,7 +252,8 @@ const Tweetbox=()=>{
           // Reset state after successful post
           setpost("");
           setimageurl("");
-          setAudioBlob(null);
+          setAudioBlob("");
+          
           setOpenPopup(false); // Close popup after successful post
           setOtpVerified(false); // Reset OTP verification
         } catch (error) {

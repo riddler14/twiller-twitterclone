@@ -1,4 +1,4 @@
-const { MongoClient,GridFSBucket } = require("mongodb");
+const { MongoClient,GridFSBucket,ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
@@ -334,32 +334,31 @@ async function run() {
     });
 
     // Endpoint to retrieve audio from GridFS
-    app.get("/audio/:id", async (req, res) => {
-      const fileId = req.params.id;
-    
-      try {
-        console.log("Attempting to retrieve audio file with ID:", fileId); // Log the ID
-    
-        // Validate the file ID
-        if (!fileId || !ObjectId.isValid(fileId)) {
-          console.error("Invalid file ID:", fileId);
-          return res.status(400).json({ error: "Invalid file ID" });
-        }
-    
-        const downloadStream = bucket.openDownloadStream(new ObjectId(fileId));
-    
-        res.set("Content-Type", "audio/wav"); // Set the appropriate content type
-        downloadStream.pipe(res);
-    
-        downloadStream.on("error", (error) => {
-          console.error("Error retrieving audio from GridFS:", error);
-          res.status(404).json({ error: "Audio not found" });
-        });
-      } catch (error) {
-        console.error("Error retrieving audio from GridFS:", error);
-        res.status(404).json({ error: "Audio not found" });
-      }
+  // Endpoint to retrieve audio from GridFS
+app.get("/audio/:id", async (req, res) => {
+  const fileId = req.params.id;
+
+  try {
+    // Validate the fileId
+    if (!fileId || !ObjectId.isValid(fileId)) {
+      console.error("Invalid file ID:", fileId);
+      return res.status(400).json({ error: "Invalid file ID" });
+    }
+
+    const downloadStream = bucket.openDownloadStream(new ObjectId(fileId));
+
+    res.set("Content-Type", "audio/wav"); // Set the appropriate content type
+    downloadStream.pipe(res);
+
+    downloadStream.on("error", (error) => {
+      console.error("Error retrieving audio from GridFS:", error);
+      res.status(404).json({ error: "Audio not found" });
     });
+  } catch (error) {
+    console.error("Error retrieving audio from GridFS:", error);
+    res.status(404).json({ error: "Audio not found" });
+  }
+});
 
     app.get("/tweets", userLimiter, async (req, res) => {
       const query = req.query.q;

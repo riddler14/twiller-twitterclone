@@ -234,7 +234,7 @@ const Tweetbox=()=>{
             profilephoto: userprofilepic,
             post: post,
             photo: imageurl,
-            audio: audioUrl || null,
+            audio: audioBlob || null,
             username: username, // Ensure username is set
             name: name, // Ensure name is set
             email: email,

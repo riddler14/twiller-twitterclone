@@ -163,102 +163,105 @@ const Tweetbox=()=>{
       // Function to handle tweet submission
       const handletweet = async (e) => {
         e.preventDefault();
-        console.log("Tweet submission started");
       
-        try {
-          // Fetch user details if logged in with email/password
-          if (user?.providerData[0]?.providerId === "password") {
-            console.log("Fetching logged-in user data...");
-            const response = await fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/loggedinuser?email=${email}`);
-            const data = await response.json();
+        // Fetch user details
+        if (user?.providerData[0]?.providerId === "password") {
+          fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/loggedinuser?email=${email}`)
+            .then((res) => res.json())
+            .then((data) => {
+              setname(data[0]?.name);
+              setusername(data[0]?.username);
+            });
+        } else {
+          setname(user?.displayName);
+          setusername(email?.split("@")[0]);
+        }
       
-            if (!data || !data[0]) {
-              console.error("No user data found for email:", email);
-              alert("Unable to fetch user details. Please try again.");
-              return;
-            }
+        // Ensure OTP is verified if audio is present
+        if (audioBlob && !otpVerified) {
+          alert("Please verify OTP before posting.");
+          return;
+        }
       
-            console.log("Fetched user data:", data);
-            setname(data[0]?.name);
-            setusername(data[0]?.username);
-          } else {
-            console.log("Setting username and name from user object...");
-            setname(user?.displayName);
-            setusername(email?.split("@")[0]);
-          }
+        // Validate audio constraints
+        if (audioBlob && !validateAudio(audioBlob)) {
+          alert("Audio must be less than 5 minutes and 100MB.");
+          return;
+        }
       
-          // Ensure OTP is verified if audio is present
-          if (audioBlob && !otpVerified) {
-            console.log("OTP not verified. Exiting...");
-            alert("Please verify OTP before posting.");
-            return;
-          }
+        // Validate time range
+        if (audioBlob && !isWithinTimeRange()) {
+          alert("You can only upload audio between 2 PM and 7 PM IST.");
+          return;
+        }
       
-          // Validate audio constraints if audio is present
-          if (audioBlob && !validateAudio(audioBlob)) {
-            console.log("Audio validation failed. Exiting...");
-            alert("Audio must be less than 5 minutes and 100MB.");
-            return;
-          }
+        // Prepare tweet data
+        const formData = new FormData();
+        if (audioBlob) {
+          formData.append("audio", audioBlob);
+        }
       
-          // Validate time range if audio is present
-          if (audioBlob && !isWithinTimeRange()) {
-            console.log("Time range validation failed. Exiting...");
-            alert("You can only upload audio between 2 PM and 7 PM IST.");
-            return;
-          }
+        // Upload audio if present
+        if (audioBlob) {
+          axios
+            .post("https://twiller-twitterclone-1-j9kj.onrender.com/upload-audio", formData, {
+              headers: { "Content-Type": "multipart/form-data" },
+            })
+            .then((res) => {
+              const audioUrl = res.data.url;
       
-          // Prepare tweet data
-          const formData = new FormData();
-          if (audioBlob) {
-            formData.append("audio", audioBlob);
-          }
+              const userPost = {
+                profilephoto: userprofilepic,
+                post: post,
+                photo: imageurl,
+                audio: audioUrl || null,
+                username: username,
+                name: name,
+                email: email,
+              };
       
-          let audioUrl = null;
-      
-          // Upload audio if present
-          if (audioBlob) {
-            console.log("Uploading audio...");
-            const uploadResponse = await axios.post(
-              "https://twiller-twitterclone-1-j9kj.onrender.com/upload-audio",
-              formData,
-              { headers: { "Content-Type": "multipart/form-data" } }
-            );
-            audioUrl = uploadResponse.data.url;
-            console.log("Audio uploaded successfully:", audioUrl);
-          }
-      
-          // Post the tweet
-          console.log("Posting tweet...");
+              // Post the tweet
+              fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
+                method: "POST",
+                headers: { "content-type": "application/json" },
+                body: JSON.stringify(userPost),
+              })
+                .then((res) => res.json())
+                .then((data) => {
+                  console.log(data);
+                  setpost("");
+                  setimageurl("");
+                  setAudioBlob(null);
+                  setOpenPopup(false); // Close popup after successful post
+                  setOtpVerified(false); // Reset OTP verification
+                });
+            })
+            .catch((error) => {
+              console.error("Error uploading audio:", error);
+            });
+        } else {
+          // Post without audio
           const userPost = {
             profilephoto: userprofilepic,
             post: post,
             photo: imageurl,
-            audio: audioUrl,
-            username: username, // Ensure username is set
-            name: name, // Ensure name is set
+            audio: null,
+            username: username,
+            name: name,
             email: email,
           };
       
-          const postResponse = await fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
+          fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify(userPost),
-          });
-      
-          const postData = await postResponse.json();
-          console.log("Tweet posted successfully:", postData);
-      
-          // Reset state after successful post
-          setpost("");
-          setimageurl("");
-          setAudioBlob("");
-          
-          setOpenPopup(false); // Close popup after successful post
-          setOtpVerified(false); // Reset OTP verification
-        } catch (error) {
-          console.error("Error during tweet submission:", error);
-          alert("An error occurred while posting the tweet. Please try again.");
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              console.log(data);
+              setpost("");
+              setimageurl("");
+            });
         }
       };
     

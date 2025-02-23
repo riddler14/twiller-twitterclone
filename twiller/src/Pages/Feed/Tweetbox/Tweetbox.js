@@ -218,7 +218,7 @@ const Tweetbox=()=>{
       profilephoto: userprofilepic,
       post: post,
       photo: imageurl,
-      audio: audioUrl || null, // Use the audio URL here
+      audio: audioUrl, // Use the audio URL here
       username: username,
       name: name,
       email: email,
@@ -249,7 +249,7 @@ const Tweetbox=()=>{
             profilephoto: userprofilepic,
             post: post,
             photo: imageurl,
-            audio: null,
+            audio: audioUrl,
             username: username,
             name: name,
             email: email,

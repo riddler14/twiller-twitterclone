@@ -17,10 +17,20 @@ const Tweetbox=()=>{
   const [isRecording, setIsRecording] = useState(false); // Track recording state
   const [otpVerified, setOtpVerified] = useState(false); // Track OTP verification
   const [openPopup, setOpenPopup] = useState(false); // Control audio popup
-  const [isAudioAttached, setIsAudioAttached] = useState(false); // Track if audio is attached
+  const [isAudioAttached, setIsAudioAttached] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0); // Tracks elapsed recording time in seconds
+const [timerInterval, setTimerInterval] = useState(null); // Stores the interval ID // Track if audio is attached
+const [playTime, setPlayTime] = useState(0); // Track playback time
+  const [isPlaying, setIsPlaying] = useState(false); // Track if audio is playing
+  const [audioDuration, setAudioDuration] = useState(""); // Track audio duration
+
+
 
   const mediaRecorderRef = useRef(null); // Reference for MediaRecorder
   const chunksRef = useRef([]); // Store recorded audio chunks
+  const audioRef = useRef(null); // Reference for Audio object
+  const timerIntervalRef = useRef(null); // Store interval ID for play timer
+
     const { user } = useUserAuth();
     const [loggedinsuer] = useLoggedinuser();
     const email = user?.email;
@@ -44,25 +54,48 @@ const Tweetbox=()=>{
           console.log(e);
         });
       };
+
+      const formatTime = (timeInSeconds) => {
+        const minutes = Math.floor(timeInSeconds / 60)
+          .toString()
+          .padStart(2, "0"); // Ensure two digits
+        const seconds = (timeInSeconds % 60).toString().padStart(2, "0"); // Ensure two digits
+        return `${minutes}:${seconds}`;
+      };
       const startRecording = async () => {
         try {
           const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
           mediaRecorderRef.current = new MediaRecorder(stream);
           chunksRef.current = [];
-    
+      
           mediaRecorderRef.current.ondataavailable = (event) => {
             if (event.data.size > 0) {
               chunksRef.current.push(event.data);
             }
           };
-    
-          mediaRecorderRef.current.onstop = () => {
+      
+          mediaRecorderRef.current.onstop = async() => {
             const audioBlob = new Blob(chunksRef.current, { type: "audio/wav" });
             setAudioBlob(audioBlob);
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const arrayBuffer = await audioBlob.arrayBuffer();
+        const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+        const durationInSeconds = Math.floor(audioBuffer.duration);
+
+        // Format duration using the existing formatTime function
+        const formattedDuration = formatTime(durationInSeconds);
+        setAudioDuration(formattedDuration);
           };
-    
+      
           mediaRecorderRef.current.start();
           setIsRecording(true);
+      
+          // Start the recording timer
+          const intervalId = setInterval(() => {
+            setRecordingTime((prevTime) => prevTime + 1); // Increment time by 1 second
+          }, 1000);
+      
+          setTimerInterval(intervalId); // Store the interval ID
         } catch (error) {
           console.error("Error accessing microphone:", error);
         }
@@ -73,9 +106,51 @@ const Tweetbox=()=>{
         if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
           mediaRecorderRef.current.stop();
           setIsRecording(false);
+      
+          // Stop the recording timer
+          clearInterval(timerInterval);
+          setTimerInterval(null);
+          setRecordingTime(0); // Reset the timer
+        }
+      };
+      const handlePlayAudio = () => {
+        const audio = new Audio(URL.createObjectURL(audioBlob));
+        audioRef.current = audio;
+    
+        // Start playing the audio
+        audio.play();
+        setIsPlaying(true);
+    
+        // Start the play timer
+        timerIntervalRef.current = setInterval(() => {
+          setPlayTime((prevTime) => prevTime + 1); // Increment time by 1 second
+        }, 1000);
+    
+        // Reset the play timer when audio ends
+        audio.addEventListener("ended", () => {
+          clearInterval(timerIntervalRef.current);
+          setPlayTime(0);
+          setIsPlaying(false);
+        });
+      };
+    
+      const handlePauseAudio = () => {
+        if (audioRef.current) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+    
+          // Stop the play timer
+          clearInterval(timerIntervalRef.current);
         }
       };
     
+      const handleClearAudio = () => {
+        setAudioBlob(null);
+        setIsAudioAttached(false);
+        setIsPlaying(false);
+        setPlayTime(0);
+        clearInterval(timerIntervalRef.current);
+      };
       // Function to validate audio size and duration
       const validateAudio = async (blob) => {
         try {
@@ -85,6 +160,8 @@ const Tweetbox=()=>{
             console.error("Audio file size exceeds 100MB");
             return false;
           }
+
+        
       
           // Validate duration using AudioContext (less than 5 minutes)
           const audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -112,8 +189,8 @@ const Tweetbox=()=>{
         const istTime = new Date(now.getTime() + istOffset * 60 * 1000);
         const hours = istTime.getUTCHours();
       
-        // Allow posting between 2 PM (14:00) and 4 AM (04:00 IST)
-        if (hours >= 14 || hours < 4) {
+        // Allow posting between 2 PM (14:00) and 7 PM (19:00) IST
+        if (hours >= 14 && hours < 19) {
           return true;
         }
         return false;
@@ -237,6 +314,8 @@ const Tweetbox=()=>{
     setpost("");
     setimageurl("");
     setAudioBlob(audioUrl);
+    setIsAudioAttached(false); // Remove "Audio Attached" message
+
     setOpenPopup(false); // Close popup after successful post
     setOtpVerified(false); // Reset OTP verification
   } catch (error) {
@@ -341,23 +420,42 @@ const Tweetbox=()=>{
 
       {/* Audio Recording Popup */}
       <Dialog open={openPopup} onClose={() => setOpenPopup(false)}>
-        <DialogTitle>Record Audio</DialogTitle>
-        <DialogContent>
-          <Button onClick={startRecording} disabled={isRecording}>
-            {isRecording ? "Recording..." : "Start Recording"}
-          </Button>
-          <Button onClick={stopRecording} disabled={!isRecording}>
-            Stop Recording
-          </Button>
-          {audioBlob && <p>Audio Recorded Successfully!</p>}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={sendOtp}>Send OTP</Button>
-          <input id="otpInput" type="text" placeholder="Enter OTP" />
-          <Button onClick={verifyOtp}>Verify OTP</Button>
-          <Button onClick={() => setOpenPopup(false)}>Cancel</Button>
-        </DialogActions>
-      </Dialog>
+      <DialogTitle>Record Audio</DialogTitle>
+      <DialogContent>
+        {/* Start/Stop Recording Buttons */}
+        <Button onClick={startRecording} disabled={isRecording}>
+          {isRecording ? "Recording..." : "Start Recording"}
+        </Button>
+        <Button onClick={stopRecording} disabled={!isRecording}>
+          Stop Recording
+        </Button>
+
+        {/* Display Recording Timer */}
+        {isRecording && <p>Recording Time: {formatTime(recordingTime)}</p>}
+
+        {/* Display Success Message and Buttons if Audio is Recorded */}
+        {audioBlob && (
+          <div>
+            <p>{`${audioDuration}  Audio Recorded Successfully!`}</p>
+            <Button onClick={handlePlayAudio} disabled={isPlaying}>
+              Play
+            </Button>
+            <Button onClick={handlePauseAudio} disabled={!isPlaying}>
+              Pause
+            </Button>
+            <Button onClick={handleClearAudio}>Clear</Button>
+            {isPlaying && <p>Playback Time: {formatTime(playTime)}</p>}
+          </div>
+        )}
+      </DialogContent>
+      <DialogActions>
+        {/* OTP Actions */}
+        <Button onClick={sendOtp}>Send OTP</Button>
+        <input id="otpInput" type="text" placeholder="Enter OTP" />
+        <Button onClick={verifyOtp}>Verify OTP</Button>
+        <Button onClick={() => setOpenPopup(false)}>Cancel</Button>
+      </DialogActions>
+    </Dialog>
     </div>
     );
 };

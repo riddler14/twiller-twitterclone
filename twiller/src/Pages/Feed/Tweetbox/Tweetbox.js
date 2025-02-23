@@ -249,7 +249,7 @@ const Tweetbox=()=>{
             profilephoto: userprofilepic,
             post: post,
             photo: imageurl,
-            audio: null,
+          
             username: username,
             name: name,
             email: email,

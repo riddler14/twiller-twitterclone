@@ -203,42 +203,46 @@ const Tweetbox=()=>{
       
         // Upload audio if present
         if (audioBlob) {
-          axios
-            .post("https://twiller-twitterclone-1-j9kj.onrender.com/upload-audio", formData, {
-              headers: { "Content-Type": "multipart/form-data" },
-            })
-            .then((res) => {
-              const audioUrl = res.data.url;
-      
-              const userPost = {
-                profilephoto: userprofilepic,
-                post: post,
-                photo: imageurl,
-                audio: audioUrl || null,
-                username: username,
-                name: name,
-                email: email,
-              };
-      
-              // Post the tweet
-              fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify(userPost),
-              })
-                .then((res) => res.json())
-                .then((data) => {
-                  console.log(data);
-                  setpost("");
-                  setimageurl("");
-                  setAudioBlob(null);
-                  setOpenPopup(false); // Close popup after successful post
-                  setOtpVerified(false); // Reset OTP verification
-                });
-            })
-            .catch((error) => {
-              console.error("Error uploading audio:", error);
-            });
+          console.log("Uploading audio...");
+  try {
+    const uploadResponse = await axios.post(
+      "https://twiller-twitterclone-1-j9kj.onrender.com/upload-audio",
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } }
+    );
+    const audioUrl = uploadResponse.data.url; // Get the audio URL from the response
+    console.log("Audio uploaded successfully:", audioUrl);
+
+    // Post the tweet with the audio URL
+    const userPost = {
+      profilephoto: userprofilepic,
+      post: post,
+      photo: imageurl,
+      audio: audioUrl || null, // Use the audio URL here
+      username: username,
+      name: name,
+      email: email,
+    };
+
+    const postResponse = await fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(userPost),
+    });
+
+    const postData = await postResponse.json();
+    console.log("Tweet posted successfully:", postData);
+
+    // Reset state after successful post
+    setpost("");
+    setimageurl("");
+    setAudioBlob(null);
+    setOpenPopup(false); // Close popup after successful post
+    setOtpVerified(false); // Reset OTP verification
+  } catch (error) {
+    console.error("Error during tweet submission:", error);
+    alert("An error occurred while posting the tweet. Please try again.");
+  }
         } else {
           // Post without audio
           const userPost = {

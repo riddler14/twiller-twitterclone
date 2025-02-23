@@ -236,7 +236,7 @@ const Tweetbox=()=>{
     // Reset state after successful post
     setpost("");
     setimageurl("");
-    setAudioBlob(null);
+    setAudioBlob(audioUrl);
     setOpenPopup(false); // Close popup after successful post
     setOtpVerified(false); // Reset OTP verification
   } catch (error) {

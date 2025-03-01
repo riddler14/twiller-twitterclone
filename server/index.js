@@ -154,7 +154,16 @@ const upload = multer({
   limits: { fileSize: 100 * 1024 * 1024 }, // Limit file size to 100MB
 }).single("audio");
 
+function isWithinPostingWindow() {
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+  const istTime = new Date(now.getTime() + istOffset);
 
+  const hours = istTime.getUTCHours();
+  const minutes = istTime.getUTCMinutes();
+
+  return hours === 10 && minutes >= 0 && minutes <= 30;
+}
 async function run() {
   try {
     await client.connect();
@@ -170,6 +179,11 @@ async function run() {
 
     app.post("/register", async (req, res) => {
       const user = req.body;
+
+      if (!user.followCount) {
+        user.followCount = 0;
+      }
+      
       const result = await usercollection.insertOne(user);
       res.send(result);
     });
@@ -179,6 +193,62 @@ async function run() {
       const user = await usercollection.find({ email: email }).toArray();
       res.send(user);
     });
+    app.post("/follow", async (req, res) => {
+      const { followerEmail, followeeEmail } = req.body;
+    
+      if (!followerEmail || !followeeEmail) {
+        return res.status(400).json({ error: "Both followerEmail and followeeEmail are required" });
+      }
+    
+      try {
+        // Fetch the follower and followee from the database
+        const follower = await usercollection.findOne({ email: followerEmail });
+        const followee = await usercollection.findOne({ email: followeeEmail });
+    
+        if (!follower || !followee) {
+          return res.status(400).json({ error: "Follower or followee not found" });
+        }
+    
+        // Check if the follower is already following the followee
+        if (follower.following && follower.following.includes(followeeEmail)) {
+          return res.status(400).json({ error: "You are already following this user" });
+        }
+    
+        // Update the follower's `following` list
+        await usercollection.updateOne(
+          { email: followerEmail },
+          { $push: { following: followeeEmail }, $inc: { followCount: 1 } }
+        );
+    
+        // Update the followee's `followers` list
+        await usercollection.updateOne(
+          { email: followeeEmail },
+          { $push: { followers: followerEmail } }
+        );
+    
+        res.json({ message: "Follow successful" });
+      } catch (error) {
+        console.error("Error updating follow relationship:", error);
+        res.status(500).json({ error: "Failed to update follow relationship" });
+      }
+    });
+
+    // app.post("/post", async (req, res) => {
+    //   const post = req.body;
+    
+    //   // Validate required fields
+    //   if (!post.name || !post.username || !post.email || !post.post) {
+    //     return res.status(400).json({ error: "Missing required fields" });
+    //   }
+    
+    //   try {
+    //     const result = await postcollection.insertOne(post);
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.error("Error inserting post:", error);
+    //     res.status(500).json({ error: "Failed to post tweet" });
+    //   }
+    // });
 
     app.post("/post", async (req, res) => {
       const post = req.body;
@@ -189,11 +259,98 @@ async function run() {
       }
     
       try {
-        const result = await postcollection.insertOne(post);
+        // Fetch the user's follow count
+        const user = await usercollection.findOne({ email: post.email });
+    
+        if (!user) {
+          return res.status(400).json({ error: "User not found" });
+        }
+    
+        const followCount = user.followCount || 0;
+        const now = new Date();
+        const currentDate = now.toDateString();
+    
+        // Fetch the user's post history
+        const postsToday = await postcollection
+          .find({
+            email: post.email,
+            createdAt: { $gte: new Date(currentDate) },
+          })
+          .toArray();
+    
+        // Apply posting rules based on follow count
+        if (followCount === 0) {
+          // User doesn't follow anyone
+          if (!isWithinPostingWindow()) {
+            return res.status(400).json({
+              error: "You can only post between 10:00 AM and 10:30 AM IST",
+            });
+          }
+    
+          if (postsToday.length > 0) {
+            return res.status(400).json({ error: "You have already posted today" });
+          }
+        } else if (followCount <= 2) {
+          // User follows 1-2 people
+          if (postsToday.length >= 2) {
+            return res.status(400).json({ error: "You can only post 2 times a day" });
+          }
+        }
+    
+        // Insert the post into the database
+        const result = await postcollection.insertOne({
+          ...post,
+          createdAt: now,
+        });
+    
         res.send(result);
       } catch (error) {
         console.error("Error inserting post:", error);
         res.status(500).json({ error: "Failed to post tweet" });
+      }
+    });
+
+    app.get("/following", async (req, res) => {
+      const email = req.query.email;
+    
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+    
+      try {
+        const user = await usercollection.findOne({ email: email });
+    
+        if (!user) {
+          return res.status(400).json({ error: "User not found" });
+        }
+    
+        const following = user.following || [];
+        res.json({ following });
+      } catch (error) {
+        console.error("Error fetching following list:", error);
+        res.status(500).json({ error: "Failed to fetch following list" });
+      }
+    });
+
+    app.get("/followers", async (req, res) => {
+      const email = req.query.email;
+    
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+    
+      try {
+        const user = await usercollection.findOne({ email: email });
+    
+        if (!user) {
+          return res.status(400).json({ error: "User not found" });
+        }
+    
+        const followers = user.followers || [];
+        res.json({ followers });
+      } catch (error) {
+        console.error("Error fetching followers list:", error);
+        res.status(500).json({ error: "Failed to fetch followers list" });
       }
     });
 
@@ -405,6 +562,38 @@ app.get("/audio/:id", async (req, res) => {
       } catch (error) {
         console.error("Error in Gemini endpoint:", error);
         res.status(500).json({ error: "Failed to process request" });
+      }
+    });
+
+    app.get("/search-users", async (req, res) => {
+      const query = req.query.query; // Explicitly access the query parameter
+      if (!query || typeof query !== "string" || query.trim() === "") {
+        return res.status(400).json({ error: "Search query is required" });
+      }
+    
+      try {
+        // Perform a case-insensitive search on the 'name' and 'username' fields
+        const users = await usercollection
+          .find({
+            $or: [
+              { name: { $regex: query.trim(), $options: "i" } }, // Case-insensitive search on 'name'
+              { username: { $regex: query.trim(), $options: "i" } }, // Case-insensitive search on 'username'
+            ],
+          })
+          .project({
+            name: 1, // Include 'name'
+            username: 1, // Include 'username'
+            profileImage: 1, // Include 'profileImage'
+            _id: 0, // Exclude '_id'
+          })
+          .limit(10) // Limit results to 10 profiles
+          .toArray();
+    
+        // Return the results
+        res.json({ users });
+      } catch (error) {
+        console.error("Error searching users:", error.message);
+        res.status(500).json({ error: "Failed to fetch users" });
       }
     });
 

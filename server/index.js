@@ -572,25 +572,33 @@ app.get("/audio/:id", async (req, res) => {
       }
     
       try {
-        // Perform a case-insensitive search on the 'name' and 'username' fields
+        // Perform a case-insensitive search on the 'name', 'username', and 'email' fields
         const users = await usercollection
           .find({
             $or: [
               { name: { $regex: query.trim(), $options: "i" } }, // Case-insensitive search on 'name'
               { username: { $regex: query.trim(), $options: "i" } }, // Case-insensitive search on 'username'
+              { email: { $regex: query.trim(), $options: "i" } }, // Case-insensitive search on 'email'
             ],
           })
           .project({
             name: 1, // Include 'name'
             username: 1, // Include 'username'
             profileImage: 1, // Include 'profileImage'
+            email: 1, // Include 'email' for generating username if missing
             _id: 0, // Exclude '_id'
           })
           .limit(10) // Limit results to 10 profiles
           .toArray();
     
+        // Ensure each user has a username (generate from email if missing)
+        const formattedUsers = users.map((user) => ({
+          ...user,
+          username: user.username || user.email.split("@")[0], // Generate username from email if missing
+        }));
+    
         // Return the results
-        res.json({ users });
+        res.json({ users: formattedUsers });
       } catch (error) {
         console.error("Error searching users:", error.message);
         res.status(500).json({ error: "Failed to fetch users" });

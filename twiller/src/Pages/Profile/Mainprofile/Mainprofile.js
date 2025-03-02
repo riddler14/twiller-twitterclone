@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import Post from "../Posts/posts";
 import { useNavigate } from "react-router-dom";
 import "./Mainprofile.css";
+import FollowSection from "./FollowSection";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import CenterFocusWeakIcon from "@mui/icons-material/CenterFocusWeak";
 import LockResetIcon from "@mui/icons-material/LockReset";
@@ -10,6 +11,7 @@ import AddLinkIcon from "@mui/icons-material/AddLink";
 import Editprofile from "../Editprofile/Editprofile";
 import axios from "axios";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
+import FollowButton from "./FollowButton"; // Import the new FollowButton component
 
 
 const Mainprofile = ({ user }) => {
@@ -22,6 +24,7 @@ const Mainprofile = ({ user }) => {
   const [location, setLocation] = useState("");
   const [weather, setWeather] = useState("");
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false); // State to toggle EditProfile visibility
 
   const [avatarUrl, setAvatarUrl] = useState("");
 
@@ -425,7 +428,15 @@ const Mainprofile = ({ user }) => {
                   </h3>
                   <p className="usernameSection">@{username}</p>
                 </div>
-                <Editprofile user={user} loggedinuser={loggedinuser} />
+                 {/* Conditional Rendering of Edit Profile or Follow Button */}
+          {loggedinuser[0]?.email === user.email ? (
+            <Editprofile user={user} loggedinuser={loggedinuser} />
+          ) : (
+            <FollowButton
+              loggedInUserEmail={loggedinuser[0]?.email}
+              profileUserEmail={user.email}
+            />
+          )}
               </div>
               <div className="infoContainer">
                 {loggedinuser[0]?.bio ? <p>{loggedinuser[0].bio}</p> : ""}
@@ -461,6 +472,7 @@ const Mainprofile = ({ user }) => {
                     ""
                   )}
                 </div>
+                <FollowSection user={user}/>
               </div>
               <h4 className="tweetsText">Tweets</h4>
               <hr />

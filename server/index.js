@@ -567,6 +567,7 @@ app.get("/audio/:id", async (req, res) => {
 
     app.get("/search-users", async (req, res) => {
       const query = req.query.query; // Explicitly access the query parameter
+      const loggedInUserEmail = req.query.email; 
       if (!query || typeof query !== "string" || query.trim() === "") {
         return res.status(400).json({ error: "Search query is required" });
       }
@@ -580,6 +581,7 @@ app.get("/audio/:id", async (req, res) => {
               { username: { $regex: query.trim(), $options: "i" } }, // Case-insensitive search on 'username'
               { email: { $regex: query.trim(), $options: "i" } }, // Case-insensitive search on 'email'
             ],
+            email: { $ne: loggedInUserEmail },
           })
           .project({
             name: 1, // Include 'name'

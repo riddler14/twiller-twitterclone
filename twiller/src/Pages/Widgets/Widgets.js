@@ -1,21 +1,25 @@
-import React,{useState,useRef,useEffect} from 'react'
+import React,{useState,useRef,useEffect,useCallback} from 'react'
 import "./widget.css";
 import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";
 import WidgetsIcon from '@mui/icons-material/Widgets';
 import useLoggedinuser from "../../hooks/useLoggedinuser";
 import { TwitterTimelineEmbed, TwitterTweetEmbed } from "react-twitter-embed";
+import { useNavigate } from 'react-router-dom';
 const Widgets=()=>{
   const [isWidgetsOpen, setIsWidgetsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loggedinuser] = useLoggedinuser();
+  const navigate=useNavigate();
   // Function to handle search
   const dropdownRef = useRef(null);
   
-  const handleSearch = async (e) => {
-    e.preventDefault();
+  const handleSearch = useCallback(async (e) => {
+    if (e) {
+      e.preventDefault(); // Only call preventDefault if `e` exists
+    }
     if (!searchTerm.trim()) {
       setSearchResults([]);
       setShowDropdown(false);
@@ -42,8 +46,11 @@ const Widgets=()=>{
       setSearchResults([]);
       setShowDropdown(false);
     }
+  }, [searchTerm, loggedinuser]);
+  const handleUserClick = (username) => {
+    navigate(`/profile/${username}`); // Navigate to the user's profile page
+    setShowDropdown(false); // Hide the dropdown after navigation
   };
-  
   // Use useEffect to trigger search dynamically with debounce
   const handleClickOutside = () => {
     setShowDropdown(false);
@@ -69,6 +76,20 @@ const Widgets=()=>{
       document.removeEventListener("mousedown", handleOutsideClick);
     };
   }, []);
+
+  useEffect(() => {
+    const delayDebounce = setTimeout(() => {
+      if (searchTerm.trim()) {
+        handleSearch();
+      } else {
+        setSearchResults([]);
+        setShowDropdown(false);
+      }
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(delayDebounce);
+  },[searchTerm,handleSearch]);
+
   const toggleWidgets = () => {
     setIsWidgetsOpen(!isWidgetsOpen);
   };
@@ -96,7 +117,7 @@ const Widgets=()=>{
         {showDropdown && searchResults.length > 0 && (
           <div className="widgets__dropdown">
             {searchResults.map((user) => (
-              <div key={user._id} className="dropdown-item">
+              <div key={user.username} className="dropdown-item" onClick={() => handleUserClick(user.username)}>
                 <img
                   src={user.profileImage || "https://via.placeholder.com/50"}
                   alt={`${user.name}'s avatar`}

@@ -25,12 +25,12 @@ const [avatarUrl, setAvatarUrl] = useState("");
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(
-          `https://twiller-twitterclone-1-j9kj.onrender.com/userprofile?username=${email}`
+          `https://twiller-twitterclone-1-j9kj.onrender.com/userprofile?email=${email}`
         );
         if (response.data.user) {
           setUser(response.data.user); // Set user data
         } else {
-          console.error("User not found.");
+          console.error("User not found.",email);
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);

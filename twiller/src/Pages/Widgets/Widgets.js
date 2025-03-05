@@ -47,35 +47,39 @@ const Widgets=()=>{
       setShowDropdown(false);
     }
   }, [searchTerm, loggedinuser]);
-  const handleUserClick = (username) => {
-    navigate(`/profile/${username}`); // Navigate to the user's profile page
-    setShowDropdown(false); // Hide the dropdown after navigation
+
+
+  const handleUserClick = (email) => {
+    navigate(`/profile/${email}`); // Navigate to the user's profile page
+    setShowDropdown(false);
+    console.log("running....",email); // Hide the dropdown after navigation
   };
   // Use useEffect to trigger search dynamically with debounce
   const handleClickOutside = () => {
+    
     setShowDropdown(false);
     setSearchResults([]);
   };
 
   // Add event listener for clicks outside the dropdown
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target)
-      ) {
-        handleClickOutside();
-      }
-    };
+  // useEffect(() => {
+  //   const handleOutsideClick = (event) => {
+  //     if (
+  //       dropdownRef.current &&
+  //       !dropdownRef.current.contains(event.target)
+  //     ) {
+  //       handleClickOutside();
+  //     }
+  //   };
 
-    // Attach the event listener
-    document.addEventListener("mousedown", handleOutsideClick);
+  //   // Attach the event listener
+  //   document.addEventListener("mousedown", handleOutsideClick);
 
-    // Cleanup the event listener on component unmount
-    return () => {
-      document.removeEventListener("mousedown", handleOutsideClick);
-    };
-  }, []);
+  //   // Cleanup the event listener on component unmount
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleOutsideClick);
+  //   };
+  // }, []);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -117,7 +121,7 @@ const Widgets=()=>{
         {showDropdown && searchResults.length > 0 && (
           <div className="widgets__dropdown">
             {searchResults.map((user) => (
-              <div key={user.username} className="dropdown-item" onClick={() => handleUserClick(user.username)}>
+              <div key={user.email} className="dropdown-item" onClick={() => handleUserClick(user.email)}>
                 <img
                   src={user.profileImage || "https://via.placeholder.com/50"}
                   alt={`${user.name}'s avatar`}

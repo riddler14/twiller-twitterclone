@@ -66,11 +66,12 @@
   align-items: center;
   padding: 10px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  text-decoration: none; /* Remove underline for <a> tags */
+  color: inherit; /* Inherit text color */
 }
 
 .dropdown-item:hover {
-  background-color: #f5f8fa;
+  background-color: var(--twitter-background);
 }
 
 .dropdown-avatar {

@@ -608,7 +608,7 @@ app.get("/audio/:id", async (req, res) => {
     });
 
     app.get("/userprofile", async (req, res) => {
-      const email = req.query.email;
+      const email = req.params.email;
     
       if (!email) {
         return res.status(400).json({ error: "Email is required" });

@@ -588,7 +588,7 @@ app.get("/audio/:id", async (req, res) => {
             username: 1, // Include 'username'
             profileImage: 1, // Include 'profileImage'
             email: 1, // Include 'email' for generating username if missing
-            _id: 0, // Exclude '_id'
+            _id: 1, // Exclude '_id'
           })
           .limit(10) // Limit results to 10 profiles
           .toArray();

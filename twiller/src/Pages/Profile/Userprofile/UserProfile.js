@@ -2,24 +2,30 @@ import React, { useState, useEffect } from "react";
 import Post from "../Posts/posts";
 import { useParams, useNavigate } from "react-router-dom";
 import "../Mainprofile/Mainprofile.css"; // Use the same CSS as Mainprofile or adjust as needed
-import FollowButton from "./FollowButton"; // Import the FollowButton component
+import FollowButton from "../Mainprofile/FollowButton"; 
+import FollowSection from "../Mainprofile/FollowSection";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import CenterFocusWeakIcon from "@mui/icons-material/CenterFocusWeak";
+import LockResetIcon from "@mui/icons-material/LockReset";
+
 import axios from "axios";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
 
 const UserProfile = () => {
   const navigate = useNavigate();
-  const { username } = useParams(); // Extract username from URL
+  const { username } = useParams();
+  const {email} =useParams();// Extract username from URL
   const [loggedinuser] = useLoggedinuser();
   const [user, setUser] = useState(null); // Profile user data
   const [posts, setPosts] = useState([]); // Posts of the profile user
   const [isLoading, setIsLoading] = useState(true);
-
+const [avatarUrl, setAvatarUrl] = useState("");
   // Fetch profile user data based on username
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(
-          `https://twiller-twitterclone-1-j9kj.onrender.com/userprofile?username=${username}`
+          `https://twiller-twitterclone-1-j9kj.onrender.com/userprofile?username=${email}`
         );
         if (response.data.user) {
           setUser(response.data.user); // Set user data
@@ -34,7 +40,7 @@ const UserProfile = () => {
     };
 
     fetchUserProfile();
-  }, [username]);
+  }, [email]);
 
   // Fetch posts for the profile user
   useEffect(() => {
@@ -74,7 +80,7 @@ const UserProfile = () => {
               <div className="hoverCoverImage">
                 <div className="imageIcon_tweetButton">
                   <label htmlFor="image" className="imageIcon">
-                    {isloading ? (
+                    {isLoading ? (
                       <LockResetIcon className="photoIcon photoIconDisabled" />
                     ) : (
                       <CenterFocusWeakIcon className="photoIcon" />
@@ -96,7 +102,7 @@ const UserProfile = () => {
                 <div className="hoverAvatarImage">
                   <div className="imageIcon_tweetButton">
                     <label htmlFor="profileImage" className="imageIcon">
-                      {isloading ? (
+                      {isLoading ? (
                         <LockResetIcon className="photoIcon photoIconDisabled" />
                       ) : (
                         <CenterFocusWeakIcon className="photoIcon" />
@@ -117,14 +123,7 @@ const UserProfile = () => {
                   <p className="usernameSection">@{username}</p>
                 </div>
                  {/* Conditional Rendering of Edit Profile or Follow Button */}
-          {loggedinuser[0]?.email === user.email ? (
-            <Editprofile user={user} loggedinuser={loggedinuser} />
-          ) : (
-            <FollowButton
-              loggedInUserEmail={loggedinuser[0]?.email}
-              profileUserEmail={user.email}
-            />
-          )}
+          
               </div>
               <div className="infoContainer">
                 {loggedinuser[0]?.bio ? <p>{loggedinuser[0].bio}</p> : ""}

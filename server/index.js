@@ -608,19 +608,20 @@ app.get("/audio/:id", async (req, res) => {
     });
 
     app.get("/userprofile", async (req, res) => {
-      const { username } = req.query;
+      const email = req.query.email;
     
-      if (!username) {
-        return res.status(400).json({ error: "Username is required" });
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
       }
     
       try {
-        const user = await usercollection.findOne({ username });
-        if (user) {
-          res.json(user);
-        } else {
-          res.status(404).json({ error: "User not found" });
+        const user = await usercollection.findOne({ email: email });
+    
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
         }
+    
+        res.json(user);
       } catch (error) {
         console.error("Error fetching user profile:", error);
         res.status(500).json({ error: "Failed to fetch user profile" });

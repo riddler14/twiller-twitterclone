@@ -610,17 +610,16 @@ app.get("/audio/:id", async (req, res) => {
     app.get("/userprofile/:id", async (req, res) => {
       const userId = req.params.id;
     
-      if (!userId) {
-        return res.status(400).json({ error: "userId is required" });
+      // Validate the ID
+      if (!userId || !ObjectId.isValid(userId)) {
+        return res.status(400).json({ error: "Invalid user ID" });
       }
     
       try {
-        const user = await usercollection.findOne({  _id: new ObjectId(userId) });
-    
+        const user = await usercollection.findOne({ _id: new ObjectId(userId) });
         if (!user) {
           return res.status(404).json({ error: "User not found" });
         }
-    
         res.json(user);
       } catch (error) {
         console.error("Error fetching user profile:", error);

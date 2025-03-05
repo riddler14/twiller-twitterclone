@@ -49,10 +49,10 @@ const Widgets=()=>{
   }, [searchTerm, loggedinuser]);
 
 
-  const handleUserClick = (email) => {
-    navigate(`/profile/${email}`); // Navigate to the user's profile page
+  const handleUserClick = (userId) => {
+    navigate(`/profile/${userId}`); // Navigate to the user's profile page
     setShowDropdown(false);
-    console.log("running....",email); // Hide the dropdown after navigation
+    console.log("running....",userId); // Hide the dropdown after navigation
   };
   // Use useEffect to trigger search dynamically with debounce
   const handleClickOutside = () => {
@@ -121,7 +121,7 @@ const Widgets=()=>{
         {showDropdown && searchResults.length > 0 && (
           <div className="widgets__dropdown">
             {searchResults.map((user) => (
-              <div key={user.email} className="dropdown-item" onClick={() => handleUserClick(user.email)}>
+              <div key={user._id} className="dropdown-item" onClick={() => handleUserClick(user._id)}>
                 <img
                   src={user.profileImage || "https://via.placeholder.com/50"}
                   alt={`${user.name}'s avatar`}

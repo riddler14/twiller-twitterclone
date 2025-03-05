@@ -607,15 +607,15 @@ app.get("/audio/:id", async (req, res) => {
       }
     });
 
-    app.get("/userprofile", async (req, res) => {
-      const email = req.params.email;
+    app.get("/userprofile/:id", async (req, res) => {
+      const userId = req.params.id;
     
-      if (!email) {
-        return res.status(400).json({ error: "Email is required" });
+      if (!userId) {
+        return res.status(400).json({ error: "userId is required" });
       }
     
       try {
-        const user = await usercollection.findOne({ email: email });
+        const user = await usercollection.findOne({  _id: new ObjectId(userId) });
     
         if (!user) {
           return res.status(404).json({ error: "User not found" });

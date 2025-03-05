@@ -14,7 +14,7 @@ import Profile from "./Pages/Profile/Profile";
 import More from "./Pages/more/More";
 import { UserAuthContextProvider } from "./context/UserAuthContext";
 import Bookmark from "./Pages/Bookmark/Bookmark";
-import Userprofile from './Pages/Profile/Userprofile/UserProfile';
+import User_Profile from "./Pages/Profile/User_Profile";
 function App() {
   return (
    <div className='app'>
@@ -39,7 +39,7 @@ function App() {
             <Route path="more" element={<More />} />
           </Route>
           {/* Dynamic Profile Route */}
-          <Route path="/profile/:email" element={<Userprofile />} />
+          <Route path="/profile/:email" element={<User_Profile />} />
 
           {/* Fallback Route */}
           <Route path="*" element={<h1>Page Not Found</h1>} />

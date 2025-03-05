@@ -14,7 +14,8 @@ import useLoggedinuser from "../../../hooks/useLoggedinuser";
 const UserProfile = () => {
   const navigate = useNavigate();
   const { username } = useParams();
-  const {email} =useParams();// Extract username from URL
+  const { email } = useParams();
+  const {id} =useParams();// Extract username from URL
   const [loggedinuser] = useLoggedinuser();
   const [user, setUser] = useState(null); // Profile user data
   const [posts, setPosts] = useState([]); // Posts of the profile user
@@ -25,12 +26,12 @@ const [avatarUrl, setAvatarUrl] = useState("");
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(
-          `https://twiller-twitterclone-1-j9kj.onrender.com/userprofile?email=${email}`
+          `https://twiller-twitterclone-1-j9kj.onrender.com/userprofile/${id}`
         );
         if (response.data.user) {
           setUser(response.data.user); // Set user data
         } else {
-          console.error("User not found.",email);
+          console.error("User not found.",id);
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -40,7 +41,7 @@ const [avatarUrl, setAvatarUrl] = useState("");
     };
 
     fetchUserProfile();
-  }, [email]);
+  }, [id]);
 
   // Fetch posts for the profile user
   useEffect(() => {

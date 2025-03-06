@@ -616,11 +616,27 @@ app.get("/audio/:id", async (req, res) => {
       }
     
       try {
-        const user = await usercollection.findOne({ _id: new ObjectId(userId) });
+        const user = await usercollection.findOne(
+          { _id: new ObjectId(userId) },
+          {
+            projection: {
+              _id: 1,
+              name: 1,
+              username: 1,
+              email: 1,
+              profileImage: 1,
+              coverimage: 1,
+              bio: 1,
+              location:1,
+            },
+          }
+        );
+    
         if (!user) {
           return res.status(404).json({ error: "User not found" });
         }
-        res.json(user);
+    
+        res.json({ user }); // Wrap the user object in a response object
       } catch (error) {
         console.error("Error fetching user profile:", error);
         res.status(500).json({ error: "Failed to fetch user profile" });

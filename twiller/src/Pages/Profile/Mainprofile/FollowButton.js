@@ -1,6 +1,7 @@
 // FollowButton.js
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "./FollowButton.css";
 
 const FollowButton = ({ loggedInUserEmail, profileUserEmail }) => {
   const [isFollowing, setIsFollowing] = useState(false);
@@ -10,7 +11,7 @@ const FollowButton = ({ loggedInUserEmail, profileUserEmail }) => {
     const checkFollowStatus = async () => {
       try {
         const response = await axios.get(
-          `https://twiller-twitterclone-1-j9kj.onrender.com/following?email=${loggedInUserEmail}`
+          `https://twiller-twitterclone-2-q41v.onrender.com/following?email=${loggedInUserEmail}`
         );
         const followingList = response.data.following || [];
         setIsFollowing(followingList.includes(profileUserEmail));
@@ -28,7 +29,7 @@ const FollowButton = ({ loggedInUserEmail, profileUserEmail }) => {
   const handleFollowToggle = async () => {
     try {
       const response = await axios.post(
-        "https://twiller-twitterclone-1-j9kj.onrender.com/follow",
+        "https://twiller-twitterclone-2-q41v.onrender.com/follow",
         {
           followerEmail: loggedInUserEmail,
           followeeEmail: profileUserEmail,

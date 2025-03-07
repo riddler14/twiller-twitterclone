@@ -135,6 +135,9 @@
 
 .Edit-profile-btn:hover {
   background-color: rgb(207, 206, 206);
+  cursor: pointer;
+  color: white;
+  background-color: black;
 }
 
 .Tweet {

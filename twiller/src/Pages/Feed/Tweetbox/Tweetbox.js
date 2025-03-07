@@ -199,7 +199,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
       // Function to send OTP to email
       const sendOtp = async () => {
         try {
-          await axios.post("https://twiller-twitterclone-1-j9kj.onrender.com/send-otp", { email });
+          await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/send-otp", { email });
           alert("OTP sent to your email. Please verify.");
         } catch (error) {
           console.error("Error sending OTP:", error);
@@ -222,7 +222,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
         }
       
         try {
-          const response = await axios.post("https://twiller-twitterclone-1-j9kj.onrender.com/verify-otp", { email, otp });
+          const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/verify-otp", { email, otp });
           if (response.data.success) {
             setOtpVerified(true); // Mark OTP as verified
             setIsAudioAttached(true); // Mark audio as attached
@@ -243,7 +243,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
       
         // Fetch user details
         if (user?.providerData[0]?.providerId === "password") {
-          fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/loggedinuser?email=${email}`)
+          fetch(`https://twiller-twitterclone-2-q41v.onrender.com/loggedinuser?email=${email}`)
             .then((res) => res.json())
             .then((data) => {
               setname(data[0]?.name);
@@ -283,7 +283,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
           console.log("Uploading audio...");
   try {
     const uploadResponse = await axios.post(
-      "https://twiller-twitterclone-1-j9kj.onrender.com/upload-audio",
+      "https://twiller-twitterclone-2-q41v.onrender.com/upload-audio",
       formData,
       { headers: { "Content-Type": "multipart/form-data" } }
     );
@@ -301,7 +301,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
       email: email,
     };
 
-    const postResponse = await fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
+    const postResponse = await fetch("https://twiller-twitterclone-2-q41v.onrender.com/post", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(userPost),
@@ -334,7 +334,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
             email: email,
           };
       
-          fetch("https://twiller-twitterclone-1-j9kj.onrender.com/post", {
+          fetch("https://twiller-twitterclone-2-q41v.onrender.com/post", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify(userPost),

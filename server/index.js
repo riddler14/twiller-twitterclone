@@ -210,23 +210,35 @@ async function run() {
         }
     
         // Check if the follower is already following the followee
-        if (follower.following && follower.following.includes(followeeEmail)) {
-          return res.status(400).json({ error: "You are already following this user" });
+        const isFollowing = follower.following && follower.following.includes(followeeEmail);
+    
+        if (isFollowing) {
+          // Unfollow logic
+          await usercollection.updateOne(
+            { email: followerEmail },
+            { $pull: { following: followeeEmail }, $inc: { followCount: -1 } }
+          );
+    
+          await usercollection.updateOne(
+            { email: followeeEmail },
+            { $pull: { followers: followerEmail } }
+          );
+    
+          return res.json({ message: "Unfollowed successfully" });
+        } else {
+          // Follow logic
+          await usercollection.updateOne(
+            { email: followerEmail },
+            { $push: { following: followeeEmail }, $inc: { followCount: 1 } }
+          );
+    
+          await usercollection.updateOne(
+            { email: followeeEmail },
+            { $push: { followers: followerEmail } }
+          );
+    
+          return res.json({ message: "Followed successfully" });
         }
-    
-        // Update the follower's `following` list
-        await usercollection.updateOne(
-          { email: followerEmail },
-          { $push: { following: followeeEmail }, $inc: { followCount: 1 } }
-        );
-    
-        // Update the followee's `followers` list
-        await usercollection.updateOne(
-          { email: followeeEmail },
-          { $push: { followers: followerEmail } }
-        );
-    
-        res.json({ message: "Follow successful" });
       } catch (error) {
         console.error("Error updating follow relationship:", error);
         res.status(500).json({ error: "Failed to update follow relationship" });
@@ -475,7 +487,7 @@ async function run() {
           uploadStream.once("finish", () => {
             const audioId = uploadStream.id; // The ID of the uploaded file in GridFS
             console.log("Uploaded audio file with ID:", audioId); // Log the ID
-            const audioUrl = `https://twiller-twitterclone-1-j9kj.onrender.com/audio/${audioId}`;
+            const audioUrl = `https://twiller-twitterclone-2-q41v.onrender.com/audio/${audioId}`;
             res.json({ url: audioUrl, id: audioId });
           });
     

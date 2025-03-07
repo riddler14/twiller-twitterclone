@@ -5,28 +5,27 @@ import "../Mainprofile/Mainprofile.css"; // Use the same CSS as Mainprofile or a
 import FollowButton from "../Mainprofile/FollowButton"; 
 import FollowSection from "../Mainprofile/FollowSection";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import CenterFocusWeakIcon from "@mui/icons-material/CenterFocusWeak";
-import LockResetIcon from "@mui/icons-material/LockReset";
+
 
 import axios from "axios";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
 
 const UserProfile = () => {
   const navigate = useNavigate();
-  const { username } = useParams();
-  const { email } = useParams();
+  // 
+  // const { email } = useParams();
   const {id} =useParams();// Extract username from URL
   const [loggedinuser] = useLoggedinuser();
   const [user, setUser] = useState(null); // Profile user data
   const [posts, setPosts] = useState([]); // Posts of the profile user
   const [isLoading, setIsLoading] = useState(true);
-const [avatarUrl, setAvatarUrl] = useState("");
+  
   // Fetch profile user data based on username
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const response = await axios.get(
-          `https://twiller-twitterclone-1-j9kj.onrender.com/userprofile/${id}`
+          `https://twiller-twitterclone-2-q41v.onrender.com/userprofile/${id}`
         );
         if (response.data.user) {
           setUser(response.data.user); // Set user data
@@ -46,7 +45,7 @@ const [avatarUrl, setAvatarUrl] = useState("");
   // Fetch posts for the profile user
   useEffect(() => {
     if (user?.email) {
-      fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/userpost?email=${user.email}`)
+      fetch(`https://twiller-twitterclone-2-q41v.onrender.com/userpost?email=${user.email}`)
         .then((res) => res.json())
         .then((data) => setPosts(data))
         .catch((error) => console.error("Error fetching posts:", error));
@@ -64,21 +63,21 @@ const [avatarUrl, setAvatarUrl] = useState("");
   return (
     <div>
       <ArrowBackIcon className="arrow-icon" onClick={() => navigate("/")} />
-      <h4 className="heading-4">{username}</h4>
+      <h4 className="heading-4">{user?.username || user?.email?.split("@")[0]}</h4>
       <div className="mainprofile">
         <div className="profile-bio">
           <div>
             <div className="coverImageContainer">
               <img
                 src={
-                  loggedinuser[0]?.coverimage
-                    ? loggedinuser[0].coverimage
+                  user?.coverimage
+                    ? user.coverimage
                     : user && user.photoURL
                 }
                 alt=""
                 className="coverImage"
               />
-              <div className="hoverCoverImage">
+              {/* <div className="hoverCoverImage">
                 <div className="imageIcon_tweetButton">
                   <label htmlFor="image" className="imageIcon">
                     {isLoading ? (
@@ -89,18 +88,18 @@ const [avatarUrl, setAvatarUrl] = useState("");
                   </label>
                  
                 </div>
-              </div>
+              </div> */}
             </div>
             <div className="avatar-img">
               <div className="avatarContainer">
                 <img
                   src={
-                    avatarUrl || loggedinuser[0]?.profileImage || user?.photoURL
+                     user.profileImage
                   }
                   alt=""
                   className="avatar"
                 />
-                <div className="hoverAvatarImage">
+                {/* <div className="hoverAvatarImage">
                   <div className="imageIcon_tweetButton">
                     <label htmlFor="profileImage" className="imageIcon">
                       {isLoading ? (
@@ -112,22 +111,23 @@ const [avatarUrl, setAvatarUrl] = useState("");
                    
                   </div>
                   
-                </div>
+                </div> */}
               </div>
               <div className="userInfo">
                 <div>
                   <h3 className="heading-3">
-                    {loggedinuser[0]?.name
-                      ? loggedinuser[0].name
-                      : user && user.displayname}
+                    {user.name}
                   </h3>
-                  <p className="usernameSection">@{username}</p>
+                  <p className="usernameSection">@{user?.username || user?.email?.split("@")[0]}</p>
                 </div>
                  {/* Conditional Rendering of Edit Profile or Follow Button */}
-          
+                 <FollowButton
+              loggedInUserEmail={loggedinuser[0]?.email}
+              profileUserEmail={user?.email}
+            />
               </div>
               <div className="infoContainer">
-                {loggedinuser[0]?.bio ? <p>{loggedinuser[0].bio}</p> : ""}
+                {user?.bio ? <p>{user.bio}</p> : ""}
                
                 <FollowSection user={user}/>
               </div>

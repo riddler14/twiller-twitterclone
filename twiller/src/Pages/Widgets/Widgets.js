@@ -28,7 +28,7 @@ const Widgets=()=>{
 
     try {
       const response = await fetch(
-        `https://twiller-twitterclone-1-j9kj.onrender.com/search-users?query=${encodeURIComponent(
+        `https://twiller-twitterclone-2-q41v.onrender.com/search-users?query=${encodeURIComponent(
           searchTerm
         )}&email=${loggedinuser[0]?.email}`
       );
@@ -50,8 +50,9 @@ const Widgets=()=>{
 
 
   const handleUserClick = (userId) => {
-    navigate(`/profile/${userId}`); // Navigate to the user's profile page
+    navigate(`/home/profile/${userId}`); // Navigate to the user's profile page
     setShowDropdown(false);
+    setSearchTerm("");
     console.log("running....",userId); // Hide the dropdown after navigation
   };
   // Use useEffect to trigger search dynamically with debounce
@@ -62,24 +63,24 @@ const Widgets=()=>{
   };
 
   // Add event listener for clicks outside the dropdown
-  // useEffect(() => {
-  //   const handleOutsideClick = (event) => {
-  //     if (
-  //       dropdownRef.current &&
-  //       !dropdownRef.current.contains(event.target)
-  //     ) {
-  //       handleClickOutside();
-  //     }
-  //   };
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target)
+      ) {
+        handleClickOutside();
+      }
+    };
 
-  //   // Attach the event listener
-  //   document.addEventListener("mousedown", handleOutsideClick);
+    // Attach the event listener
+    document.addEventListener("mousedown", handleOutsideClick);
 
-  //   // Cleanup the event listener on component unmount
-  //   return () => {
-  //     document.removeEventListener("mousedown", handleOutsideClick);
-  //   };
-  // }, []);
+    // Cleanup the event listener on component unmount
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
 
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
@@ -119,7 +120,7 @@ const Widgets=()=>{
         </div>
 
         {showDropdown && searchResults.length > 0 && (
-          <div className="widgets__dropdown">
+          <div className="widgets__dropdown" ref={dropdownRef}>
             {searchResults.map((user) => (
               <div key={user._id} className="dropdown-item" onClick={() => handleUserClick(user._id)}>
                 <img

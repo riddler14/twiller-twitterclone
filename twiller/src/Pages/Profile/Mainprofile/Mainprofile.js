@@ -11,7 +11,7 @@ import AddLinkIcon from "@mui/icons-material/AddLink";
 import Editprofile from "../Editprofile/Editprofile";
 import axios from "axios";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
-import FollowButton from "./FollowButton"; // Import the new FollowButton component
+
 
 
 const Mainprofile = ({ user }) => {
@@ -24,7 +24,7 @@ const Mainprofile = ({ user }) => {
   const [location, setLocation] = useState("");
   const [weather, setWeather] = useState("");
   const [loadingLocation, setLoadingLocation] = useState(false);
-  const [showEditProfile, setShowEditProfile] = useState(false); // State to toggle EditProfile visibility
+   // State to toggle EditProfile visibility
 
   const [avatarUrl, setAvatarUrl] = useState("");
 
@@ -104,7 +104,7 @@ const Mainprofile = ({ user }) => {
 
   useEffect(() => {
     fetch(
-      `https://twiller-twitterclone-1-j9kj.onrender.com/userpost?email=${user?.email}`
+      `https://twiller-twitterclone-2-q41v.onrender.com/userpost?email=${user?.email}`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -204,7 +204,7 @@ const Mainprofile = ({ user }) => {
         setisloading(false);
         if (url) {
           fetch(
-            `https://twiller-twitterclone-1-j9kj.onrender.com/userupdate/${user?.email}`,
+            `https://twiller-twitterclone-2-q41v.onrender.com/userupdate/${user?.email}`,
             {
               method: "PATCH",
               headers: {
@@ -246,7 +246,7 @@ const Mainprofile = ({ user }) => {
         setisloading(false);
         if (url) {
           fetch(
-            `https://twiller-twitterclone-1-j9kj.onrender.com/userupdate/${user?.email}`,
+            `https://twiller-twitterclone-2-q41v.onrender.com/userupdate/${user?.email}`,
             {
               method: "PATCH",
               headers: {
@@ -329,7 +329,7 @@ const Mainprofile = ({ user }) => {
         email: user?.email,
         profileImage: imgUrl,
       };
-      await fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/userupdate/${user?.email}`, {
+      await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/userupdate/${user?.email}`, {
         method: "PATCH",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(userProfileUpdate),
@@ -429,14 +429,9 @@ const Mainprofile = ({ user }) => {
                   <p className="usernameSection">@{username}</p>
                 </div>
                  {/* Conditional Rendering of Edit Profile or Follow Button */}
-          {loggedinuser[0]?.email === user.email ? (
+         
             <Editprofile user={user} loggedinuser={loggedinuser} />
-          ) : (
-            <FollowButton
-              loggedInUserEmail={loggedinuser[0]?.email}
-              profileUserEmail={user.email}
-            />
-          )}
+         
               </div>
               <div className="infoContainer">
                 {loggedinuser[0]?.bio ? <p>{loggedinuser[0].bio}</p> : ""}

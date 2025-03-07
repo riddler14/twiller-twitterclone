@@ -1,0 +1,12 @@
+.follow-button {
+    background-color: white;
+    padding: 10px;
+    border: 1px solid;
+    border-radius: 2rem;
+    margin-right: 20px;
+  }
+  .follow-button:hover{
+    cursor: pointer;
+    color: white;
+    background-color: black;
+  }

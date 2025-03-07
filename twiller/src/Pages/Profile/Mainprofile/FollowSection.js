@@ -3,8 +3,8 @@ import axios from "axios";
 import "./FollowSection.css";
 
 const FollowSection = ({ user }) => {
-  const [following, setFollowing] = useState([]);
-  const [followers, setFollowers] = useState([]);
+  const [followingCount, setFollowingCount] = useState(0); // Store count of following
+  const [followersCount, setFollowersCount] = useState(0); // Store count of followers
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -12,9 +12,9 @@ const FollowSection = ({ user }) => {
     const fetchFollowing = async () => {
       try {
         const response = await axios.get(
-          `https://twiller-twitterclone-1-j9kj.onrender.com/following?email=${user?.email}`
+          `https://twiller-twitterclone-2-q41v.onrender.com/following?email=${user?.email}`
         );
-        setFollowing(response.data.following || []);
+        setFollowingCount(response.data.following?.length || 0);
       } catch (error) {
         console.error("Error fetching following list:", error);
       }
@@ -24,9 +24,9 @@ const FollowSection = ({ user }) => {
     const fetchFollowers = async () => {
       try {
         const response = await axios.get(
-          `https://twiller-twitterclone-1-j9kj.onrender.com/followers?email=${user?.email}`
+          `https://twiller-twitterclone-2-q41v.onrender.com/followers?email=${user?.email}`
         );
-        setFollowers(response.data.followers || []);
+        setFollowersCount(response.data.followers?.length || 0);
       } catch (error) {
         console.error("Error fetching followers list:", error);
       } finally {
@@ -44,27 +44,15 @@ const FollowSection = ({ user }) => {
 
   return (
     <div className="follow-section">
-      <h3>Following</h3>
-      <ul>
-        {following.length > 0 ? (
-          following.map((followee, index) => (
-            <li key={index}>{followee}</li>
-          ))
-        ) : (
-          <li>No users being followed.</li>
-        )}
-      </ul>
+      <div className="follow-info">
+        <h3>Following</h3>
+        <p>{followingCount}</p>
+      </div>
 
-      <h3>Followers</h3>
-      <ul>
-        {followers.length > 0 ? (
-          followers.map((follower, index) => (
-            <li key={index}>{follower}</li>
-          ))
-        ) : (
-          <li>No followers yet.</li>
-        )}
-      </ul>
+      <div className="follow-info">
+        <h3>Followers</h3>
+        <p>{followersCount}</p>
+      </div>
     </div>
   );
 };

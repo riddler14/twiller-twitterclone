@@ -7,7 +7,7 @@ const useLoggedinuser = () => {
   const [loggedinuser, setloggedinuser] = useState({});
 
   useEffect(() => {
-    fetch(`https://twiller-twitterclone-1-j9kj.onrender.com/loggedinuser?email=${email}`)
+    fetch(`https://twiller-twitterclone-2-q41v.onrender.com/loggedinuser?email=${email}`)
       .then((res) => res.json())
       .then((data) => {
         //console.log(data)

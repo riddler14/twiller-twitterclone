@@ -37,9 +37,10 @@ function App() {
             <Route path="profile" element={<Profile />} />
             
             <Route path="more" element={<More />} />
+            <Route path="profile/:id" element={<User_Profile />} />
           </Route>
           {/* Dynamic Profile Route */}
-          <Route path="/profile/:id" element={<User_Profile />} />
+          
 
           {/* Fallback Route */}
           <Route path="*" element={<h1>Page Not Found</h1>} />

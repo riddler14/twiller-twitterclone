@@ -25,7 +25,7 @@ const Signup=()=>{
         name: name,
         email: email,
       };
-      fetch("https://twiller-twitterclone-1-j9kj.onrender.com/register", {
+      fetch("https://twiller-twitterclone-2-q41v.onrender.com/register", {
         method: "POST",
         headers: {
           "content-type": "application/json",

@@ -3,6 +3,7 @@ import "../pages.css";
 // import UserProfile from "./Userprofile/UserProfile";
 import { useUserAuth } from "../../context/UserAuthContext";
 import UserProfile from "./Userprofile/UserProfile";
+
 const Profile = () => {
   const { user } = useUserAuth();
   // const user = {
@@ -11,6 +12,7 @@ const Profile = () => {
   // };
   return (
     <div className="page">
+      
         <UserProfile user={user} />
     </div>
   );

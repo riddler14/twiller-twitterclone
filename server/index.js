@@ -262,6 +262,66 @@ async function run() {
     //   }
     // });
 
+    // app.post("/post", async (req, res) => {
+    //   const post = req.body;
+    
+    //   // Validate required fields
+    //   if (!post.name || !post.username || !post.email || !post.post) {
+    //     return res.status(400).json({ error: "Missing required fields" });
+    //   }
+    
+    //   try {
+    //     // Fetch the user's follow count
+    //     const user = await usercollection.findOne({ email: post.email });
+    
+    //     if (!user) {
+    //       return res.status(400).json({ error: "User not found" });
+    //     }
+    
+    //     const followCount = user.followCount || 0;
+    //     const now = new Date();
+    //     const currentDate = now.toDateString();
+    
+    //     // Fetch the user's post history
+    //     const postsToday = await postcollection
+    //       .find({
+    //         email: post.email,
+    //         createdAt: { $gte: new Date(currentDate) },
+    //       })
+    //       .toArray();
+    
+    //     // Apply posting rules based on follow count
+    //     if (followCount === 0) {
+    //       // User doesn't follow anyone
+    //       if (!isWithinPostingWindow()) {
+    //         return res.status(400).json({
+    //           error: "You can only post between 10:00 AM and 10:30 AM IST",
+    //         });
+    //       }
+    
+    //       if (postsToday.length > 0) {
+    //         return res.status(400).json({ error: "You have already posted today" });
+    //       }
+    //     } else if (followCount <= 2) {
+    //       // User follows 1-2 people
+    //       if (postsToday.length >= 2) {
+    //         return res.status(400).json({ error: "You can only post 2 times a day" });
+    //       }
+    //     }
+    
+    //     // Insert the post into the database
+    //     const result = await postcollection.insertOne({
+    //       ...post,
+    //       createdAt: now,
+    //     });
+    
+    //     res.send(result);
+    //   } catch (error) {
+    //     console.error("Error inserting post:", error);
+    //     res.status(500).json({ error: "Failed to post tweet" });
+    //   }
+    // });
+
     app.post("/post", async (req, res) => {
       const post = req.body;
     
@@ -282,13 +342,25 @@ async function run() {
         const now = new Date();
         const currentDate = now.toDateString();
     
-        // Fetch the user's post history
+        // Fetch the user's post history for today
         const postsToday = await postcollection
           .find({
             email: post.email,
             createdAt: { $gte: new Date(currentDate) },
           })
           .toArray();
+    
+        // Helper function to check posting window
+        const isWithinPostingWindow = () => {
+          const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+          const istTime = new Date(now.getTime() + istOffset);
+    
+          const hours = istTime.getUTCHours();
+          const minutes = istTime.getUTCMinutes();
+    
+          // Check if the time is between 10:00 AM and 10:30 AM IST
+          return hours === 10 && minutes >= 0 && minutes <= 30;
+        };
     
         // Apply posting rules based on follow count
         if (followCount === 0) {
@@ -302,12 +374,17 @@ async function run() {
           if (postsToday.length > 0) {
             return res.status(400).json({ error: "You have already posted today" });
           }
-        } else if (followCount <= 2) {
-          // User follows 1-2 people
-          if (postsToday.length >= 2) {
-            return res.status(400).json({ error: "You can only post 2 times a day" });
+        } else if (followCount > 0 && followCount < 10) {
+          // User follows 1–9 people
+          const maxPostsPerDay = followCount <= 2 ? 2 : 5; // Adjust limits as needed
+    
+          if (postsToday.length >= maxPostsPerDay) {
+            return res.status(400).json({
+              error: `You can only post ${maxPostsPerDay} times a day`,
+            });
           }
         }
+        // Users with 10+ followers can post unlimited times
     
         // Insert the post into the database
         const result = await postcollection.insertOne({

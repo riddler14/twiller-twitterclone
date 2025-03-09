@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./FollowButton.css";
 
-const FollowButton = ({ loggedInUserEmail, profileUserEmail }) => {
+const FollowButton = ({ loggedInUserEmail, profileUserEmail,onFollowUpdate }) => {
   const [isFollowing, setIsFollowing] = useState(false);
 
   // Check if the logged-in user is already following the profile user
@@ -38,8 +38,10 @@ const FollowButton = ({ loggedInUserEmail, profileUserEmail }) => {
 
       if (response.data.message === "Followed successfully") {
         setIsFollowing(true);
+        onFollowUpdate("follow");
       } else if (response.data.message === "Unfollowed successfully") {
         setIsFollowing(false);
+        onFollowUpdate("unfollow");
       }
     } catch (error) {
       console.error("Error toggling follow status:", error);

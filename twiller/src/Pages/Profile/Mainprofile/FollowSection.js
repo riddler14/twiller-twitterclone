@@ -2,41 +2,33 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./FollowSection.css";
 
-const FollowSection = ({ user }) => {
+const FollowSection = ({ user,onFollowUpdate }) => {
   const [followingCount, setFollowingCount] = useState(0); // Store count of following
   const [followersCount, setFollowersCount] = useState(0); // Store count of followers
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch following list
-    const fetchFollowing = async () => {
+    // Fetch following and followers counts
+    const fetchCounts = async () => {
       try {
-        const response = await axios.get(
+        const followingResponse = await axios.get(
           `https://twiller-twitterclone-2-q41v.onrender.com/following?email=${user?.email}`
         );
-        setFollowingCount(response.data.following?.length || 0);
-      } catch (error) {
-        console.error("Error fetching following list:", error);
-      }
-    };
-
-    // Fetch followers list
-    const fetchFollowers = async () => {
-      try {
-        const response = await axios.get(
+        const followersResponse = await axios.get(
           `https://twiller-twitterclone-2-q41v.onrender.com/followers?email=${user?.email}`
         );
-        setFollowersCount(response.data.followers?.length || 0);
+
+        setFollowingCount(followingResponse.data.following?.length || 0);
+        setFollowersCount(followersResponse.data.followers?.length || 0);
       } catch (error) {
-        console.error("Error fetching followers list:", error);
+        console.error("Error fetching follow counts:", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchFollowing();
-    fetchFollowers();
-  }, [user?.email]);
+    fetchCounts();
+  }, [user?.email, onFollowUpdate]); 
 
   if (loading) {
     return <p>Loading...</p>;

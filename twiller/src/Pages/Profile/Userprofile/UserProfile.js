@@ -19,6 +19,46 @@ const UserProfile = () => {
   const [user, setUser] = useState(null); // Profile user data
   const [posts, setPosts] = useState([]); // Posts of the profile user
   const [isLoading, setIsLoading] = useState(true);
+  const loggedInUserEmail = loggedinuser[0]?.email || "";
+  const profileUserEmail = user?.email || "";
+
+  // State for followers/following counts
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
+
+  // Fetch initial counts
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const followersResponse = await fetch(
+          `https://twiller-twitterclone-2-q41v.onrender.com/followers?email=${user?.email}`
+        );
+        const followingResponse = await fetch(
+          `https://twiller-twitterclone-2-q41v.onrender.com/following?email=${user?.email}`
+        );
+
+        const followersData = await followersResponse.json();
+        const followingData = await followingResponse.json();
+
+        setFollowersCount(followersData.followers?.length || 0);
+        setFollowingCount(followingData.following?.length || 0);
+      } catch (error) {
+        console.error("Error fetching counts:", error);
+      }
+    };
+
+    fetchCounts();
+  }, [user?.email]);
+
+  // Callback to update counts
+  const handleFollowUpdate = (action) => {
+    if (action === "follow") {
+      setFollowersCount((prev) => prev + 1);
+    } else if (action === "unfollow") {
+      setFollowersCount((prev) => prev - 1);
+    }
+  };
+
   
   // Fetch profile user data based on username
   useEffect(() => {
@@ -124,12 +164,13 @@ const UserProfile = () => {
                  <FollowButton
               loggedInUserEmail={loggedinuser[0]?.email}
               profileUserEmail={user?.email}
+              onFollowUpdate={handleFollowUpdate}
             />
               </div>
               <div className="infoContainer">
                 {user?.bio ? <p>{user.bio}</p> : ""}
                
-                <FollowSection user={user}/>
+                <FollowSection user={user} onFollowUpdate={handleFollowUpdate}/>
               </div>
               <h4 className="tweetsText">Tweets</h4>
               <hr />

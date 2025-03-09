@@ -6,9 +6,16 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import PublishIcon from "@mui/icons-material/Publish";
+import { useNavigate } from "react-router-dom";
 
 const Posts = ({ p }) => {
-  const { name, username, photo, post, profilephoto,audio } = p;
+  const { name, username, photo, post, profilephoto,audio,email } = p;
+  const navigate=useNavigate();
+  const handleUserClick = (email) => {
+    navigate(`/home/profile/${email}`); // Navigate to the user's profile page
+    
+    console.log("running....",email); // Hide the dropdown after navigation
+  };
   return (
     <div className="post">
       <div className="post__avatar">
@@ -17,7 +24,7 @@ const Posts = ({ p }) => {
       <div className="post__body">
         <div className="post__header">
           <div className="post__headerText">
-            <h3>
+            <h3 onClick={() => handleUserClick(email)}>
               {name}{" "}
               <span className="post__headerSpecial">
                 <VerifiedUserIcon className="post__badge" /> @{username}

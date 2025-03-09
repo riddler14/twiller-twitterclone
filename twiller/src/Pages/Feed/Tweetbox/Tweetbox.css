@@ -30,6 +30,11 @@
   justify-content: space-between;
   align-items: center;
 }
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 8px;
+}
 
 .tweetBox__tweetButton {
   background-color: var(--twitter-color);

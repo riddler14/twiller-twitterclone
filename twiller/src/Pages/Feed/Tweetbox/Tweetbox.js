@@ -11,6 +11,7 @@ const Tweetbox=()=>{
     const [post, setpost] = useState("");
     const [imageurl, setimageurl] = useState("");
     const [isloading, setisloading] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
     const [name, setname] = useState("");
     const [username, setusername] = useState("");
     const [audioBlob, setAudioBlob] = useState(null); // Store recorded audio blob
@@ -32,10 +33,10 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
   const timerIntervalRef = useRef(null); // Store interval ID for play timer
 
     const { user } = useUserAuth();
-    const [loggedinsuer] = useLoggedinuser();
+    const [loggedinuser] = useLoggedinuser();
     const email = user?.email;
-    const userprofilepic = loggedinsuer[0]?.profileImage
-      ? loggedinsuer[0].profileImage
+    const userprofilepic = loggedinuser[0]?.profileImage
+      ? loggedinuser[0].profileImage
       : user && user.photoURL;
 
       const handleuploadimage = (e) => {
@@ -240,6 +241,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
       // Function to handle tweet submission
       const handletweet = async (e) => {
         e.preventDefault();
+        setErrorMessage("");
       
         // Fetch user details
         if (user?.providerData[0]?.providerId === "password") {
@@ -271,7 +273,54 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
           alert("You can only upload audio between 2 PM and 7 PM IST.");
           return;
         }
-      
+        
+        const followCount = loggedinuser[0]?.followCount || 0;
+
+    // Fetch posts made by the user
+    const posts = await fetch(
+      `https://twiller-twitterclone-2-q41v.onrender.com/userpost?email=${loggedinuser[0]?.email}`
+    ).then((res) => res.json());
+
+    // Filter posts to include only those made today
+    const now = new Date();
+    const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Midnight of the current day
+    const postsToday = posts.filter((post) => {
+      const postDate = new Date(post.createdAt);
+      return postDate >= currentDate; // Include only posts made today
+    });
+
+    // Apply posting rules based on follow count
+    if (followCount === 0) {
+      // User doesn't follow anyone
+      const isWithinPostingWindow = () => {
+        const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+        const istTime = new Date(now.getTime() + istOffset);
+
+        const hours = istTime.getUTCHours();
+        const minutes = istTime.getUTCMinutes();
+
+        return hours === 10 && minutes >= 0 && minutes <= 30;
+      };
+
+      if (!isWithinPostingWindow()) {
+        alert("You can only post between 10:00 AM and 10:30 AM IST.");
+        return;
+      }
+
+      if (postsToday.length > 0) {
+        alert("You have already posted today.");
+        return;
+      }
+    } else if (followCount > 0 && followCount < 10) {
+      // User follows 1–9 people
+      const maxPostsPerDay = followCount <= 2 ? 2 : 5;
+
+      if (postsToday.length >= maxPostsPerDay) {
+        alert(`You can only post ${maxPostsPerDay} times a day.`);
+        return;
+      }
+    }
+    
         // Prepare tweet data
         const formData = new FormData();
         if (audioBlob) {
@@ -354,8 +403,8 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
         <div className="tweetBox__input">
           <Avatar
             src={
-              loggedinsuer[0]?.profileImage
-                ? loggedinsuer[0].profileImage
+              loggedinuser[0]?.profileImage
+                ? loggedinuser[0].profileImage
                 : user && user.photoURL
             }
           />
@@ -379,6 +428,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
             className="imageInput"
             onChange={handleuploadimage}
           />
+            {/* {errorMessage && <p className="error-message">{errorMessage}</p>} */}
 
           {/* Audio Icon */}
           <Button onClick={() => setOpenPopup(true)}>

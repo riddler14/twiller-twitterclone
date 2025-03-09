@@ -733,6 +733,42 @@ app.get("/audio/:id", async (req, res) => {
     });
 
 
+    app.get("/userprofile/:email", async (req, res) => {
+      const email = req.params.email;
+    
+      // Validate the ID
+      if (!email) {
+        return res.status(400).json({ error: "Invalid email" });
+      }
+    
+      try {
+        const user = await usercollection.findOne(
+          { email: email },
+          {
+            projection: {
+              _id: 1,
+              name: 1,
+              username: 1,
+              email: 1,
+              profileImage: 1,
+              coverimage: 1,
+              bio: 1,
+              location:1,
+            },
+          }
+        );
+    
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+    
+        res.json({ user }); // Wrap the user object in a response object
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        res.status(500).json({ error: "Failed to fetch user profile" });
+      }
+    });
+
   } catch (error) {
     console.log(error);
   }

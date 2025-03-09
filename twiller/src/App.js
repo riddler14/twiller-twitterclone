@@ -38,6 +38,7 @@ function App() {
             
             <Route path="more" element={<More />} />
             <Route path="profile/:id" element={<User_Profile />} />
+            <Route path="profile/:email" element={<User_Profile />} />
           </Route>
           {/* Dynamic Profile Route */}
           

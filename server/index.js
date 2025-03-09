@@ -734,16 +734,16 @@ app.get("/audio/:id", async (req, res) => {
 
 
     app.get("/userprofile/:email", async (req, res) => {
-      const email = req.params.email;
+      const Email = req.params.email;
     
       // Validate the ID
-      if (!email || typeof email !== "string" || email.trim() === "") {
+      if (!Email || typeof Email !== "string" || Email.trim() === "") {
         return res.status(400).json({ error: "Invalid email" });
       }
     
       try {
         const user = await usercollection.findOne(
-          { email: email },
+          { email: Email },
           {
             projection: {
               _id: 1,

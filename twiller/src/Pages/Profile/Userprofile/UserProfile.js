@@ -65,6 +65,7 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
+        
         const response = await axios.get(
           `https://twiller-twitterclone-2-q41v.onrender.com/userprofile/${id}`
         );
@@ -82,27 +83,6 @@ const UserProfile = () => {
 
     fetchUserProfile();
   }, [id]);
-
-  useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const response = await axios.get(
-          `https://twiller-twitterclone-2-q41v.onrender.com/userprofile/${email}`
-        );
-        if (response.data.user) {
-          setUser(response.data.user); // Set user data
-        } else {
-          console.error("User not found.",email);
-        }
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserProfile();
-  }, [email]);
 
   // Fetch posts for the profile user
   useEffect(() => {

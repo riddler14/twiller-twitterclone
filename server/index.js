@@ -733,27 +733,21 @@ app.get("/audio/:id", async (req, res) => {
     });
 
 
-    app.get("/userprofile/:email", async (req, res) => {
-      const Email = req.params.email;
+    app.get("/userprofile", async (req, res) => {
+      const { email } = req.query;
     
-      // Validate the ID
-      if (!Email || typeof Email !== "string" || Email.trim() === "") {
+      // Validate the email
+      if (!email || typeof email !== "string" || email.trim() === "") {
         return res.status(400).json({ error: "Invalid email" });
       }
     
       try {
         const user = await usercollection.findOne(
-          { email: Email },
+          { email: email },
           {
             projection: {
               _id: 1,
-              name: 1,
-              username: 1,
-              email: 1,
-              profileImage: 1,
-              coverimage: 1,
-              bio: 1,
-              location:1,
+             
             },
           }
         );

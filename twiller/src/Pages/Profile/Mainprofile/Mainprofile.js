@@ -24,6 +24,7 @@ const Mainprofile = ({ user }) => {
   const [location, setLocation] = useState("");
   const [weather, setWeather] = useState("");
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(user.notificationsEnabled || false);
    // State to toggle EditProfile visibility
 
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -114,7 +115,23 @@ const Mainprofile = ({ user }) => {
 
   
   
-  
+  const updateNotificationPreference = async (enabled) => {
+    try {
+      const response = await axios.patch(`https://twiller-twitterclone-2-q41v.onrender.com/update-notification-preference/${user.email}`, {
+        notificationsEnabled: enabled,
+      });
+
+      if (response.data.success) {
+        setNotificationsEnabled(enabled); // Update local state
+        alert("Notification preference updated.");
+      } else {
+        alert("Failed to update notification preference.");
+      }
+    } catch (error) {
+      console.error("Error updating notification preference:", error);
+      alert("An error occurred while updating notification preference.");
+    }
+  };
   const fetchLocationAndWeather = () => {
     if (navigator.geolocation) {
       setLoadingLocation(true);
@@ -428,6 +445,12 @@ const Mainprofile = ({ user }) => {
                   </h3>
                   <p className="usernameSection">@{username}</p>
                 </div>
+               
+              <button onClick={updateNotificationPreference} className="notfication-settings">
+                {notificationsEnabled ? "Disable Notifications" : "Enable Notifications"}
+              </button>
+           
+
                  {/* Conditional Rendering of Edit Profile or Follow Button */}
          
             <Editprofile user={user} loggedinuser={loggedinuser} />

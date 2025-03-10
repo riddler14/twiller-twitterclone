@@ -763,6 +763,27 @@ app.get("/audio/:id", async (req, res) => {
       }
     });
 
+    app.patch("/update-notification-preference/:email", async (req, res) => {
+      const { email } = req.params;
+      const { notificationsEnabled } = req.body;
+    
+      try {
+        const result = await usercollection.updateOne(
+          { email: email },
+          { $set: { notificationsEnabled: notificationsEnabled } }
+        );
+    
+        if (result.modifiedCount > 0) {
+          res.json({ success: true, message: "Notification preference updated." });
+        } else {
+          res.status(404).json({ error: "User not found." });
+        }
+      } catch (error) {
+        console.error("Error updating notification preference:", error);
+        res.status(500).json({ error: "Failed to update notification preference." });
+      }
+    });
+
   } catch (error) {
     console.log(error);
   }

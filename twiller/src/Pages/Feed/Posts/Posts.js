@@ -8,12 +8,15 @@ import RepeatIcon from "@mui/icons-material/Repeat";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import PublishIcon from "@mui/icons-material/Publish";
 import { useNavigate } from "react-router-dom";
+import useLoggedinuser from "../../../hooks/useLoggedinuser";
+
 
 const Posts = ({ p }) => {
   const { name, username, photo, post, profilephoto,audio,email } = p;
   const navigate=useNavigate();
   const [userId, setUserId] = useState(null); // Store the user's _id locally
-
+  const [loggedinuser] = useLoggedinuser(); // Assuming this hook provides the logged-in user's data
+  const loggedInEmail = loggedinuser[0]?.email;
   // Fetch user's _id based on email
   const fetchUserId = async (email) => {
     try {
@@ -23,7 +26,10 @@ const Posts = ({ p }) => {
 
       if (response.data.user) {
         setUserId(response.data.user._id); // Store the _id locally
-      } else {
+      }   if (email === loggedInEmail) {
+        alert("This is your profile!");
+        return;
+      }else {
         console.error("User not found for email:", email);
       }
     } catch (error) {
@@ -41,7 +47,7 @@ const Posts = ({ p }) => {
 
     if (!userId) {
       fetchUserId(email); // Fetch the user's _id if not already fetched
-    } else {
+    }else {
       navigate(`/home/profile/${userId}`); // Navigate to the user's profile page
     }
   };
@@ -54,7 +60,7 @@ const Posts = ({ p }) => {
       <div className="post__body">
         <div className="post__header">
           <div className="post__headerText">
-            <h3 onClick={handleUserClick}>
+            <h3 onClick={handleUserClick} className="user_name">
               {name}{" "}
               <span className="post__headerSpecial">
                 <VerifiedUserIcon className="post__badge" /> @{username}

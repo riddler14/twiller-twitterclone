@@ -118,6 +118,26 @@ const Mainprofile = ({ user }) => {
       });
   }, [user.email]);
 
+  useEffect(() => {
+    const fetchNotificationPreference = async () => {
+      try {
+        const response = await axios.get(
+          `https://twiller-twitterclone-2-q41v.onrender.com/get-notification-preference/${user?.email}`
+        );
+        if (response.data.success) {
+          setNotificationsEnabled(response.data.notificationsEnabled);
+        }
+      } catch (error) {
+        console.error("Error fetching notification preference:", error);
+      }
+    };
+
+    if (user?.email) {
+      fetchNotificationPreference();
+    }
+  }, [user?.email]);
+
+
   const toggleNotificationPreference = async () => {
     try {
       const newPreference = !notificationsEnabled; // Toggle the current state

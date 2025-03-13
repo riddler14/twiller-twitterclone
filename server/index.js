@@ -786,7 +786,30 @@ app.get("/audio/:id", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch user profile" });
       }
     });
+
+
        // Endpoint to update notification preference
+
+       // Endpoint to get the user's notification preference
+app.get("/get-notification-preference/:email", async (req, res) => {
+  const { email } = req.params;
+
+  try {
+    const user = await usercollection.findOne({ email: email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Return the user's notification preference
+    res.json({
+      success: true,
+      notificationsEnabled: user.notificationsEnabled || false,
+    });
+  } catch (error) {
+    console.error("Error fetching notification preference:", error);
+    res.status(500).json({ error: "Failed to fetch notification preference." });
+  }
+});
 app.patch("/update-notification-preference/:email", async (req, res) => {
   const { email } = req.params; // Extract email from URL parameters
   const { notificationsEnabled } = req.body; // Extract new notification preference from request body

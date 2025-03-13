@@ -24,6 +24,7 @@ const Mainprofile = ({ user }) => {
   const [location, setLocation] = useState("");
   const [weather, setWeather] = useState("");
   const [loadingLocation, setLoadingLocation] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(user.notificationsEnabled || false);
    // State to toggle EditProfile visibility
 
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -112,7 +113,33 @@ const Mainprofile = ({ user }) => {
       });
   }, [user.email]);
 
+  const toggleNotificationPreference = async () => {
+    try {
+      const newPreference = !notificationsEnabled; // Toggle the current state
   
+      // Ensure only valid data is sent
+      const userEmail = user?.email; // Extract email explicitly
+      if (!userEmail) {
+        console.error("User email is missing.");
+        alert("An error occurred: User email is missing.");
+        return;
+      }
+  
+      const response = await axios.patch(`https://twiller-twitterclone-2-q41v.onrender.com/update-notification-preference/${userEmail}`, {
+        notificationsEnabled: newPreference,
+      });
+  
+      if (response.data.success) {
+        setNotificationsEnabled(newPreference); // Update local state
+        alert(`Notifications ${newPreference ? "enabled" : "disabled"}.`);
+      } else {
+        alert("Failed to update notification preference.");
+      }
+    } catch (error) {
+      console.error("Error updating notification preference:", error);
+      alert("An error occurred while updating notification preference.");
+    }
+  };
   
   
   const fetchLocationAndWeather = () => {
@@ -428,6 +455,9 @@ const Mainprofile = ({ user }) => {
                   </h3>
                   <p className="usernameSection">@{username}</p>
                 </div>
+                <button onClick={toggleNotificationPreference} className="notfication-settings">
+                {notificationsEnabled ? "Disable Notifications" : "Enable Notifications"}
+              </button>
                  {/* Conditional Rendering of Edit Profile or Follow Button */}
          
             <Editprofile user={user} loggedinuser={loggedinuser} />

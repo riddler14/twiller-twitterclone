@@ -11,7 +11,7 @@ const Tweetbox=()=>{
     const [post, setpost] = useState("");
     const [imageurl, setimageurl] = useState("");
     const [isloading, setisloading] = useState(false);
-    const [errorMessage, setErrorMessage] = useState("");
+    // const [errorMessage, setErrorMessage] = useState("");
     const [name, setname] = useState("");
     const [username, setusername] = useState("");
     const [audioBlob, setAudioBlob] = useState(null); // Store recorded audio blob
@@ -241,7 +241,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
       // Function to handle tweet submission
       const handletweet = async (e) => {
         e.preventDefault();
-        setErrorMessage("");
+        // setErrorMessage("");
       
         // Fetch user details
         if (user?.providerData[0]?.providerId === "password") {

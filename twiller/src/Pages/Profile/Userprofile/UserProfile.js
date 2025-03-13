@@ -15,13 +15,13 @@ const UserProfile = () => {
   // 
   // const { email } = useParams();
   const {id} =useParams();// Extract username from URL
-  const {email}=useParams();
+  // const {email}=useParams();
   const [loggedinuser] = useLoggedinuser();
   const [user, setUser] = useState(null); // Profile user data
   const [posts, setPosts] = useState([]); // Posts of the profile user
   const [isLoading, setIsLoading] = useState(true);
-  const loggedInUserEmail = loggedinuser[0]?.email || "";
-  const profileUserEmail = user?.email || "";
+  // const loggedInUserEmail = loggedinuser[0]?.email || "";
+  // const profileUserEmail = user?.email || "";
 
   // State for followers/following counts
   const [followersCount, setFollowersCount] = useState(0);

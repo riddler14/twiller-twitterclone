@@ -391,13 +391,34 @@ async function run() {
           ...post,
           createdAt: now,
         });
-    
+        // Check if the post contains the keywords "cricket" or "science"
+    const lowerCasePost = post.post.toLowerCase();
+    const keywords = ["cricket", "science"];
+    const containsKeyword = keywords.some((keyword) =>
+      lowerCasePost.includes(keyword)
+    );
+
+    if (containsKeyword) {
+      // Fetch all users with notificationsEnabled set to true
+      const usersWithNotifications = await usercollection
+        .find({ notificationsEnabled: true })
+        .toArray();
+
+      // Send notifications to these users
+      usersWithNotifications.forEach((user) => {
+        if (user.email !== post.email) {
+          // Avoid notifying the author of the post
+          sendNotification(user.email, post.post);
+        }
+      });
+    }
         res.send(result);
       } catch (error) {
         console.error("Error inserting post:", error);
         res.status(500).json({ error: "Failed to post tweet" });
       }
     });
+
 
     app.get("/following", async (req, res) => {
       const email = req.query.email;
@@ -762,6 +783,37 @@ app.get("/audio/:id", async (req, res) => {
         res.status(500).json({ error: "Failed to fetch user profile" });
       }
     });
+       // Endpoint to update notification preference
+app.patch("/update-notification-preference/:email", async (req, res) => {
+  const { email } = req.params; // Extract email from URL parameters
+  const { notificationsEnabled } = req.body; // Extract new notification preference from request body
+
+  try {
+    // Find the user by email
+    const user = await usercollection.findOne({ email: email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found." });
+    }
+
+    // Update the user's notification preference
+    const result = await usercollection.updateOne(
+      { email: email },
+      { $set: { notificationsEnabled: notificationsEnabled } }
+    );
+
+    if (result.modifiedCount > 0 || result.matchedCount > 0) {
+      // Successfully updated or added the field
+      res.json({ success: true, message: "Notification preference updated." });
+    } else {
+      res.status(500).json({ error: "Failed to update notification preference." });
+    }
+  } catch (error) {
+    console.error("Error updating notification preference:", error);
+    res.status(500).json({ error: "Failed to update notification preference." });
+  }
+});
+
 
   } catch (error) {
     console.log(error);

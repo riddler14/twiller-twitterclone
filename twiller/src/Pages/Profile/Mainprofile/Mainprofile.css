@@ -124,7 +124,20 @@
 .hoverAvatarImage:hover {
   opacity: 100%;
 }
+.notfication-settings {
+  background-color: white;
+  padding: 10px;
+  border: 1px solid;
+  border-radius: 2rem;
+  margin-right: 20px;
+}
 
+.notfication-settings:hover {
+  background-color: rgb(207, 206, 206);
+  cursor: pointer;
+  color: white;
+  background-color: black;
+}
 .Edit-profile-btn {
   background-color: white;
   padding: 10px;

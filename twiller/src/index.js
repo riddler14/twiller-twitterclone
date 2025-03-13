@@ -5,6 +5,21 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter as Router } from "react-router-dom";
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const requestNotificationPermission = async () => {
+  try {
+    const permission = await Notification.requestPermission();
+    if (permission === "granted") {
+      console.log("Notification permission granted");
+    } else {
+      console.warn("Notification permission denied");
+    }
+  } catch (error) {
+    console.error("Error requesting notification permission:", error);
+  }
+};
+
+// Call this function when the app loads
+requestNotificationPermission();
 root.render(
   <React.StrictMode>
     <Router>

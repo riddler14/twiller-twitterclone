@@ -407,8 +407,11 @@ async function run() {
       // Send notifications to these users
       usersWithNotifications.forEach((user) => {
         if (user.email !== post.email) {
-          // Avoid notifying the author of the post
-          sendNotification(user.email, post.post);
+          // Emit an event to notify the frontend
+          io.emit(`notification-${user.email}`, {
+            title: "New Post Alert!",
+            body: `${post.name} posted: ${post.post}`,
+          });
         }
       });
     }

@@ -11,7 +11,7 @@ import AddLinkIcon from "@mui/icons-material/AddLink";
 import Editprofile from "../Editprofile/Editprofile";
 import axios from "axios";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
-
+import { listenForNotifications } from "./socket";
 
 
 const Mainprofile = ({ user }) => {
@@ -102,7 +102,12 @@ const Mainprofile = ({ user }) => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
  
 
-
+  useEffect(() => {
+    listenForNotifications(user.email, (notification) => {
+      console.log("Received notification:", notification);
+      // Optionally update the UI with the notification
+    });
+  }, [user.email]);
   useEffect(() => {
     fetch(
       `https://twiller-twitterclone-2-q41v.onrender.com/userpost?email=${user?.email}`

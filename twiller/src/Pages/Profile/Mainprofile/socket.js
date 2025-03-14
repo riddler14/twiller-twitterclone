@@ -1,7 +1,7 @@
 import io from "socket.io-client";
 
 // Connect to the Socket.IO server
-const socket = io("http://localhost:5000", {
+const socket = io("https://twiller-twitterclone-2-q41v.onrender.com", {
   transports: ["websocket"], // Ensure WebSocket transport is used
 });
 

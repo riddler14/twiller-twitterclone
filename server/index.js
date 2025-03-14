@@ -15,6 +15,17 @@ const { Server } = require("socket.io");
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
+
+
+
+require("dotenv").config();
+
+const app = express();
+app.use(cors());
+app.use(express.json());
+// const parser = new Parser();
+
+const client = new MongoClient(url);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -31,17 +42,6 @@ io.on("connection", (socket) => {
     console.log("A user disconnected:", socket.id);
   });
 });
-
-
-require("dotenv").config();
-
-const app = express();
-app.use(cors());
-app.use(express.json());
-// const parser = new Parser();
-
-const client = new MongoClient(url);
-
 
 
 // const TAGGBOX_API_URL = "https://api.taggbox.com/v1/widget";

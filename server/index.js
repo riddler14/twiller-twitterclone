@@ -10,10 +10,27 @@ const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
 const rateLimit = require("express-rate-limit"); // OpenAI API
 const { OpenAI } = require("openai"); // OpenAI library
 const { GoogleGenerativeAI } = require("@google/generative-ai");
-
+const http = require("http");
+const { Server } = require("socket.io");
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000", // Replace with your frontend URL
+    methods: ["GET", "POST"],
+  },
+});
+
+// Handle Socket.IO connections
+io.on("connection", (socket) => {
+  console.log("A user connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected:", socket.id);
+  });
+});
 
 
 require("dotenv").config();

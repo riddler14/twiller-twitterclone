@@ -1,9 +1,10 @@
 import io from "socket.io-client";
 
-// Initialize the socket connection
-const socket = io("https://twiller-twitterclone-2-q41v.onrender.com");
+// Connect to the Socket.IO server
+const socket = io("http://localhost:5000", {
+  transports: ["websocket"], // Ensure WebSocket transport is used
+});
 
-// Function to listen for notifications
 export const listenForNotifications = (userEmail, onNotification) => {
   socket.on(`notification-${userEmail}`, (notification) => {
     if (Notification.permission === "granted") {
@@ -19,5 +20,4 @@ export const listenForNotifications = (userEmail, onNotification) => {
   });
 };
 
-// Export the socket instance in case it's needed elsewhere
 export default socket;

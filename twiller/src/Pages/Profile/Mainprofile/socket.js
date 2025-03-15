@@ -3,6 +3,7 @@ import io from "socket.io-client";
 // Connect to the Socket.IO server
 const socket = io("https://twiller-twitterclone-2-q41v.onrender.com", {
   transports: ["websocket"], // Ensure WebSocket transport is used
+  // Pass the user's email to the server
 });
 
 export const listenForNotifications = (userEmail, onNotification) => {

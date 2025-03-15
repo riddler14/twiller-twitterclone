@@ -4,7 +4,7 @@ import "../pages.css";
 import { useUserAuth } from "../../context/UserAuthContext";
 import UserProfile from "./Userprofile/UserProfile";
 
-const Profile = () => {
+const ProfileUser = () => {
   const { user } = useUserAuth();
   // const user = {
   //   displayname: "bithead",
@@ -18,4 +18,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default ProfileUser;

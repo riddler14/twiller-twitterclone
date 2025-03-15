@@ -24,7 +24,9 @@ const UserProfile = () => {
   // const profileUserEmail = user?.email || "";
 
   // State for followers/following counts
+  // eslint-disable-next-line
   const [followersCount, setFollowersCount] = useState(0);
+  // eslint-disable-next-line
   const [followingCount, setFollowingCount] = useState(0);
 
   // Fetch initial counts
@@ -173,6 +175,7 @@ const UserProfile = () => {
                 {user?.bio ? <p>{user.bio}</p> : ""}
                
                 <FollowSection user={user} onFollowUpdate={handleFollowUpdate}/>
+                
               </div>
               <h4 className="tweetsText">Tweets</h4>
               <hr />

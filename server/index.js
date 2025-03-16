@@ -43,7 +43,7 @@ io.on("connection", (socket) => {
   const userEmail = socket.handshake.query.email;
 
   if (userEmail) {
-    const decodedEmail = encodeURIComponent(userEmail);
+    const decodedEmail = decodeURIComponent(userEmail);
     console.log("Decoded email:", decodedEmail);
 
     // Join a room named after the user's email

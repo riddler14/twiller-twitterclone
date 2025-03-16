@@ -5,6 +5,7 @@ import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { BrowserRouter as Router } from "react-router-dom";
 import { SocketProvider } from "./context/SocketContext";
+import {UserAuthContextProvider} from "./context/UserAuthContext";
 const root = ReactDOM.createRoot(document.getElementById('root'));
 const requestNotificationPermission = async () => {
   try {
@@ -24,9 +25,11 @@ requestNotificationPermission();
 root.render(
   <React.StrictMode>
     <Router>
+      <UserAuthContextProvider>
       <SocketProvider>
       <App />
       </SocketProvider>
+      </UserAuthContextProvider>
     </Router>
   </React.StrictMode>
 );

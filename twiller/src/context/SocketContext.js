@@ -1,7 +1,7 @@
 // File: src/context/SocketContext.js
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import useLoggedinuser from "../hooks/useLoggedinuser";
+import { useUserAuth } from "../context/UserAuthContext";
  // Import your UserAuthContext
 
 const SocketContext = createContext();
@@ -10,8 +10,8 @@ export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
-  const [loggedinuser] = useLoggedinuser(); // Retrieve loggedinuser from UserAuthContext
-  const userEmail = loggedinuser?.email; // Extract the user's email
+  const { user } = useUserAuth();
+  const userEmail = user?.email; // Extract the user's email
 
   useEffect(() => {
     if (!userEmail) {

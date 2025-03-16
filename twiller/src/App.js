@@ -15,10 +15,12 @@ import More from "./Pages/more/More";
 import { UserAuthContextProvider } from "./context/UserAuthContext";
 import Bookmark from "./Pages/Bookmark/Bookmark";
 import ProfileUser from "./Pages/Profile/ProfileUser";
+import NotificationManager from './components/NotificationManager';
 function App() {
   return (
    <div className='app'>
     <UserAuthContextProvider>
+      <NotificationManager />
       <Routes>
           <Route path="/" element={<Home/>}>
             <Route index element={<Feed/>}/>

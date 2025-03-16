@@ -35,11 +35,36 @@ const io = new Server(server, {
 });
 
 // Handle Socket.IO connections
+// Handle Socket.IO connections
 io.on("connection", (socket) => {
   console.log("A user connected:", socket.id);
 
+  // Extract and decode the email query parameter
+  const userEmail = socket.handshake.query.email;
+
+  if (userEmail) {
+    const decodedEmail = decodeURIComponent(userEmail);
+    console.log("Decoded email:", decodedEmail);
+
+    // Join a room named after the user's email
+    socket.join(decodedEmail);
+    console.log(`User ${decodedEmail} joined room: ${decodedEmail}`);
+  }
+
+  // Handle disconnection
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);
+  });
+
+  // Example: Listen for a custom event (e.g., "send-notification")
+  socket.on("send-notification", (data) => {
+    console.log("Received notification data:", data);
+
+    // Emit the notification to the recipient's room
+    io.to(data.recipientEmail).emit("notification", {
+      title: data.title,
+      body: data.body,
+    });
   });
 });
 

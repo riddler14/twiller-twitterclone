@@ -29,7 +29,7 @@ const client = new MongoClient(url);
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "https://twiller-clone.netlify.app/", // Replace with your frontend URL
+    origin: "http://localhost:3000", // Replace with your frontend URL
     methods: ["GET", "POST"],
   },
 });

@@ -1,5 +1,5 @@
 // File: src/context/SocketContext.js
-import React, { createContext, useContext, useEffect, useState } from "react";
+import  { createContext, useContext, useState } from "react";
 import { io } from "socket.io-client";
 // import { useUserAuth } from "../context/UserAuthContext";
  // Import your UserAuthContext
@@ -13,11 +13,8 @@ export const SocketProvider = ({ children }) => {
   // const { user } = useUserAuth();
   // const userEmail = user?.email; // Extract the user's email
 
-  useEffect(() => {
-    if (!userEmail) {
-      console.warn("User email is missing. Cannot establish WebSocket connection.");
-      return;
-    }
+
+   
 
     // Initialize the socket connection
     const newSocket = io("wss://twiller-twitterclone-2-q41v.onrender.com", {
@@ -40,11 +37,10 @@ export const SocketProvider = ({ children }) => {
       newSocket.disconnect(); // Clean up the socket connection on unmount
       console.log("WebSocket disconnected");
     };
-  }, [userEmail]); // Reinitialize the socket if the userEmail changes
+  }; // Reinitialize the socket if the userEmail changes
 
   return (
     <SocketContext.Provider value={socket}>
       {children}
     </SocketContext.Provider>
   );
-};

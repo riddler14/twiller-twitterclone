@@ -1,7 +1,7 @@
 // File: src/context/SocketContext.js
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import useLoggedinuser from "../../../hooks/useLoggedinuser";
+import useLoggedinuser from "../hooks/useLoggedinuser";
  // Import your UserAuthContext
 
 const SocketContext = createContext();

@@ -11,9 +11,10 @@ export const SocketProvider = ({ children }) => {
 const [socket, setSocket] = useState(null);
 const {user}=useUserAuth();
 
-const userEmail=user.email;
+const userEmail=encodeURIComponent(user.email);
 useEffect(() => {
 // Initialize the socket connection
+console.log("User's email: ",user.email);
 console.log("User's email: ",userEmail);
 const newSocket = io("https://twiller-twitterclone-2-q41v.onrender.com", {
 transports: ["websocket"],
@@ -25,7 +26,7 @@ setSocket(newSocket);
 return () => {
 newSocket.disconnect(); // Clean up the socket connection on unmount
 };
-}, [userEmail]);
+}, [user?.email]);
 
 return (
 <SocketContext.Provider value={socket}>

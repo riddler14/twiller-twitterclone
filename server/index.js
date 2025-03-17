@@ -42,14 +42,30 @@ io.on("connection", (socket) => {
   // Extract and decode the email query parameter
   const userEmail = socket.handshake.query.email;
 
-  if (userEmail) {
-    const decodedEmail = userEmail;
-    console.log("Decoded email:", decodedEmail);
-
-    // Join a room named after the user's email
-    socket.join(decodedEmail);
-    console.log(`User ${decodedEmail} joined room: ${decodedEmail}`);
+  if (!userEmail) {
+    console.error("Email is missing in the query parameters.");
+    return;
   }
+
+  let decodedEmail;
+  try {
+    decodedEmail = decodeURIComponent(userEmail);
+  } catch (error) {
+    console.error("Failed to decode email:", error.message);
+    return;
+  }
+
+  // Validate the email format
+  if (!decodedEmail.includes("@")) {
+    console.error("Invalid email format:", decodedEmail);
+    return;
+  }
+
+  console.log("Decoded email:", decodedEmail);
+
+  // Join a room named after the user's email
+  socket.join(decodedEmail);
+  console.log(`User ${decodedEmail} joined room: ${decodedEmail}`);
 
   // Handle disconnection
   socket.on("disconnect", () => {
@@ -60,8 +76,15 @@ io.on("connection", (socket) => {
   socket.on("send-notification", (data) => {
     console.log("Received notification data:", data);
 
+    // Validate the recipient email
+    const recipientEmail = data.recipientEmail;
+    if (!recipientEmail || !recipientEmail.includes("@")) {
+      console.error("Invalid recipient email:", recipientEmail);
+      return;
+    }
+
     // Emit the notification to the recipient's room
-    io.to(data.recipientEmail).emit("notification", {
+    io.to(recipientEmail).emit("notification", {
       title: data.title,
       body: data.body,
     });

@@ -14,6 +14,7 @@ const {user}=useUserAuth();
 const userEmail=user.email;
 useEffect(() => {
 // Initialize the socket connection
+console.log("User's email: ",userEmail);
 const newSocket = io("https://twiller-twitterclone-2-q41v.onrender.com", {
 transports: ["websocket"],
 query:{email:userEmail}, // Placeholder for email

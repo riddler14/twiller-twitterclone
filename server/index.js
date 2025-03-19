@@ -926,6 +926,6 @@ app.get("/", (req,res) => {
 app.listen(port, () => {
   console.log(`Twiller clone is working on ${port}`);
 });
-server.listen(port, () => {
-  console.log(`WebSocket server is running on port ${port}`);
+server.listen(4000, () => {
+  console.log(`WebSocket server is running on port 4000`);
 });

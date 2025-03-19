@@ -71,7 +71,13 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("A user disconnected:", socket.id);
   });
-
+  socket.onopen = () => {
+    console.log("WebSocket connection established");
+  };
+  
+  socket.onerror = (error) => {
+    console.error("WebSocket error:", error);
+  };
   // Example: Listen for a custom event (e.g., "send-notification")
   socket.on("send-notification", (data) => {
     console.log("Received notification data:", data);
@@ -919,4 +925,7 @@ app.get("/", (req,res) => {
 
 app.listen(port, () => {
   console.log(`Twiller clone is working on ${port}`);
+});
+server.listen(port, () => {
+  console.log(`WebSocket server is running on port ${port}`);
 });

@@ -942,23 +942,30 @@ app.post("/check-reset-permission", async (req, res) => {
     const now = new Date();
 
     // Check if the user has already requested a reset email in the last 24 hours
-    const lastResetRequest = user.lastResetRequest; // Timestamp of the last reset request
-    const oneDayInMs = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+// Get the user's reset request history
+const resetRequests = user.resetRequests || [];
 
-    if (lastResetRequest && now - new Date(lastResetRequest) < oneDayInMs) {
-      return res.status(400).json({
-        allowed: false,
-        error: "You can only request one password reset email per day.",
-      });
-    }
+// Filter out reset requests older than 24 hours
+const recentRequests = resetRequests.filter(
+  (timestamp) => now - new Date(timestamp) < oneDayInMs
+);
 
-    // Allow the reset email request and update the timestamp
-    await usercollection.updateOne(
-      { email },
-      { $set: { lastResetRequest: now } }
-    );
+// Check if the user has exceeded the limit of 4 requests per day
+if (recentRequests.length >= 4) {
+  return res.status(400).json({
+    allowed: false,
+    error: "You can only request up to 4 password reset emails per day.",
+  });
+}
 
-    res.json({ allowed: true });
+// Allow the reset email request and update the resetRequests array
+resetRequests.push(now); // Add the current timestamp
+await usercollection.updateOne(
+  { email },
+  { $set: { resetRequests: resetRequests } }
+);
+
+res.json({ allowed: true });
   } catch (error) {
     console.error("Error checking reset permission:", error.message || error);
     res.status(500).json({ error: "Failed to check reset permission." });

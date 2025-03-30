@@ -932,15 +932,15 @@ app.post("/send-reset-email", async (req, res) => {
     }
 
     // Check if the user has already requested a reset email in the last 24 hours
-    const lastResetRequest = user.lastResetRequest; // Timestamp of the last reset request
-    const now = new Date();
-    const oneDayInMs = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    // const lastResetRequest = user.lastResetRequest; // Timestamp of the last reset request
+    // const now = new Date();
+    // const oneDayInMs = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-    if (lastResetRequest && now - new Date(lastResetRequest) < oneDayInMs) {
-      return res.status(400).json({
-        error: "You can only request one password reset email per day.",
-      });
-    }
+    // if (lastResetRequest && now - new Date(lastResetRequest) < oneDayInMs) {
+    //   return res.status(400).json({
+    //     error: "You can only request one password reset email per day.",
+    //   });
+    // }
 
     // Allow the reset email request and update the timestamp
     await usercollection.updateOne(

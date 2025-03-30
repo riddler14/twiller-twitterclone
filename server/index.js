@@ -911,6 +911,120 @@ app.patch("/update-notification-preference/:email", async (req, res) => {
   }
 });
 
+// Endpoint to send OTP for password reset
+app.post("/send-reset-otp", async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: "Email is required" });
+  }
+
+  try {
+    // Check if the user exists in your database
+    const user = await usercollection.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Generate a 6-character OTP
+    const otp = crypto.randomBytes(3).toString("hex").toUpperCase();
+
+    // Configure nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER, // Your Gmail address
+        pass: process.env.EMAIL_PASS, // Your Gmail password or App Password
+      },
+    });
+
+    // Email options
+    const mailOptions = {
+      from: "Twiller-Support",
+      to: email,
+      subject: "Your OTP for Password Reset",
+      text: `Your OTP for password reset is: ${otp}. Please use this to verify your email.`,
+    };
+
+    // Send the email
+    await transporter.sendMail(mailOptions);
+
+    // Store the OTP in the database with an expiration time and purpose
+    await otpCollection.updateOne(
+      { email: email },
+      { $set: { email: email, otp: otp, createdAt: new Date(), purpose: "password-reset" } },
+      { upsert: true }
+    );
+
+    res.json({ message: "OTP sent successfully" });
+  } catch (error) {
+    console.error("Error sending OTP:", error);
+    res.status(500).json({ error: "Failed to send OTP" });
+  }
+});
+
+// Endpoint to verify OTP for password reset
+app.post("/verify-reset-otp", async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ error: "Email and OTP are required" });
+  }
+
+  try {
+    // Find the stored OTP in the database
+    const storedOtp = await otpCollection.findOne({ email: email, purpose: "password-reset" });
+
+    if (!storedOtp || storedOtp.otp !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Check if the OTP has expired (valid for 15 minutes)
+    const otpExpiryTime = new Date(storedOtp.createdAt.getTime() + 15 * 60 * 1000); // 15 minutes
+    if (new Date() > otpExpiryTime) {
+      return res.status(400).json({ error: "OTP has expired" });
+    }
+
+    // Delete the OTP after successful verification
+    await otpCollection.deleteOne({ email: email, purpose: "password-reset" });
+
+    res.json({ success: true, message: "OTP verified successfully" });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    res.status(500).json({ error: "Failed to verify OTP" });
+  }
+});
+
+// Endpoint to reset password
+app.post("/reset-password", async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json({ error: "Email and new password are required" });
+  }
+
+  try {
+    // Find the user in the database
+    const user = await usercollection.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Hash the new password before saving (assuming you have a hashPassword function)
+     // Implement your password hashing logic
+
+    // Update the user's password
+    await usercollection.updateOne(
+      { email: email },
+      { $set: { password: newPassword } }
+    );
+
+    res.json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ error: "Failed to reset password" });
+  }
+});
 
   } catch (error) {
     console.log(error);

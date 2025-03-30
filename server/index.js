@@ -12,7 +12,7 @@ const { OpenAI } = require("openai"); // OpenAI library
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const http = require("http");
 const { Server } = require("socket.io");
-const {getAuth,sendPasswordResetEmail}=require("firebase/auth");
+
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
@@ -923,12 +923,12 @@ app.patch("/update-notification-preference/:email", async (req, res) => {
 
 
 // Endpoint to reset password
-app.post("/send-reset-email", async (req, res) => {
+app.post("/check-reset-permission", async (req, res) => {
   const { email } = req.body;
 
   // Validate email
-  if (!email) {
-    return res.status(400).json({ error: "Email is required." });
+  if (!email || !email.includes("@")) {
+    return res.status(400).json({ error: "Invalid email format." });
   }
 
   try {
@@ -938,16 +938,19 @@ app.post("/send-reset-email", async (req, res) => {
       return res.status(404).json({ error: "User not found." });
     }
 
+    // Define the current timestamp
+    const now = new Date();
+
     // Check if the user has already requested a reset email in the last 24 hours
     const lastResetRequest = user.lastResetRequest; // Timestamp of the last reset request
-    const now = new Date();
     const oneDayInMs = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-    // if (lastResetRequest && now - new Date(lastResetRequest) < oneDayInMs) {
-    //   return res.status(400).json({
-    //     error: "You can only request one password reset email per day.",
-    //   });
-    // }
+    if (lastResetRequest && now - new Date(lastResetRequest) < oneDayInMs) {
+      return res.status(400).json({
+        allowed: false,
+        error: "You can only request one password reset email per day.",
+      });
+    }
 
     // Allow the reset email request and update the timestamp
     await usercollection.updateOne(
@@ -955,14 +958,10 @@ app.post("/send-reset-email", async (req, res) => {
       { $set: { lastResetRequest: now } }
     );
 
-    // Send the password reset email using Firebase
-    const auth = getAuth(); // Initialize Firebase Auth
-    await sendPasswordResetEmail(auth, email);
-
-    res.json({ message: "Password reset email sent successfully." });
+    res.json({ allowed: true });
   } catch (error) {
-    console.error("Error sending reset email:", error);
-    res.status(500).json({ error: "Failed to send password reset email." });
+    console.error("Error checking reset permission:", error.message || error);
+    res.status(500).json({ error: "Failed to check reset permission." });
   }
 });
 

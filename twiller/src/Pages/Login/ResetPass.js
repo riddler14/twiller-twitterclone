@@ -1,7 +1,7 @@
 import React, { useState} from 'react'
 import twitterimg from "../../image/twitter.jpeg";
 import TwitterIcon from "@mui/icons-material/Twitter";
-
+import {getAuth,sendPasswordResetEmail} from "firebase/auth";
 import { Link } from 'react-router-dom';
 import axios from "axios";
 import "./login.css";
@@ -15,7 +15,7 @@ const ResetPass=()=>{
     const [generatedPassword, setGeneratedPassword] = useState(""); // Store the generated password
     // Tracks if OTP has been sent
     // const [isOtpVerified, setIsOtpVerified] = useState(false); // Tracks if OTP is verified
-    
+    const auth=getAuth();
     
 
     // Function to send OTP
@@ -95,16 +95,30 @@ const ResetPass=()=>{
     e.preventDefault();
     setError("");
     setMessage("");
-
+  
     if (!email) {
       setError("Email is required.");
       return;
     }
-    console.log(email);
+  
     try {
-      const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/send-reset-email", { email });
-      setMessage(response.data.message);
+      // Step 1: Check permission with the backend
+      const permissionResponse = await axios.post(
+        "https://twiller-twitterclone-2-q41v.onrender.com/check-reset-permission",
+        { email }
+      );
+  
+      if (!permissionResponse.data.allowed) {
+        setError(permissionResponse.data.error || "Permission denied.");
+        return;
+      }
+  
+      // Step 2: Send the reset email using Firebase
+      await sendPasswordResetEmail(auth, email);
+  
+      setMessage("Password reset email sent successfully.");
     } catch (err) {
+      console.error("Error sending reset email:", err);
       setError(err.response?.data?.error || "Failed to send reset email.");
     }
   };

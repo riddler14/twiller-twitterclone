@@ -3,6 +3,7 @@ import {Routes,Route} from 'react-router-dom';
 import Home from './Pages/Home';
 import Login from "./Pages/Login/Login";
 import Signup from "./Pages/Login/Signup";
+import ResetPass from './Pages/Login/ResetPass';
 import Feed from "./Pages/Feed/Feed";
 import Explore from "./Pages/Explore/Explore";
 import Notification from "./Pages/Notification/Notification";
@@ -28,6 +29,8 @@ function App() {
           <Route path="/" element={<Home/>}/>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/resetpass" element={<ResetPass />} />
+          
           <Route path="/home" element={<Home />}>
             <Route path="feed" element={<Feed />} />
             <Route path="explore" element={<Explore />} />

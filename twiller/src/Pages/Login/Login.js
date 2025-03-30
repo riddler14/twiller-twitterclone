@@ -67,7 +67,19 @@ const Login=()=>{
             <hr />
             <div>
               <GoogleButton className="g-btn" type="light" onClick={hanglegooglesignin}/>
+              <Link
+              to="/resetpass"
+              style={{
+                textDecoration: "none",
+                color: "var(--twitter-color)",
+                fontWeight: "600",
+                marginLeft: "5px",
+              }}
+            >
+              Forgot Password?
+            </Link>
             </div>
+            
           </div>
           <div>
             Don't have an account

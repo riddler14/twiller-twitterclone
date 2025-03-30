@@ -1,7 +1,8 @@
 // File: src/context/SocketContext.js
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { io } from "socket.io-client";
-import { useUserAuth } from "./UserAuthContext";
+// import { useUserAuth } from "./UserAuthContext";
+import useLoggedinuser from "../hooks/useLoggedinuser";
 
 const SocketContext = createContext();
 
@@ -9,9 +10,10 @@ export const useSocket = () => useContext(SocketContext);
 
 export const SocketProvider = ({ children }) => {
 const [socket, setSocket] = useState(null);
-const {user}=useUserAuth();
+const [loggedinuser] = useLoggedinuser();
 
-const userEmail=encodeURIComponent(user.email);
+
+const userEmail=encodeURIComponent(loggedinuser?.email);
 useEffect(() => {
 // Initialize the socket connection
 

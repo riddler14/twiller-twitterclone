@@ -100,7 +100,7 @@ const ResetPass=()=>{
       setError("Email is required.");
       return;
     }
-
+    console.log(email);
     try {
       const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/send-reset-email", { email });
       setMessage(response.data.message);

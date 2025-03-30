@@ -12,6 +12,7 @@ const { OpenAI } = require("openai"); // OpenAI library
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const http = require("http");
 const { Server } = require("socket.io");
+import { getAuth,sendPasswordResetEmail } from 'firebase/auth';
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;

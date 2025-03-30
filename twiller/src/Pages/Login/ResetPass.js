@@ -1,8 +1,8 @@
 import React, { useState} from 'react'
 import twitterimg from "../../image/twitter.jpeg";
 import TwitterIcon from "@mui/icons-material/Twitter";
-import { getAuth,sendPasswordResetEmail,onAuthStateChanged } from 'firebase/auth';
-import { Link, useNavigate } from 'react-router-dom';
+
+import { Link } from 'react-router-dom';
 import axios from "axios";
 import "./login.css";
 
@@ -15,8 +15,8 @@ const ResetPass=()=>{
     const [generatedPassword, setGeneratedPassword] = useState(""); // Store the generated password
     // Tracks if OTP has been sent
     // const [isOtpVerified, setIsOtpVerified] = useState(false); // Tracks if OTP is verified
-    const navigate=useNavigate();
-    const auth = getAuth();
+    
+    
 
     // Function to send OTP
 //   const handleSendOtp = async (e) => {

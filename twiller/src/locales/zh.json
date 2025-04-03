@@ -1,0 +1,19 @@
+{
+    "welcome": "欢迎来到Twiller！",
+    "join_twiller_today": "今天加入Twiller",
+    "select_language": "选择语言",
+    "username_placeholder": "@用户名",
+    "full_name_placeholder": "输入全名",
+    "email_placeholder": "电子邮件",
+    "password_placeholder": "密码（至少8个字符）",
+    "sign_up": "注册",
+    "send_otp": "发送OTP",
+    "verify_otp": "验证OTP",
+    "enter_otp": "输入OTP",
+    "already_have_account": "已经有账户？",
+    "log_in": "登录",
+    "otp_sent": "已将OTP发送到您的电子邮件",
+    "otp_sent_sms": "已将OTP发送到您的手机号码",
+    "email_verified": "电子邮件验证成功",
+    "mobile_verified": "手机号码验证成功"
+  }

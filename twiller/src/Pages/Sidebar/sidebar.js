@@ -24,6 +24,7 @@ import Customlink from "./Customlink";
 import Sidebaroption from "./Sidebaroption";
 import { useNavigate } from "react-router-dom";
 import useLoggedinuser from "../../hooks/useLoggedinuser";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
 
 const Sidebar = ({ handlelogout, user }) => {
   const [anchorE1, setanchorE1] = useState(null);
@@ -59,6 +60,7 @@ const Sidebar = ({ handlelogout, user }) => {
 
       <div className={`sidebar ${isSidebarOpen ? "active" : ""}`}>
         <TwitterIcon className="sidebar__twitterIcon" />
+        <LanguageSwitcher/>
         <Customlink to="/home/feed">
           <Sidebaroption active Icon={HomeIcon} text="Home" />
         </Customlink>
@@ -153,6 +155,7 @@ const Sidebar = ({ handlelogout, user }) => {
             <MenuItem onClick={handleclose}>Add an existing account</MenuItem>
             <MenuItem onClick={handlelogout}>Log out @{result}</MenuItem>
           </Menu>
+          
         </div>
       </div>
     </>

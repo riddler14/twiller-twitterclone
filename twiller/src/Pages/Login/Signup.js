@@ -4,6 +4,7 @@ import twitterimg from "../../image/twitter.jpeg";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import GoogleButton from "react-google-button";
 import { useUserAuth } from "../../context/UserAuthContext";
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 import "./login.css";
 const Signup=()=>{
     const [username, setusername] = useState("");
@@ -128,6 +129,7 @@ const Signup=()=>{
                 >
                   Log In
                 </Link>
+                 <LanguageSwitcher/>
               </div>
             </div>
           </div>

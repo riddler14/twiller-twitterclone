@@ -1,0 +1,19 @@
+{
+    "welcome": "ट्विलर में स्वागत है!",
+    "join_twiller_today": "आज ही ट्विलर में शामिल हों",
+    "select_language": "भाषा चुनें",
+    "username_placeholder": "@उपयोगकर्तानाम",
+    "full_name_placeholder": "पूरा नाम दर्ज़ करें",
+    "email_placeholder": "ईमेल",
+    "password_placeholder": "पासवर्ड (कम से कम 8 अक्षर)",
+    "sign_up": "साइन अप करें",
+    "send_otp": "OTP भेजें",
+    "verify_otp": "OTP प्रमाणीकरण करें",
+    "enter_otp": "OTP दर्ज़ करें",
+    "already_have_account": "क्या आपका एक खाता पहले से है?",
+    "log_in": "लॉग इन करें",
+    "otp_sent": "आपके ईमेल पर OTP भेजा गया है",
+    "otp_sent_sms": "आपके मोबाइल नंबर पर OTP भेजा गया है",
+    "email_verified": "ईमेल सफलतापूर्वक प्रमाणीकृत किया गया",
+    "mobile_verified": "मोबाइल नंबर सफलतापूर्वक प्रमाणीकृत किया गया"
+  }

@@ -1,0 +1,19 @@
+{
+    "welcome": "¡Bienvenido a Twiller!",
+    "join_twiller_today": "Únete a Twiller hoy",
+    "select_language": "Seleccionar idioma",
+    "username_placeholder": "@nombredeusuario",
+    "full_name_placeholder": "Ingresa tu nombre completo",
+    "email_placeholder": "Correo electrónico",
+    "password_placeholder": "Contraseña (al menos 8 caracteres)",
+    "sign_up": "Registrarse",
+    "send_otp": "Enviar OTP",
+    "verify_otp": "Verificar OTP",
+    "enter_otp": "Ingrese OTP",
+    "already_have_account": "¿Ya tienes una cuenta?",
+    "log_in": "Iniciar sesión",
+    "otp_sent": "Se ha enviado un OTP a tu correo electrónico",
+    "otp_sent_sms": "Se ha enviado un OTP a tu número de móvil",
+    "email_verified": "Correo electrónico verificado con éxito",
+    "mobile_verified": "Número de móvil verificado con éxito"
+  }

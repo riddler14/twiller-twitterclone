@@ -5,6 +5,7 @@ import GoogleButton from "react-google-button";
 import { useNavigate, Link } from "react-router-dom";
 import "./login.css";
 import { useUserAuth } from "../../context/UserAuthContext";
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 const Login=()=>{
     const [email, seteamil] = useState("");
     const [password, setpassword] = useState("");
@@ -34,7 +35,9 @@ const Login=()=>{
   };
     return(
         <>
+        
             <div className="login-container">
+              
         <div className="image-container">
           <img src={twitterimg} className=" image" alt="twitterimg" />
         </div>
@@ -94,6 +97,7 @@ const Login=()=>{
             >
               Sign Up
             </Link>
+            <LanguageSwitcher/>
           </div>
         </div>
       </div>

@@ -965,6 +965,106 @@ app.post("/check-reset-permission", async (req, res) => {
   }
 });
 
+// Endpoint to send OTP via email
+app.post("/send-email-otp", async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes("@")) {
+    return res.status(400).json({ error: "Invalid email format" });
+  }
+
+  const otp = crypto.randomBytes(3).toString("hex").toUpperCase(); // Generate a 6-character OTP
+  const transporter = nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: "Twiller-Support",
+    to: email,
+    subject: "Your OTP for Email Verification for French Language",
+    text: `Your OTP is: ${otp}. Please use this to verify your email.`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    await otpCollection.updateOne(
+      { email: email },
+      { $set: { email: email, otp: otp, createdAt: new Date() } },
+      { upsert: true }
+    );
+    res.json({ message: "Email OTP sent successfully" });
+  } catch (error) {
+    console.error("Error sending email OTP:", error);
+    res.status(500).json({ error: "Failed to send email OTP" });
+  }
+});
+
+// Endpoint to send OTP via SMS using Twilio
+app.post("/send-sms-otp", async (req, res) => {
+  const { phoneNumber } = req.body;
+  if (!/^\+\d{10,15}$/.test(phoneNumber)) {
+    return res.status(400).json({ error: "Invalid phone number format" });
+  }
+
+  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit numeric OTP
+
+  try {
+    await twilioClient.messages.create({
+      body: `Your OTP is: ${otp}. Please use this to verify your phone number.`,
+      from: twilioPhoneNumber,
+      to: phoneNumber,
+    });
+
+    await otpCollection.updateOne(
+      { phoneNumber: phoneNumber },
+      { $set: { phoneNumber: phoneNumber, otp: otp, createdAt: new Date() } },
+      { upsert: true }
+    );
+
+    res.json({ message: "SMS OTP sent successfully" });
+  } catch (error) {
+    console.error("Error sending SMS OTP:", error);
+    res.status(500).json({ error: "Failed to send SMS OTP" });
+  }
+});
+
+// Endpoint to verify OTP
+app.post("/verify-otp", async (req, res) => {
+  const { email, phoneNumber, otp } = req.body;
+
+  if ((!email && !phoneNumber) || !otp) {
+    return res.status(400).json({ error: "Email or phone number and OTP are required" });
+  }
+
+  try {
+    let query = {};
+    if (email) {
+      query.email = email;
+    } else if (phoneNumber) {
+      query.phoneNumber = phoneNumber;
+    }
+
+    const storedOtp = await otpCollection.findOne(query);
+    if (!storedOtp || storedOtp.otp !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    const otpExpiryTime = new Date(storedOtp.createdAt.getTime() + 15 * 60 * 1000); // OTP valid for 15 minutes
+    if (new Date() > otpExpiryTime) {
+      return res.status(400).json({ error: "OTP has expired" });
+    }
+
+    await otpCollection.deleteOne(query); // Delete OTP after successful verification
+    res.json({ success: true, message: "OTP verified successfully" });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    res.status(500).json({ error: "Failed to verify OTP" });
+  }
+});
+
   } catch (error) {
     console.log(error);
   }

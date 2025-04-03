@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useUserAuth } from "../context/UserAuthContext";
 import { useSocket } from "../context/SocketContext";
 
+
 const Home=()=>{
   const {logOut,user}=useUserAuth()
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ const Home=()=>{
       };
     return(
         <div className="app">
+          
       <Sidebar handlelogout={handlelogout} user={user} />
       <Outlet />
       <Widgets />

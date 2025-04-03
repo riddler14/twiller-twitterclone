@@ -5,6 +5,7 @@ import {getAuth,sendPasswordResetEmail} from "firebase/auth";
 import { Link } from 'react-router-dom';
 import axios from "axios";
 import "./login.css";
+import LanguageSwitcher from '../../components/LanguageSwitcher';
 
 const ResetPass=()=>{
     const [email, setemail] = useState("");
@@ -195,7 +196,7 @@ const ResetPass=()=>{
                        >
                         Login
                        </Link>
-          
+          <LanguageSwitcher/>
             
             
           </div>

@@ -1,4 +1,4 @@
-import React,{useState,useRef,useEffect,useCallback} from 'react'
+import React,{useState,useRef,useEffect,useCallback, useTransition} from 'react'
 import "./widget.css";
 import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";
@@ -6,12 +6,15 @@ import WidgetsIcon from '@mui/icons-material/Widgets';
 import useLoggedinuser from "../../hooks/useLoggedinuser";
 import { TwitterTimelineEmbed, TwitterTweetEmbed } from "react-twitter-embed";
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+
 const Widgets=()=>{
   const [isWidgetsOpen, setIsWidgetsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [loggedinuser] = useLoggedinuser();
+  const {t}=useTranslation();
   const navigate=useNavigate();
   // Function to handle search
   const dropdownRef = useRef(null);
@@ -112,7 +115,7 @@ const Widgets=()=>{
           <SearchIcon className="widget__searchIcon" />
           <input
           type="text"
-          placeholder="Search Twiller"
+          placeholder={t("Search Twiller")}
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
@@ -140,7 +143,7 @@ const Widgets=()=>{
 
 
         <div className="widgets__widgetContainer">
-          <h2>What's Happening</h2>
+          <h2>{t("What's Happening")}</h2>
           <TwitterTweetEmbed tweetId={"1811030889922711622"} />
           <TwitterTimelineEmbed
             sourceType="profile"

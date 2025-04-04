@@ -6,6 +6,7 @@ import GoogleButton from "react-google-button";
 import { useUserAuth } from "../../context/UserAuthContext";
 import LanguageSwitcher from '../../components/LanguageSwitcher';
 import "./login.css";
+import { useTranslation } from 'react-i18next';
 const Signup=()=>{
     const [username, setusername] = useState("");
     const [name, setname] = useState("");
@@ -15,7 +16,7 @@ const Signup=()=>{
     const { signin } = useUserAuth();
     const { googleSignin } = useUserAuth();
     const navigate = useNavigate();
-
+    const {t}=useTranslation();
     const handlesubmit = async (e) => {
         e.preventDefault();
         seterror("");
@@ -65,9 +66,9 @@ const Signup=()=>{
           <div className="form-container">
             <div className="">
               <TwitterIcon className="Twittericon" style={{ color: "skyblue" }} />
-              <h2 className="heading">Happening Now</h2>
+              <h2 className="heading">{t('Happening Now')}</h2>
               <div class="d-flex align-items-sm-center">
-                <h3 className="heading1"> Join twiller today</h3>
+                <h3 className="heading1"> {t('Join twiller today')}</h3>
               </div>
               {error && <p className="errorMessage">{error}</p>}
               <form onSubmit={handlesubmit}>
@@ -104,7 +105,7 @@ const Signup=()=>{
                 />
                 <div className="btn-login">
                   <button type="submit" className="btn">
-                    Sign Up
+                    {t('Sign Up')}
                   </button>
                 </div>
               </form>
@@ -117,7 +118,7 @@ const Signup=()=>{
                 />
               </div>
               <div>
-                Already have an account?
+                {t('Already have an account?')}
                 <Link
                   to="/login"
                   style={{
@@ -127,7 +128,7 @@ const Signup=()=>{
                     marginLeft: "5px",
                   }}
                 >
-                  Log In
+                  {t('Log In')}
                 </Link>
                  <LanguageSwitcher/>
               </div>

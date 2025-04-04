@@ -13,12 +13,31 @@ const LanguageSwitcher = () => {
   const [verificationSuccess, setVerificationSuccess] = useState(false);
   const [verificationError, setVerificationError] = useState('');
   const [retryCount, setRetryCount] = useState(0);
+  const [selectedLanguage, setSelectedLanguage] = useState('en'); // Track the selected language
 
   // Function to handle language selection
   const changeLanguage = (lng) => {
-    setVerificationMethod(lng === 'fr' ? 'email' : 'sms');
+    setSelectedLanguage(lng); // Update the selected language
+    // Set the verification method: 'email' for French and English, 'sms' for others
+    setVerificationMethod(['fr', 'en'].includes(lng) ? 'email' : 'sms');
     setIsPopupOpen(true); // Open the popup for email/phone input
-    i18n.changeLanguage(lng); // Change language but delay full switching until OTP is verified
+    // Do NOT change the language here; wait until OTP verification succeeds
+  };
+
+  // Function to reset the popup state
+  const resetPopupState = () => {
+    setEmailOrMobile('');
+    setOtp('');
+    setVerificationSent(false);
+    setVerificationSuccess(false);
+    setVerificationError('');
+    setRetryCount(0);
+  };
+
+  // Function to close the popup and reset its state
+  const closePopup = () => {
+    setIsPopupOpen(false);
+    resetPopupState();
   };
 
   // Function to send email OTP via backend
@@ -30,7 +49,7 @@ const LanguageSwitcher = () => {
       }
 
       // Call the backend to send an OTP via email
-      const response = await axios.post('/send-email-otp', { email: emailOrMobile });
+      const response = await axios.post('https://twiller-twitterclone-2-q41v.onrender.com/send-email-otp', { email: emailOrMobile });
 
       console.log(response.data.message);
       setVerificationSent(true);
@@ -49,7 +68,7 @@ const LanguageSwitcher = () => {
       }
 
       // Call the backend to send an OTP via SMS
-      const response = await axios.post('/send-sms-otp', { phoneNumber: emailOrMobile });
+      const response = await axios.post('https://twiller-twitterclone-2-q41v.onrender.com/send-sms-otp', { phoneNumber: emailOrMobile });
 
       console.log(response.data.message);
       setVerificationSent(true);
@@ -65,21 +84,27 @@ const LanguageSwitcher = () => {
       let response;
       if (verificationMethod === 'email') {
         // Verify OTP using the backend endpoint
-        response = await axios.post('/verify-otp', { email: emailOrMobile, otp });
+        response = await axios.post('https://twiller-twitterclone-2-q41v.onrender.com/verify-otp', { email: emailOrMobile, otp });
       } else if (verificationMethod === 'sms') {
         // Verify OTP using the backend endpoint
-        response = await axios.post('/verify-otp', { phoneNumber: emailOrMobile, otp });
+        response = await axios.post('https://twiller-twitterclone-2-q41v.onrender.com/verify-otp', { phoneNumber: emailOrMobile, otp });
       }
 
       if (response.data.success) {
         console.log(t('verification_success'));
+
+        // Change the language only after OTP verification succeeds
+        const lng = selectedLanguage || 'en'; // Fallback to 'en' if no language is selected
+        console.log("Saving language to localStorage:", lng); // Debugging line
+        i18n.changeLanguage(lng); // Switch the language here
+        localStorage.setItem('language', lng); // Save the language preference
         setVerificationSuccess(true);
-        setIsPopupOpen(false); // Close the popup on success
+        closePopup(); // Close the popup on success
       } else {
         setVerificationError(t('error_verifying_otp'));
         setRetryCount(retryCount + 1);
         if (retryCount >= 3) {
-          setIsPopupOpen(false); // Close the popup after 3 failed attempts
+          closePopup(); // Close the popup after 3 failed attempts
         }
       }
     } catch (error) {
@@ -87,7 +112,7 @@ const LanguageSwitcher = () => {
       setVerificationError(t('error_verifying_otp'));
       setRetryCount(retryCount + 1);
       if (retryCount >= 3) {
-        setIsPopupOpen(false); // Close the popup after 3 failed attempts
+        closePopup(); // Close the popup after 3 failed attempts
       }
     }
   };
@@ -127,12 +152,11 @@ const LanguageSwitcher = () => {
           <div className="popup-content">
             {!verificationSent ? (
               <>
-                <h3>{t('Enter Email or Phone')}</h3>
+                <h3>{t('enter_email_or_phone')}</h3>
                 {verificationMethod === 'email' && (
-                  
                   <input
                     type="text"
-                    placeholder={t('Enter Email Address')}
+                    placeholder={t('enter_email')}
                     value={emailOrMobile}
                     onChange={handleEmailOrMobileChange}
                   />
@@ -140,7 +164,7 @@ const LanguageSwitcher = () => {
                 {verificationMethod === 'sms' && (
                   <input
                     type="text"
-                    placeholder={t('Enter Phone Number')}
+                    placeholder={t('enter_phone_number')}
                     value={emailOrMobile}
                     onChange={handleEmailOrMobileChange}
                   />
@@ -150,10 +174,10 @@ const LanguageSwitcher = () => {
               </>
             ) : (
               <>
-                <h3>{t('Enter OTP')}</h3>
+                <h3>{t('enter_otp')}</h3>
                 <input
                   type="text"
-                  placeholder={t('Enter OTP')}
+                  placeholder={t('enter_otp')}
                   value={otp}
                   onChange={handleOtpChange}
                 />
@@ -161,7 +185,7 @@ const LanguageSwitcher = () => {
                 {verificationError && <p className="error-message">{verificationError}</p>}
               </>
             )}
-            <button onClick={() => setIsPopupOpen(false)}>{t('Close')}</button>
+            <button onClick={closePopup}>{t('close')}</button>
           </div>
         </div>
       )}

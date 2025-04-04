@@ -12,7 +12,7 @@ import Editprofile from "../Editprofile/Editprofile";
 import axios from "axios";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
 // import { listenForNotifications } from "./socket";
-
+import {useTranslation} from "react-i18next";
 
 const Mainprofile = ({ user }) => {
   const navigate = useNavigate();
@@ -26,7 +26,7 @@ const Mainprofile = ({ user }) => {
   const [loadingLocation, setLoadingLocation] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(user.notificationsEnabled || false);
    // State to toggle EditProfile visibility
-
+  const {t}=useTranslation();
   const [avatarUrl, setAvatarUrl] = useState("");
 
   // useEffect(() => {
@@ -467,7 +467,7 @@ const Mainprofile = ({ user }) => {
                     className="avatar-library-button"
                     onClick={handleChooseAvatar}
                   >
-                    Choose Avatar
+                    {t('Choose Avatar')}
                   </button>
                 </div>
               </div>
@@ -495,7 +495,7 @@ const Mainprofile = ({ user }) => {
                     onClick={fetchLocationAndWeather}
                     className="getLocationButton"
                   >
-                    Get Location & Weather
+                    {t('Get Location & Weather')}
                   </button>
                   <br />
                   <br />
@@ -504,14 +504,14 @@ const Mainprofile = ({ user }) => {
 
                     <strong>
                       {loadingLocation
-                        ? "Loading location ..."
-                        : ` Location: ${location}`}
+                       ? t("loadingLocation") // Translate "Loading location ..."
+                       : t("Location",":", {location })}
                     </strong>
                     <br />
                     <strong>
                       {loadingLocation
-                        ? "Loading  Weather..."
-                        : ` Weather: ${weather}`}
+                        ? t("loadingLocation") // Translate "Loading location ..."
+                        : t("Weather",":", {weather })}
                     </strong>
                   </p>
                   {loggedinuser[0]?.website ? (
@@ -530,7 +530,7 @@ const Mainprofile = ({ user }) => {
            {/* Customization Popup */}
            {isPopupVisible && (
     <div className="avatarCustomizationPopup">
-      <h4>Customize Avatar</h4>
+      <h4>{t('Customize Avatar')}</h4>
       <div className="avatar-preview">
             <img src={avatarUrl} alt="Customized Avatar" />
           </div>

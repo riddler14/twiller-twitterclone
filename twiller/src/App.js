@@ -1,4 +1,5 @@
 import './App.css';
+import { useEffect } from 'react';
 import {Routes,Route} from 'react-router-dom';
 import Home from './Pages/Home';
 import Login from "./Pages/Login/Login";
@@ -17,11 +18,23 @@ import { UserAuthContextProvider } from "./context/UserAuthContext";
 import Bookmark from "./Pages/Bookmark/Bookmark";
 import ProfileUser from "./Pages/Profile/ProfileUser";
 import NotificationManager from './components/NotificationManager';
+import { I18nextProvider, useTranslation } from 'react-i18next';
+
 
 
 function App() {
+  const { i18n } = useTranslation();
+
+  useEffect(() => {
+    // Load the saved language from localStorage
+    const savedLanguage = localStorage.getItem('language') || 'en'; // Default to 'en'
+    i18n.changeLanguage(savedLanguage).catch((error) => {
+      console.error('Failed to load saved language:', error);
+    });
+  }, []);
   return (
    <div className='app'>
+    <I18nextProvider i18n={i18n}>
     <UserAuthContextProvider>
       <NotificationManager />
       <Routes>
@@ -54,6 +67,7 @@ function App() {
           <Route path="*" element={<h1>Page Not Found</h1>} />
       </Routes>
       </UserAuthContextProvider>
+      </I18nextProvider>
    </div>
   );
 }

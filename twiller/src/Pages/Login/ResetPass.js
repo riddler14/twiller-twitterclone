@@ -6,10 +6,11 @@ import { Link } from 'react-router-dom';
 import axios from "axios";
 import "./login.css";
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 const ResetPass=()=>{
     const [email, setemail] = useState("");
-   
+    const {t}=useTranslation();
     const [error, setError] = useState("");
     const [message, setMessage] = useState("");
     // const [isOtpSent, setIsOtpSent] = useState(false);
@@ -135,7 +136,7 @@ const ResetPass=()=>{
         <div className="form-container">
           <div className="form-box">
             <TwitterIcon style={{ color: "skyblue" }} />
-            <h2 className="heading">Reset Password</h2>
+            <h2 className="heading">{t('Reset Password')}</h2>
             {error && <p className="error-message">{error}</p>}
             {message && <p className="success-message">{message}</p>}
             <form onSubmit={
@@ -160,7 +161,7 @@ const ResetPass=()=>{
                       className="btn"
                       onClick={generateRandomPassword}
                     >
-                      Generate Random Password
+                      {t('Generate Random Password')}
                     </button>
                     &nbsp;
                     {generatedPassword && (
@@ -179,12 +180,12 @@ const ResetPass=()=>{
               
               <div className="btn-login">
                 <button type="submit" className="btn">
-                  Send Reset Mail
+                  {t('Send Reset Mail')}
                 </button>
               </div>
             </form>
             <hr/>
-            Wanna go back to login Page?
+            {t('Wanna go back to login Page?')}
            <Link
                          to="/login"
                          style={{
@@ -194,7 +195,7 @@ const ResetPass=()=>{
                            marginLeft: "5px",
                          }}
                        >
-                        Login
+                        {t('Log In')}
                        </Link>
           <LanguageSwitcher/>
             

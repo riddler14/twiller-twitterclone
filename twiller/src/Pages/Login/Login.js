@@ -6,7 +6,11 @@ import { useNavigate, Link } from "react-router-dom";
 import "./login.css";
 import { useUserAuth } from "../../context/UserAuthContext";
 import LanguageSwitcher from '../../components/LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
+
 const Login=()=>{
+  const { t } = useTranslation();
+
     const [email, seteamil] = useState("");
     const [password, setpassword] = useState("");
     const [error, seterror] = useState("");
@@ -44,7 +48,7 @@ const Login=()=>{
         <div className="form-container">
           <div className="form-box">
             <TwitterIcon style={{ color: "skyblue" }} />
-            <h2 className="heading">Happening Now</h2>
+            <h2 className="heading">{t('Happening Now')}</h2>
             {error && <p>{error.message}</p>}
             <form onSubmit={handlesubmit}>
               <input
@@ -63,7 +67,7 @@ const Login=()=>{
               />
               <div className="btn-login">
                 <button type="submit" className="btn">
-                  Log In
+                {t('Log In')}
                 </button>
               </div>
             </form>
@@ -79,13 +83,13 @@ const Login=()=>{
                 marginLeft: "5px",
               }}
             >
-              Forgot Password?
+              {t('Forgot Password?')}
             </Link>
             </div>
             
           </div>
           <div>
-            Don't have an account
+            {t("Don't have an account?")}
             <Link
               to="/signup"
               style={{
@@ -95,7 +99,7 @@ const Login=()=>{
                 marginLeft: "5px",
               }}
             >
-              Sign Up
+              {t('Sign Up')}
             </Link>
             <LanguageSwitcher/>
           </div>

@@ -5,6 +5,7 @@ import ChatIcon from "@mui/icons-material/Chat";
 import SendIcon from "@mui/icons-material/Send";
 import CircularProgress from "@mui/material/CircularProgress"; // Loading spinner
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 const Chatbot = () => {
   const [query, setQuery] = useState("");
@@ -13,7 +14,7 @@ const Chatbot = () => {
   const [response, setResponse] = useState(""); // Store chatbot response
   const [tweets, setTweets] = useState([]); // Store fetched tweets
   const [rateLimitExceeded, setRateLimitExceeded] = useState(false); // Track rate limit status
-
+  const {t}=useTranslation();
   const handleInputChange = (e) => {
     setQuery(e.target.value);
   };
@@ -76,7 +77,7 @@ const Chatbot = () => {
           <div className="error_message">
             {error}
             {rateLimitExceeded && (
-              <p>You can retry after 15 minutes.</p>
+              <p>{t('You can retry after 15 minutes.')}</p>
             )}
           </div>
         ) : (
@@ -125,7 +126,7 @@ const Chatbot = () => {
         <div className="searchbox__input">
           <ChatIcon className="searchbox__Icon" />
           <input
-            placeholder="Ask Me Anything"
+            placeholder={t("Ask Me Anything")}
             type="text"
             value={query}
             onChange={handleInputChange}

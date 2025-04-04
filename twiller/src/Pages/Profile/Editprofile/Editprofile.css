@@ -88,14 +88,18 @@
   align-items: flex-start;
   margin-top: 20px;
   margin-left: 15px;
+  
 }
 
 .birthdate-section p {
   font-weight: 600;
   padding-left: 5px;
   margin-bottom: -8px;
+  cursor: pointer;
 }
-
+.edit-btn{
+  cursor: pointer;
+}
 .text {
   display: flex;
   flex-direction: column;

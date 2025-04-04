@@ -6,11 +6,13 @@ import MicIcon from "@mui/icons-material/Mic"; // For audio icon
 import axios from "axios";
 import { useUserAuth } from "../../../context/UserAuthContext";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
+import { useTranslation } from 'react-i18next';
 
 const Tweetbox=()=>{
     const [post, setpost] = useState("");
     const [imageurl, setimageurl] = useState("");
     const [isloading, setisloading] = useState(false);
+    const {t}=useTranslation();
     // const [errorMessage, setErrorMessage] = useState("");
     const [name, setname] = useState("");
     const [username, setusername] = useState("");
@@ -410,7 +412,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
           />
           <input
             type="text"
-            placeholder="What's happening?"
+            placeholder={t("What's happening?")}
             onChange={(e) => setpost(e.target.value)}
             value={post}
             required
@@ -419,7 +421,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
         <div className="imageIcon_tweetButton">
           <label htmlFor="image" className="imageIcon">
             {
-              isloading ?<p>Uploading Image</p>:<p>{imageurl ? "Image Uploaded":<AddPhotoAlternateOutlinedIcon />}</p>
+              isloading ?<p>{t('Uploading Image')}</p>:<p>{imageurl ? "Image Uploaded":<AddPhotoAlternateOutlinedIcon />}</p>
             }
           </label>
           <input
@@ -445,7 +447,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
                 audio.play();
               }}
             >
-              Play
+              {t('Play')}
             </Button>
             <Button
               variant="contained"
@@ -455,7 +457,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
                 setIsAudioAttached(false);
               }}
             >
-              Clear
+              {t('Clear')}
             </Button>
           </div>
         )}
@@ -463,47 +465,47 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
 
 
           <Button className="tweetBox__tweetButton" type="submit">
-            Post
+            {t('Post')}
           </Button>
         </div>
       </form>
 
       {/* Audio Recording Popup */}
       <Dialog open={openPopup} onClose={() => setOpenPopup(false)}>
-      <DialogTitle>Record Audio</DialogTitle>
+      <DialogTitle>{t('Record Audio')}</DialogTitle>
       <DialogContent>
         {/* Start/Stop Recording Buttons */}
         <Button onClick={startRecording} disabled={isRecording}>
-          {isRecording ? "Recording..." : "Start Recording"}
+          {isRecording ? t("Recording...") : t("Start Recording")}
         </Button>
         <Button onClick={stopRecording} disabled={!isRecording}>
-          Stop Recording
+          {t('Stop Recording')}
         </Button>
 
         {/* Display Recording Timer */}
-        {isRecording && <p>Recording Time: {formatTime(recordingTime)}</p>}
+        {isRecording && <p>{t('Recording Time:')} {formatTime(recordingTime)}</p>}
 
         {/* Display Success Message and Buttons if Audio is Recorded */}
         {audioBlob && (
           <div>
             <p>{`${audioDuration}  Audio Recorded Successfully!`}</p>
             <Button onClick={handlePlayAudio} disabled={isPlaying}>
-              Play
+              {t('Play')}
             </Button>
             <Button onClick={handlePauseAudio} disabled={!isPlaying}>
-              Pause
+              {t('Pause')}
             </Button>
-            <Button onClick={handleClearAudio}>Clear</Button>
-            {isPlaying && <p>Playback Time: {formatTime(playTime)}</p>}
+            <Button onClick={handleClearAudio}>{t('Clear')}</Button>
+            {isPlaying && <p>{t('Playback Time:')} {formatTime(playTime)}</p>}
           </div>
         )}
       </DialogContent>
       <DialogActions>
         {/* OTP Actions */}
-        <Button onClick={sendOtp}>Send OTP</Button>
-        <input id="otpInput" type="text" placeholder="Enter OTP" />
-        <Button onClick={verifyOtp}>Verify OTP</Button>
-        <Button onClick={() => setOpenPopup(false)}>Cancel</Button>
+        <Button onClick={sendOtp}>{t('Send OTP')}</Button>
+        <input id="otpInput" type="text" placeholder={t("Enter OTP")} />
+        <Button onClick={verifyOtp}>{t('Verify OTP')}</Button>
+        <Button onClick={() => setOpenPopup(false)}>{t('Cancel')}</Button>
       </DialogActions>
     </Dialog>
     </div>

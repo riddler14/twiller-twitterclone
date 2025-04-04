@@ -2,8 +2,10 @@ import React , {useState,useEffect }from 'react'
 import './Feed.css'
 import Posts from './Posts/Posts'
 import Tweetbox from './Tweetbox/Tweetbox';
+import { useTranslation } from 'react-i18next';
 const Feed=()=>{
     const [post, setpost] = useState([]);
+    const {t}=useTranslation();
     useEffect(() => {
       fetch("https://twiller-twitterclone-2-q41v.onrender.com/post")
         .then((res) => res.json())
@@ -42,7 +44,7 @@ const Feed=()=>{
     return (
      <div className="feed">
       <div className="feed__header">
-        <h2>Home</h2>
+        <h2>{t('Home')}</h2>
       </div>
       <Tweetbox />
       {post.map((p) => (

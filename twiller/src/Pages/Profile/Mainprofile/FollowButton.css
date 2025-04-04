@@ -4,6 +4,7 @@
     border: 1px solid;
     border-radius: 2rem;
     margin-right: 20px;
+    color: black;
   }
   .follow-button:hover{
     cursor: pointer;

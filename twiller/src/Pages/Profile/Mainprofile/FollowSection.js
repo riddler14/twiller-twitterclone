@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import "./FollowSection.css";
+import { useTranslation } from "react-i18next";
 
 const FollowSection = ({ user,onFollowUpdate }) => {
   const [followingCount, setFollowingCount] = useState(0); // Store count of following
   const [followersCount, setFollowersCount] = useState(0); // Store count of followers
   const [loading, setLoading] = useState(true);
-
+  const {t}=useTranslation();
   useEffect(() => {
     // Fetch following and followers counts
     const fetchCounts = async () => {
@@ -37,12 +38,12 @@ const FollowSection = ({ user,onFollowUpdate }) => {
   return (
     <div className="follow-section">
       <div className="follow-info">
-        <h3>Following</h3>
+        <h3>{t('Following')}</h3>
         <p>{followingCount}</p>
       </div>
 
       <div className="follow-info">
-        <h3>Followers</h3>
+        <h3>{t('Followers')}</h3>
         <p>{followersCount}</p>
       </div>
     </div>

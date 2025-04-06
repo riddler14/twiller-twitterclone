@@ -1,11 +1,7 @@
 {
     
     
-    "select_language": "Sélectionner la langue",
-    "username_placeholder": "@nom_d'utilisateur",
-    "full_name_placeholder": "Entrez votre nom complet",
-    "email_placeholder": "Email",
-    "password_placeholder": "Mot de passe (au moins 8 caractères)",
+ 
     "Sign Up": "S'inscrire",
     "Send OTP": "Envoyer OTP",
     "Verify OTP": "Vérifier OTP",

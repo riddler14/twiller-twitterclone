@@ -1005,29 +1005,80 @@ app.post("/send-email-otp", async (req, res) => {
 // Endpoint to send OTP via SMS using Twilio
 app.post("/send-sms-otp", async (req, res) => {
   const { phoneNumber } = req.body;
-  if (!/^\+\d{10,15}$/.test(phoneNumber)) {
-    return res.status(400).json({ error: "Invalid phone number format" });
+
+  // Validate phone number format (international format: +[country code][number])
+  if (!phoneNumber || !/^\+\d{10,15}$/.test(phoneNumber)) {
+    return res.status(400).json({ 
+      error: "Valid phone number in international format is required (e.g., +1234567890)" 
+    });
   }
 
-  const otp = Math.floor(100000 + Math.random() * 900000).toString(); // Generate a 6-digit numeric OTP
+  // Generate 6-digit numeric OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
   try {
-    await twilioClient.messages.create({
-      body: `Your OTP is: ${otp}. Please use this to verify your phone number.`,
-      from: twilioPhoneNumber,
-      to: phoneNumber,
-    });
+    // Send via Phone.Email API
+    const response = await axios.post(
+      "https://www.phone.email/send-sms",
+      {
+        api_key: process.env.PHONE_EMAIL_API_KEY,
+        to: phoneNumber,
+        message: `Your Twiller verification code is: ${otp}`,
+        sender_id: process.env.PHONE_EMAIL_SENDER_ID || "TWILLER" // Customizable sender ID
+      },
+      {
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json"
+        },
+        timeout: 5000 // 5 second timeout
+      }
+    );
 
+    // Check if SMS was successfully queued
+    if (response.data?.status !== "success") {
+      throw new Error(response.data?.message || "Failed to queue SMS");
+    }
+
+    // Store OTP in database with phone number and timestamp
     await otpCollection.updateOne(
       { phoneNumber: phoneNumber },
-      { $set: { phoneNumber: phoneNumber, otp: otp, createdAt: new Date() } },
+      { 
+        $set: { 
+          otp: otp,
+          createdAt: new Date(),
+          verified: false // Initial state
+        } 
+      },
       { upsert: true }
     );
 
-    res.json({ message: "SMS OTP sent successfully" });
+    res.json({ 
+      success: true,
+      message: "SMS OTP sent successfully",
+      // Don't send OTP back in production - only for testing
+      otp: process.env.NODE_ENV === "development" ? otp : undefined
+    });
+
   } catch (error) {
-    console.error("Error sending SMS OTP:", error);
-    res.status(500).json({ error: "Failed to send SMS OTP" });
+    console.error("SMS OTP Error:", {
+      error: error.message,
+      response: error.response?.data,
+      phoneNumber: phoneNumber.replace(/\d(?=\d{4})/g, "*") // Mask for logs
+    });
+
+    const statusCode = error.response?.status || 500;
+    const errorMessage = error.response?.data?.message || 
+                        "Failed to send SMS OTP. Please try again later.";
+
+    res.status(statusCode).json({ 
+      error: errorMessage,
+      // Include more details in development
+      details: process.env.NODE_ENV === "development" ? {
+        apiError: error.response?.data,
+        stack: error.stack
+      } : undefined
+    });
   }
 });
 

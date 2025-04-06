@@ -75,28 +75,28 @@ const Signup=()=>{
                 <input
                   className="display-name"
                   type="username"
-                  placeholder="@username"
+                  placeholder={t("@username")}
                   onChange={(e) => setusername(e.target.value)}
                   required
                 />
                 <input
                   className="display-name"
                   type="name"
-                  placeholder="Enter Full Name"
+                  placeholder={t("Enter Full Name")}
                   onChange={(e) => setname(e.target.value)}
                   required
                 />
                 <input
                   className="email"
                   type="email"
-                  placeholder="Email Address"
+                  placeholder={t("Email Address")}
                   onChange={(e) => setemail(e.target.value)}
                   required
                 />
                 <input
                   className="password"
                   type="password"
-                  placeholder="Password (at least 8 Characters)"
+                  placeholder={t("Password (at least 8 Characters)")}
                   onChange={(e) => setpassword(e.target.value)}
                   pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
                   // Enforce minimum 8 characters

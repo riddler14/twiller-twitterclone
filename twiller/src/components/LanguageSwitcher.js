@@ -152,11 +152,11 @@ const LanguageSwitcher = () => {
           <div className="popup-content">
             {!verificationSent ? (
               <>
-                <h3>{t('enter_email_or_phone')}</h3>
+                <h3>{t('Enter Email/Phone')}</h3>
                 {verificationMethod === 'email' && (
                   <input
                     type="text"
-                    placeholder={t('enter_email')}
+                    placeholder={t('Enter Email')}
                     value={emailOrMobile}
                     onChange={handleEmailOrMobileChange}
                   />
@@ -164,28 +164,28 @@ const LanguageSwitcher = () => {
                 {verificationMethod === 'sms' && (
                   <input
                     type="text"
-                    placeholder={t('enter_phone_number')}
+                    placeholder={t('Enter Phone Number')}
                     value={emailOrMobile}
                     onChange={handleEmailOrMobileChange}
                   />
                 )}
-                <button onClick={handleSendOtpManually}>{t('send_otp')}</button>
+                <button onClick={handleSendOtpManually}>{t('Send OTP')}</button>
                 {verificationError && <p className="error-message">{verificationError}</p>}
               </>
             ) : (
               <>
-                <h3>{t('enter_otp')}</h3>
+                <h3>{t('Enter OTP')}</h3>
                 <input
                   type="text"
-                  placeholder={t('enter_otp')}
+                  placeholder={t('Enter OTP')}
                   value={otp}
                   onChange={handleOtpChange}
                 />
-                <button onClick={handleVerifyOtp}>{t('verify_otp')}</button>
+                <button onClick={handleVerifyOtp}>{t('Verify OTP')}</button>
                 {verificationError && <p className="error-message">{verificationError}</p>}
               </>
             )}
-            <button onClick={closePopup}>{t('close')}</button>
+            <button onClick={closePopup}>{t('Close')}</button>
           </div>
         </div>
       )}

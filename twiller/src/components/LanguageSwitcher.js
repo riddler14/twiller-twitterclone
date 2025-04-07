@@ -63,7 +63,7 @@ const LanguageSwitcher = () => {
   const sendSMSOTP = async () => {
     try {
       if (!/^\+\d{10,15}$/.test(emailOrMobile)) {
-        setVerificationError(t('invalid_phone_number'));
+        setVerificationError(t('Invalid Phone Number'));
         return;
       }
 
@@ -74,7 +74,7 @@ const LanguageSwitcher = () => {
       setVerificationSent(true);
     } catch (error) {
       console.error('Error sending SMS OTP:', error);
-      setVerificationError(t('error_sending_otp'));
+      setVerificationError(t('Error Sending OTP'));
     }
   };
 

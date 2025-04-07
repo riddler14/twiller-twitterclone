@@ -8,15 +8,18 @@ const crypto = require("crypto"); // For generating OTPs
 const { TwitterApi } = require("twitter-api-v2"); // Official Twitter API v2
 // const  OpenAI = require("openai");
 const rateLimit = require("express-rate-limit"); // OpenAI API
-const { OpenAI } = require("openai"); // OpenAI library
+// const { OpenAI } = require("openai"); // OpenAI library
 const { GoogleGenerativeAI } = require("@google/generative-ai");
 const http = require("http");
 const { Server } = require("socket.io");
-
+const twilio=require("twilio");
 const url =
   "mongodb+srv://admin:admin@twitter.3aijc.mongodb.net/?retryWrites=true&w=majority&appName=twitter";
 const port = 5000;
-
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
+const twilioClient = twilio(accountSid, authToken);
 
 
 require("dotenv").config();
@@ -1003,84 +1006,39 @@ app.post("/send-email-otp", async (req, res) => {
 });
 
 // Endpoint to send OTP via SMS using Twilio
+// Endpoint to send OTP via SMS using Twilio
 app.post("/send-sms-otp", async (req, res) => {
   const { phoneNumber } = req.body;
 
-  // Validate phone number format (international format: +[country code][number])
   if (!phoneNumber || !/^\+\d{10,15}$/.test(phoneNumber)) {
-    return res.status(400).json({ 
-      error: "Valid phone number in international format is required (e.g., +1234567890)" 
-    });
+    return res.status(400).json({ error: "Invalid phone number format" });
   }
 
-  // Generate 6-digit numeric OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  // Generate a 6-digit OTP
+  const otp = crypto.randomBytes(3).toString("hex").toUpperCase();
 
   try {
-    // Send via Phone.Email API
-    const response = await axios.post(
-      "https://www.phone.email/send-sms",
-      {
-        api_key: process.env.PHONE_EMAIL_API_KEY,
-        to: phoneNumber,
-        message: `Your Twiller verification code is: ${otp}`,
-        sender_id: process.env.PHONE_EMAIL_SENDER_ID || "TWILLER" // Customizable sender ID
-      },
-      {
-        headers: {
-          "Content-Type": "application/json",
-          "Accept": "application/json"
-        },
-        timeout: 5000 // 5 second timeout
-      }
-    );
+    // Send the OTP via Twilio SMS
+    await twilioClient.messages.create({
+      body: `Your OTP is: ${otp}. Please use this to verify your phone number.`,
+      from: twilioPhoneNumber,
+      to: phoneNumber,
+    });
 
-    // Check if SMS was successfully queued
-    if (response.data?.status !== "success") {
-      throw new Error(response.data?.message || "Failed to queue SMS");
-    }
-
-    // Store OTP in database with phone number and timestamp
+    // Store the OTP in the database
     await otpCollection.updateOne(
       { phoneNumber: phoneNumber },
-      { 
-        $set: { 
-          otp: otp,
-          createdAt: new Date(),
-          verified: false // Initial state
-        } 
-      },
+      { $set: { phoneNumber: phoneNumber, otp: otp, createdAt: new Date() } },
       { upsert: true }
     );
 
-    res.json({ 
-      success: true,
-      message: "SMS OTP sent successfully",
-      // Don't send OTP back in production - only for testing
-      otp: process.env.NODE_ENV === "development" ? otp : undefined
-    });
-
+    res.json({ message: "OTP sent successfully" });
   } catch (error) {
-    console.error("SMS OTP Error:", {
-      error: error.message,
-      response: error.response?.data,
-      phoneNumber: phoneNumber.replace(/\d(?=\d{4})/g, "*") // Mask for logs
-    });
-
-    const statusCode = error.response?.status || 500;
-    const errorMessage = error.response?.data?.message || 
-                        "Failed to send SMS OTP. Please try again later.";
-
-    res.status(statusCode).json({ 
-      error: errorMessage,
-      // Include more details in development
-      details: process.env.NODE_ENV === "development" ? {
-        apiError: error.response?.data,
-        stack: error.stack
-      } : undefined
-    });
+    console.error("Error sending SMS OTP:", error);
+    res.status(500).json({ error: "Failed to send OTP" });
   }
 });
+
 
 // Endpoint to verify OTP
 app.post("/verify-otp", async (req, res) => {

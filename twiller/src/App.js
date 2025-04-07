@@ -31,7 +31,7 @@ function App() {
     i18n.changeLanguage(savedLanguage).catch((error) => {
       console.error('Failed to load saved language:', error);
     });
-  }, []);
+  }, [i18n]);
   return (
    <div className='app'>
     <I18nextProvider i18n={i18n}>

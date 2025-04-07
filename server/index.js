@@ -1041,7 +1041,7 @@ app.post("/send-sms-otp", async (req, res) => {
 
 
 // Endpoint to verify OTP
-app.post("/verify-otp", async (req, res) => {
+app.post("/verify-sms-otp", async (req, res) => {
   const { email, phoneNumber, otp } = req.body;
 
   if ((!email && !phoneNumber) || !otp) {

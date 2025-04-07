@@ -84,10 +84,10 @@ const LanguageSwitcher = () => {
       let response;
       if (verificationMethod === 'email') {
         // Verify OTP using the backend endpoint
-        response = await axios.post('https://twiller-twitterclone-2-q41v.onrender.com/verify-otp', { email: emailOrMobile, otp });
+        response = await axios.post('https://twiller-twitterclone-2-q41v.onrender.com/verify-sms-otp', { email: emailOrMobile, otp });
       } else if (verificationMethod === 'sms') {
         // Verify OTP using the backend endpoint
-        response = await axios.post('https://twiller-twitterclone-2-q41v.onrender.com/verify-otp', { phoneNumber: emailOrMobile, otp });
+        response = await axios.post('https://twiller-twitterclone-2-q41v.onrender.com/verify-sms-otp', { phoneNumber: emailOrMobile, otp });
       }
 
       if (response.data.success) {

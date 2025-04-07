@@ -1045,18 +1045,19 @@ app.post("/verify-otp", async (req, res) => {
   const { email, phoneNumber, otp } = req.body;
 
   if ((!email && !phoneNumber) || !otp) {
-    return res.status(400).json({ error: "Email or phone number and OTP are required" });
+    return res.status(400).json({ error: "Email/Phone and OTP are required" });
   }
 
   try {
-    let query = {};
+    let storedOtp;
     if (email) {
-      query.email = email;
+      // Verify OTP for email
+      storedOtp = await otpCollection.findOne({ email: email });
     } else if (phoneNumber) {
-      query.phoneNumber = phoneNumber;
+      // Verify OTP for phone number
+      storedOtp = await otpCollection.findOne({ phoneNumber: phoneNumber });
     }
 
-    const storedOtp = await otpCollection.findOne(query);
     if (!storedOtp || storedOtp.otp !== otp) {
       return res.status(400).json({ error: "Invalid OTP" });
     }
@@ -1066,7 +1067,13 @@ app.post("/verify-otp", async (req, res) => {
       return res.status(400).json({ error: "OTP has expired" });
     }
 
-    await otpCollection.deleteOne(query); // Delete OTP after successful verification
+    // Delete OTP after successful verification
+    if (email) {
+      await otpCollection.deleteOne({ email: email });
+    } else if (phoneNumber) {
+      await otpCollection.deleteOne({ phoneNumber: phoneNumber });
+    }
+
     res.json({ success: true, message: "OTP verified successfully" });
   } catch (error) {
     console.error("Error verifying OTP:", error);

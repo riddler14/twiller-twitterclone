@@ -480,7 +480,7 @@ const Mainprofile = ({ user }) => {
                   </h3>
                   <p className="usernameSection">@{username}</p>
                 </div>
-                <button onClick={toggleNotificationPreference} className="notfication-settings">
+                <button onClick={toggleNotificationPreference} className="notification-settings">
                 {notificationsEnabled ? "Disable Notifications" : "Enable Notifications"}
               </button>
                  {/* Conditional Rendering of Edit Profile or Follow Button */}

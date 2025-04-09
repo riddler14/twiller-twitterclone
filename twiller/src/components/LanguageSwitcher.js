@@ -19,7 +19,7 @@ const LanguageSwitcher = () => {
   const changeLanguage = (lng) => {
     setSelectedLanguage(lng); // Update the selected language
     // Set the verification method: 'email' for French and English, 'sms' for others
-    setVerificationMethod(['fr', 'en'].includes(lng) ? 'email' : 'sms');
+    setVerificationMethod(['fr'].includes(lng) ? 'email' : 'sms');
     setIsPopupOpen(true); // Open the popup for email/phone input
     // Do NOT change the language here; wait until OTP verification succeeds
   };

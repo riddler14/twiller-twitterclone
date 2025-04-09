@@ -54,14 +54,14 @@ const Login=()=>{
               <input
                 type="email"
                 className="email"
-                placeholder="Email address"
+                placeholder={t("Email address")}
                 onChange={(e) => seteamil(e.target.value)}
                 required
               />
               <input
                 type="password"
                 className="password"
-                placeholder="Password"
+                placeholder={t("Password")}
                 onChange={(e) => setpassword(e.target.value)}
                 required
               />

@@ -22,7 +22,7 @@ const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 const twilioClient = twilio(accountSid, authToken);
 const useragent = require("express-useragent");
 const admin = require("firebase-admin"); // Import Firebase Admin SDK
-const serviceAccount = require(process.env.FIREBASE_SERVICE_ACCOUNT); // Replace with your service account file path
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT); // Replace with your service account file path
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });

@@ -20,6 +20,7 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 const twilioClient = twilio(accountSid, authToken);
+const useragent = require("express-useragent");
 
 
 require("dotenv").config();
@@ -35,7 +36,7 @@ app.use(
 );
 app.use(express.json());
 // const parser = new Parser();
-
+app.use(useragent.express());
 const client = new MongoClient(url);
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -274,6 +275,22 @@ async function run() {
       const email = req.query.email;
       const user = await usercollection.find({ email: email }).toArray();
       res.send(user);
+    });
+    
+    app.get("/login-history", async (req, res) => {
+      const { email } = req.query;
+    
+      try {
+        const user = await usercollection.findOne({ email: email }, { projection: { loginHistory: 1 } });
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
+    
+        res.json({ loginHistory: user.loginHistory });
+      } catch (error) {
+        console.error("Error fetching login history:", error);
+        res.status(500).json({ error: "Failed to fetch login history." });
+      }
     });
     app.post("/follow", async (req, res) => {
       const { followerEmail, followeeEmail } = req.body;
@@ -1005,6 +1022,7 @@ app.post("/send-email-otp", async (req, res) => {
   }
 });
 
+
 // Endpoint to send OTP via SMS using Twilio
 // Endpoint to send OTP via SMS using Twilio
 app.post("/send-sms-otp", async (req, res) => {
@@ -1080,7 +1098,41 @@ app.post("/verify-sms-otp", async (req, res) => {
     res.status(500).json({ error: "Failed to verify OTP" });
   }
 });
+app.post("/send-chrome-otp", async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.includes("@")) {
+    return res.status(400).json({ error: "Invalid email format" });
+  }
 
+  const otp = crypto.randomBytes(3).toString("hex").toUpperCase(); // Generate a 6-character OTP
+  const transporter = nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+
+  const mailOptions = {
+    from: "Twiller-Support",
+    to: email,
+    subject: "Your OTP for Email Verification for Chrome Browser",
+    text: `Your OTP is: ${otp}. Please use this to verify your email.`,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    await otpCollection.updateOne(
+      { email: email },
+      { $set: { email: email, otp: otp, createdAt: new Date() } },
+      { upsert: true }
+    );
+    res.json({ message: "Email OTP sent successfully" });
+  } catch (error) {
+    console.error("Error sending email OTP:", error);
+    res.status(500).json({ error: "Failed to send email OTP" });
+  }
+});
   } catch (error) {
     console.log(error);
   }

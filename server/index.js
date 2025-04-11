@@ -21,7 +21,11 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 const twilioClient = twilio(accountSid, authToken);
 const useragent = require("express-useragent");
-
+const admin = require("firebase-admin"); // Import Firebase Admin SDK
+const serviceAccount = require("./firebase-config.json"); // Replace with your service account file path
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 
 require("dotenv").config();
 
@@ -1131,6 +1135,44 @@ app.post("/send-chrome-otp", async (req, res) => {
   } catch (error) {
     console.error("Error sending email OTP:", error);
     res.status(500).json({ error: "Failed to send email OTP" });
+  }
+});
+
+app.post("/verify-chrome-otp", async (req, res) => {
+  const { email, otp } = req.body;
+
+  if (!email || !otp) {
+    return res.status(400).json({ error: "Email and OTP are required" });
+  }
+
+  try {
+    // Verify OTP against the database
+    const storedOtp = await otpCollection.findOne({ email: email });
+    if (!storedOtp || storedOtp.otp !== otp) {
+      return res.status(400).json({ error: "Invalid OTP" });
+    }
+
+    // Check if OTP has expired (15 minutes validity)
+    const otpExpiryTime = new Date(storedOtp.createdAt.getTime() + 15 * 60 * 1000); // OTP valid for 15 minutes
+    if (new Date() > otpExpiryTime) {
+      return res.status(400).json({ error: "OTP has expired" });
+    }
+
+    // Delete OTP after successful verification
+    await otpCollection.deleteOne({ email: email });
+
+    // Generate a Firebase custom token
+    const firebaseToken = await admin.auth().createCustomToken(email);
+
+    // Return the custom token to the client
+    res.json({
+      success: true,
+      message: "OTP verified successfully",
+      firebaseToken: firebaseToken,
+    });
+  } catch (error) {
+    console.error("Error verifying OTP:", error);
+    res.status(500).json({ error: "Failed to verify OTP" });
   }
 });
   } catch (error) {

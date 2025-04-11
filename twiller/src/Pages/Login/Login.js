@@ -52,7 +52,7 @@ const Login = () => {
       return;
     }
     try {
-      const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/verify-otp", { email, otp });
+      const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/verify-chrome-otp", { email, otp });
       const firebaseToken = response.data.firebaseToken;
 
       // Authenticate the user using the Firebase custom token

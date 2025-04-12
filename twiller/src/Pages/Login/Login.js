@@ -7,7 +7,7 @@ import "./login.css";
 import { useUserAuth } from "../../context/UserAuthContext";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
-import { getAuth, signInWithCustomToken } from "firebase/auth";
+
 import axios from "axios";
 
 const Login = () => {
@@ -21,7 +21,7 @@ const Login = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const { googleSignin, logIn } = useUserAuth();
-  const auth = getAuth();
+  
 
   const userAgent = navigator.userAgent;
   const isMobile = /Mobi|Android/i.test(userAgent); // Check if the device is mobile
@@ -52,13 +52,17 @@ const Login = () => {
       return;
     }
     try {
+      // Verify OTP with the backend
       const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/verify-chrome-otp", { email, otp });
-      const firebaseToken = response.data.firebaseToken;
-
-      // Authenticate the user using the Firebase custom token
-      const userCredential = await signInWithCustomToken(auth, firebaseToken);
-      console.log("User logged in:", userCredential.user);
-      navigate("/"); // Redirect to the home page after successful login
+  
+      // If OTP verification is successful, proceed to email/password login
+      if (response.data.success) {
+        alert("OTP verified successfully. Logging in...");
+        await logIn(email, password); // Log in with email and password
+        navigate("/"); // Redirect to the home page
+      } else {
+        setError("Failed to verify OTP.");
+      }
     } catch (error) {
       setError(error.response?.data?.error || "Failed to verify OTP");
     }
@@ -68,11 +72,11 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
+  
     // Get current time
     const now = new Date();
     const currentHour = now.getHours();
-
+  
     if (isMobile) {
       // Restrict login to 7 PM to 12 PM for mobile devices
       if (currentHour < 19 || currentHour >= 24) {
@@ -80,7 +84,7 @@ const Login = () => {
         return;
       }
     }
-
+  
     if (isChrome) {
       // Send OTP to Chrome users
       try {

@@ -1,7 +1,7 @@
 const { MongoClient,GridFSBucket,ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
-const axios = require("axios");
+
 const nodemailer = require("nodemailer"); // For sending OTP emails
 const multer = require("multer"); // For handling file uploads
 const crypto = require("crypto"); // For generating OTPs
@@ -21,11 +21,7 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 const twilioClient = twilio(accountSid, authToken);
 const useragent = require("express-useragent");
-const admin = require("firebase-admin"); // Import Firebase Admin SDK
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT); // Replace with your service account file path
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
-});
+
 
 require("dotenv").config();
 
@@ -1146,30 +1142,24 @@ app.post("/verify-chrome-otp", async (req, res) => {
   }
 
   try {
-    // Verify OTP against the database
+    // Find the stored OTP in the database
     const storedOtp = await otpCollection.findOne({ email: email });
+
     if (!storedOtp || storedOtp.otp !== otp) {
       return res.status(400).json({ error: "Invalid OTP" });
     }
 
-    // Check if OTP has expired (15 minutes validity)
-    const otpExpiryTime = new Date(storedOtp.createdAt.getTime() + 15 * 60 * 1000); // OTP valid for 15 minutes
+    // Check if the OTP has expired (15 minutes validity)
+    const otpExpiryTime = new Date(storedOtp.createdAt.getTime() + 15 * 60 * 1000);
     if (new Date() > otpExpiryTime) {
       return res.status(400).json({ error: "OTP has expired" });
     }
 
-    // Delete OTP after successful verification
+    // Delete the OTP after successful verification
     await otpCollection.deleteOne({ email: email });
 
-    // Generate a Firebase custom token
-    const firebaseToken = await admin.auth().createCustomToken(email);
-
-    // Return the custom token to the client
-    res.json({
-      success: true,
-      message: "OTP verified successfully",
-      firebaseToken: firebaseToken,
-    });
+    // Return success response
+    res.json({ success: true, message: "OTP verified successfully" });
   } catch (error) {
     console.error("Error verifying OTP:", error);
     res.status(500).json({ error: "Failed to verify OTP" });

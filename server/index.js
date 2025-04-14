@@ -1165,11 +1165,6 @@ app.post("/verify-chrome-otp", async (req, res) => {
     res.status(500).json({ error: "Failed to verify OTP" });
   }
 });
-  } catch (error) {
-    console.log(error);
-  }
-}
-// Endpoint to store login metadata after successful login
 app.post("/store-login-metadata", async (req, res) => {
   const { email, metadata } = req.body;
 
@@ -1204,6 +1199,12 @@ app.post("/store-login-metadata", async (req, res) => {
     res.status(500).json({ error: "Failed to store login metadata" });
   }
 });
+  } catch (error) {
+    console.log(error);
+  }
+}
+// Endpoint to store login metadata after successful login
+
 run().catch(console.dir);
 
 app.get("/", (req,res) => {

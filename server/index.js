@@ -279,13 +279,11 @@ async function run() {
     
     app.get("/login-history", async (req, res) => {
       const { email } = req.query;
-    
       try {
         const user = await usercollection.findOne({ email: email }, { projection: { loginHistory: 1 } });
         if (!user) {
           return res.status(404).json({ error: "User not found" });
         }
-    
         res.json({ loginHistory: user.loginHistory });
       } catch (error) {
         console.error("Error fetching login history:", error);

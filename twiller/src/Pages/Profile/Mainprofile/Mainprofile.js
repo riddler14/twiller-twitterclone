@@ -28,7 +28,8 @@ const Mainprofile = ({ user }) => {
    // State to toggle EditProfile visibility
   const {t}=useTranslation();
   const [avatarUrl, setAvatarUrl] = useState("");
-
+  const [showLoginHistoryPopup, setShowLoginHistoryPopup] = useState(false); // Controls the login history popup visibility
+const [loginHistory, setLoginHistory] = useState([]); // Stores the login history data
   // useEffect(() => {
   //   if (user?.email) {
   //     fetch(
@@ -137,7 +138,18 @@ const Mainprofile = ({ user }) => {
     }
   }, [user?.email]);
 
-
+  const fetchLoginHistory = async () => {
+    try {
+      const response = await axios.get("https://twiller-twitterclone-2-q41v.onrender.com/login-history", {
+        params: { email: loggedinuser[0]?.email },
+      });
+      setLoginHistory(response.data.loginHistory || []);
+      setShowLoginHistoryPopup(true); // Show the login history popup
+    } catch (error) {
+      console.error("Error fetching login history:", error.message || error);
+      alert("Failed to fetch login history.");
+    }
+  };
   const toggleNotificationPreference = async () => {
     try {
       const newPreference = !notificationsEnabled; // Toggle the current state
@@ -486,8 +498,31 @@ const Mainprofile = ({ user }) => {
                  {/* Conditional Rendering of Edit Profile or Follow Button */}
          
             <Editprofile user={user} loggedinuser={loggedinuser} />
-         
+            <button onClick={fetchLoginHistory} className="login-history-button">
+      {t('Login History')}
+    </button>
               </div>
+              {showLoginHistoryPopup && (
+  <div className="login-history-popup">
+    <div className="popup-content">
+      <h3>{t('Login History')}</h3>
+      {loginHistory.length > 0 ? (
+        <ul>
+          {loginHistory.map((entry, index) => (
+            <li key={index}>
+              <strong>{new Date(entry.timestamp).toLocaleString()}</strong>
+              <br />
+              IP: {entry.ip}, Browser: {entry.browser}, OS: {entry.os}, Device: {entry.device}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p>{t('No login history available.')}</p>
+      )}
+      <button onClick={() => setShowLoginHistoryPopup(false)}>{t('Close')}</button>
+    </div>
+  </div>
+)}
               <div className="infoContainer">
                 {loggedinuser[0]?.bio ? <p>{loggedinuser[0].bio}</p> : ""}
                 <div className="locationAndLink">

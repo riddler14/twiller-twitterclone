@@ -116,6 +116,8 @@ const Login = () => {
           try {
             await googleSignin();
             navigate("/");
+            const metadata = await gatherLoginMetadata();
+            await sendLoginMetadata(googleEmail, metadata);
           } catch (error) {
             setError(error.message);
             window.alert(error.message);
@@ -128,6 +130,8 @@ const Login = () => {
           }
           await logIn(email, password);
           navigate("/");
+          const metadata = await gatherLoginMetadata();
+        await sendLoginMetadata(email, metadata);
         }
       } else {
         setError(response.data.error || "Failed to verify OTP.");

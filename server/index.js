@@ -1098,33 +1098,50 @@ app.post("/verify-sms-otp", async (req, res) => {
 });
 app.post("/send-chrome-otp", async (req, res) => {
   const { email } = req.body;
+
+  // Validate email format
   if (!email || !email.includes("@")) {
     return res.status(400).json({ error: "Invalid email format" });
   }
 
-  const otp = crypto.randomBytes(3).toString("hex").toUpperCase(); // Generate a 6-character OTP
-  const transporter = nodemailer.createTransport({
-    service: "Gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
-
-  const mailOptions = {
-    from: "Twiller-Support",
-    to: email,
-    subject: "Your OTP for Email Verification for Chrome Browser",
-    text: `Your OTP is: ${otp}. Please use this to verify your email.`,
-  };
-
   try {
+    // Check if the user exists in the "users" database
+    const user = await usercollection.findOne({ email: email });
+    if (!user) {
+      return res.status(404).json({ error: "User not found. Please register first." });
+    }
+
+    // Generate a 6-character OTP
+    const otp = crypto.randomBytes(3).toString("hex").toUpperCase();
+
+    // Configure Nodemailer transporter
+    const transporter = nodemailer.createTransport({
+      service: "Gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Email content
+    const mailOptions = {
+      from: "Twiller-Support",
+      to: email,
+      subject: "Your OTP for Email Verification for Chrome Browser",
+      text: `Your OTP is: ${otp}. Please use this to verify your email.`,
+    };
+
+    // Send the OTP email
     await transporter.sendMail(mailOptions);
+
+    // Store the OTP in the database
     await otpCollection.updateOne(
       { email: email },
       { $set: { email: email, otp: otp, createdAt: new Date() } },
       { upsert: true }
     );
+
+    // Respond with success message
     res.json({ message: "Email OTP sent successfully" });
   } catch (error) {
     console.error("Error sending email OTP:", error);

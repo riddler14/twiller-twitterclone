@@ -79,19 +79,25 @@ const Login = () => {
     }
   };
   // Function to send OTP
-  const handleSendOtp = async (e) => {
-    e.preventDefault();
+  const handleSendOtp = async () => {
     const targetEmail = googleEmail || email; // Use Google email or regular email
+  
+    console.log("Target email for OTP:", targetEmail); // Debugging log
+  
     if (!targetEmail || !targetEmail.includes("@")) {
       setError("Please enter a valid email address.");
       return;
     }
+  
     try {
       const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/send-chrome-otp", { email: targetEmail });
+  
+      console.log("OTP sent successfully:", response.data); // Debugging log
       alert(response.data.message); // Notify the user that the OTP has been sent
       setIsOtpSent(true); // Show OTP input field
     } catch (error) {
-      setError(error.response?.data?.error || "Failed to send OTP");
+      console.error("Error sending OTP:", error); // Log the full error
+      setError(error.response?.data?.error || "Failed to send OTP. Please try again.");
     }
   };
 
@@ -151,8 +157,8 @@ const Login = () => {
     const currentHour = now.getHours();
 
     if (isMobile) {
-      if (currentHour < 10 || currentHour >= 13) {
-        setError("Login is only allowed between 10 AM and 1 PM on mobile devices.");
+      if (currentHour < 20 || currentHour >= 24) {
+        setError("Login is only allowed between 8 PM and 12 AM on mobile devices.");
         return;
       }
     }
@@ -160,7 +166,7 @@ const Login = () => {
     if (isChrome) {
       // Send OTP to Chrome users
       try {
-        await handleSendOtp(e); // Call the handleSendOtp function here
+        await handleSendOtp(); // Call the handleSendOtp function here
         setShowOtpPopup(true); // Show the OTP popup
       } catch (error) {
         setError(error.message || "Failed to send OTP.");
@@ -198,16 +204,45 @@ const Login = () => {
       // Trigger Google Sign-In
       const user = await googleSignin();
       const userEmail = user?.user?.email;
-
+  
       if (!userEmail) {
         setError("Unable to retrieve email from Google Sign-In.");
         return;
       }
-
-      // Store the Google email and trigger OTP verification
-      setGoogleEmail(userEmail);
-      await handleSendOtp(e); // Send OTP for Google email
-      setShowOtpPopup(true); // Show the OTP popup
+  
+      console.log("Step 1: Google Sign-In completed. Email:", userEmail);
+  
+      // Check if the browser is Chrome
+      if (isChrome) {
+        // Set the Google email in the state
+        setGoogleEmail(userEmail);
+  
+        // Ensure the email is set before proceeding
+        await new Promise((resolve) => setTimeout(resolve, 0)); // Wait for state update
+  
+        // Send OTP to the user's email
+        try {
+          await handleSendOtp(); // Send OTP for Google email
+          console.log("Step 2: OTP sent successfully.");
+          setShowOtpPopup(true); // Show the OTP popup only after OTP is sent
+        } catch (error) {
+          console.error("Error during OTP sending:", error);
+          setError("Failed to send OTP. Please try again.");
+        }
+      } else {
+        // For non-Chrome browsers (e.g., Edge) or mobile devices, log in directly using googleSignin()
+        try {
+          await googleSignin(); // Complete the Google Sign-In process
+          navigate("/");
+  
+          // Gather and send login metadata
+          const metadata = await gatherLoginMetadata();
+          await sendLoginMetadata(userEmail, metadata);
+        } catch (error) {
+          console.error("Error during direct Google Sign-In:", error);
+          setError(error.message || "Failed to log in with Google.");
+        }
+      }
     } catch (error) {
       console.error("Error during Google Sign-In:", error);
       setError(error.message || "Failed to sign in with Google.");

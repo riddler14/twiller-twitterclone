@@ -1169,7 +1169,41 @@ app.post("/verify-chrome-otp", async (req, res) => {
     console.log(error);
   }
 }
+// Endpoint to store login metadata after successful login
+app.post("/store-login-metadata", async (req, res) => {
+  const { email, metadata } = req.body;
 
+  if (!email || !metadata) {
+    return res.status(400).json({ error: "Email and metadata are required" });
+  }
+
+  try {
+    // Update the user's login history in the database
+    const result = await usercollection.updateOne(
+      { email: email },
+      {
+        $push: {
+          loginHistory: {
+            timestamp: new Date(),
+            ip: metadata.ip,
+            browser: metadata.browser,
+            os: metadata.os,
+            device: metadata.device,
+          },
+        },
+      }
+    );
+
+    if (result.modifiedCount > 0 || result.matchedCount > 0) {
+      res.json({ success: true, message: "Login metadata stored successfully" });
+    } else {
+      res.status(404).json({ error: "User not found" });
+    }
+  } catch (error) {
+    console.error("Error storing login metadata:", error);
+    res.status(500).json({ error: "Failed to store login metadata" });
+  }
+});
 run().catch(console.dir);
 
 app.get("/", (req,res) => {

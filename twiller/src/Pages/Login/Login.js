@@ -7,7 +7,6 @@ import "./login.css";
 import { useUserAuth } from "../../context/UserAuthContext";
 import LanguageSwitcher from "../../components/LanguageSwitcher";
 import { useTranslation } from "react-i18next";
-
 import axios from "axios";
 
 const Login = () => {
@@ -19,24 +18,76 @@ const Login = () => {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const [showOtpPopup, setShowOtpPopup] = useState(false); // Controls the OTP popup visibility
   const [error, setError] = useState("");
+  const [googleEmail, setGoogleEmail] = useState(""); // Email retrieved from Google Sign-In
   const navigate = useNavigate();
   const { googleSignin, logIn } = useUserAuth();
-  
 
   const userAgent = navigator.userAgent;
   const isMobile = /Mobi|Android/i.test(userAgent); // Check if the device is mobile
   const isChrome = userAgent.includes("Chrome") && !userAgent.includes("Edg"); // Check for Chrome
   const isEdge = userAgent.includes("Edg"); // Check for Edge
 
+  const fetchIPAddress = async () => {
+    try {
+      const response = await axios.get("https://api.ipify.org?format=json");
+      return response.data.ip;
+    } catch (error) {
+      console.error("Error fetching IP address:", error);
+      return "Unknown";
+    }
+  };
+  
+  const getBrowserInfo = () => {
+    if (isChrome) return "Chrome";
+    if (isEdge) return "Edge";
+    return "Other";
+  };
+  
+  const getOSInfo = () => {
+    if (/Windows/i.test(userAgent)) return "Windows";
+    if (/Macintosh/i.test(userAgent)) return "Mac";
+    if (/Linux/i.test(userAgent)) return "Linux";
+    return "Other";
+  };
+  
+  const getDeviceInfo = () => {
+    return isMobile ? "Mobile" : "Desktop";
+  };
+  
+  const gatherLoginMetadata = async () => {
+    const ip = await fetchIPAddress();
+    return {
+      ip: ip,
+      browser: getBrowserInfo(),
+      os: getOSInfo(),
+      device: getDeviceInfo(),
+    };
+  };
+
+  const sendLoginMetadata = async (email, metadata) => {
+    try {
+      const response = await axios.post(
+        "https://twiller-twitterclone-2-q41v.onrender.com/store-login-metadata",
+        {
+          email: email,
+          metadata: metadata,
+        }
+      );
+      console.log("Login metadata stored successfully:", response.data);
+    } catch (error) {
+      console.error("Error storing login metadata:", error.message || error);
+    }
+  };
   // Function to send OTP
   const handleSendOtp = async (e) => {
     e.preventDefault();
-    if (!email || !email.includes("@")) {
+    const targetEmail = googleEmail || email; // Use Google email or regular email
+    if (!targetEmail || !targetEmail.includes("@")) {
       setError("Please enter a valid email address.");
       return;
     }
     try {
-      const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/send-chrome-otp", { email });
+      const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/send-chrome-otp", { email: targetEmail });
       alert(response.data.message); // Notify the user that the OTP has been sent
       setIsOtpSent(true); // Show OTP input field
     } catch (error) {
@@ -47,23 +98,42 @@ const Login = () => {
   // Function to verify OTP
   const handleVerifyOtp = async (e) => {
     e.preventDefault();
+    const targetEmail = googleEmail || email; // Use Google email or regular email
     if (!otp) {
       setError("Please enter the OTP.");
       return;
     }
     try {
-      // Verify OTP with the backend
-      const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/verify-chrome-otp", { email, otp });
-  
-      // If OTP verification is successful, proceed to email/password login
+      const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/verify-chrome-otp", { email: targetEmail, otp });
+
+      console.log("OTP verification response:", response.data);
+
       if (response.data.success) {
         alert("OTP verified successfully. Logging in...");
-        await logIn(email, password); // Log in with email and password
-        navigate("/"); // Redirect to the home page
+
+        if (googleEmail) {
+          // Proceed with Google Sign-In
+          try {
+            await googleSignin();
+            navigate("/");
+          } catch (error) {
+            setError(error.message);
+            window.alert(error.message);
+          }
+        } else {
+          // Proceed with regular email/password login
+          if (!email || !password) {
+            setError("Email and password are required.");
+            return;
+          }
+          await logIn(email, password);
+          navigate("/");
+        }
       } else {
-        setError("Failed to verify OTP.");
+        setError(response.data.error || "Failed to verify OTP.");
       }
     } catch (error) {
+      console.error("Error verifying OTP:", error);
       setError(error.response?.data?.error || "Failed to verify OTP");
     }
   };
@@ -72,19 +142,17 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-  
-    // Get current time
+
     const now = new Date();
     const currentHour = now.getHours();
-  
+
     if (isMobile) {
-      // Restrict login to 7 PM to 12 PM for mobile devices
-      if (currentHour < 19 || currentHour >= 24) {
-        setError("Login is only allowed between 7 PM and 12 PM on mobile devices.");
+      if (currentHour < 10 || currentHour >= 13) {
+        setError("Login is only allowed between 10 AM and 1 PM on mobile devices.");
         return;
       }
     }
-  
+
     if (isChrome) {
       // Send OTP to Chrome users
       try {
@@ -98,6 +166,9 @@ const Login = () => {
       try {
         await logIn(email, password);
         navigate("/");
+
+        const metadata = await gatherLoginMetadata();
+      await sendLoginMetadata(email, metadata);
       } catch (error) {
         setError(error.message);
         window.alert(error.message);
@@ -107,6 +178,8 @@ const Login = () => {
       try {
         await logIn(email, password);
         navigate("/");
+        const metadata = await gatherLoginMetadata();
+      await sendLoginMetadata(email, metadata);
       } catch (error) {
         setError(error.message);
         window.alert(error.message);
@@ -114,14 +187,26 @@ const Login = () => {
     }
   };
 
-
+  // Handle Google Sign-In
   const handleGoogleSignIn = async (e) => {
     e.preventDefault();
     try {
-      await googleSignin();
-      navigate("/");
+      // Trigger Google Sign-In
+      const user = await googleSignin();
+      const userEmail = user?.user?.email;
+
+      if (!userEmail) {
+        setError("Unable to retrieve email from Google Sign-In.");
+        return;
+      }
+
+      // Store the Google email and trigger OTP verification
+      setGoogleEmail(userEmail);
+      await handleSendOtp(e); // Send OTP for Google email
+      setShowOtpPopup(true); // Show the OTP popup
     } catch (error) {
-      console.log(error.message);
+      console.error("Error during Google Sign-In:", error);
+      setError(error.message || "Failed to sign in with Google.");
     }
   };
 
@@ -147,18 +232,14 @@ const Login = () => {
               />
 
               {/* Password Input */}
-              {!isOtpSent && (
-                <input
-                  type="password"
-                  className="password"
-                  placeholder={t("Password")}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              )}
-
-             
+              <input
+                type="password"
+                className="password"
+                placeholder={t("Password")}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
 
               <div className="btn-login">
                 <button type="submit" className="btn">
@@ -171,8 +252,8 @@ const Login = () => {
             {showOtpPopup && (
               <div className="otp-popup">
                 <div className="popup-content">
-                  <h3>{t('Chrome Verification')}</h3>
-                  
+                  <h3>{t('Verification')}</h3>
+
                   <input
                     type="text"
                     className="otp-input"

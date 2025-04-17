@@ -7,6 +7,7 @@ import axios from "axios";
 import { useUserAuth } from "../../../context/UserAuthContext";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
 import { useTranslation } from 'react-i18next';
+import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
 
 const Tweetbox=()=>{
     const [post, setpost] = useState("");
@@ -26,8 +27,9 @@ const [timerInterval, setTimerInterval] = useState(null); // Stores the interval
 const [playTime, setPlayTime] = useState(0); // Track playback time
   const [isPlaying, setIsPlaying] = useState(false); // Track if audio is playing
   const [audioDuration, setAudioDuration] = useState(""); // Track audio duration
-
-
+  const [isLoading,setIsLoading]=useState(false);
+  const [videoFile, setVideoFile] = useState(null); // Store selected video file
+  const [videoUrl, setVideoUrl] = useState(""); // Store video preview URL
 
   const mediaRecorderRef = useRef(null); // Reference for MediaRecorder
   const chunksRef = useRef([]); // Store recorded audio chunks
@@ -306,11 +308,27 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
 
       if (!isWithinPostingWindow()) {
         alert("You can only post between 10:00 AM and 10:30 AM IST.");
+        setpost("");
+        setimageurl("");
+        setAudioBlob(null);
+        
+        setVideoFile(null); // Clear the video file
+        setIsAudioAttached(false); // Remove "Audio Attached" message
+        setOpenPopup(false); // Close popup after successful post
+        setOtpVerified(false);
         return;
       }
 
       if (postsToday.length > 0) {
         alert("You have already posted today.");
+        setpost("");
+        setimageurl("");
+        setAudioBlob(null);
+        
+        setVideoFile(null); // Clear the video file
+        setIsAudioAttached(false); // Remove "Audio Attached" message
+        setOpenPopup(false); // Close popup after successful post
+        setOtpVerified(false);
         return;
       }
     } else if (followCount > 0 && followCount < 10) {
@@ -319,34 +337,58 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
 
       if (postsToday.length >= maxPostsPerDay) {
         alert(`You can only post ${maxPostsPerDay} times a day.`);
+        setpost("");
+        setimageurl("");
+        setAudioBlob(null);
+        
+        setVideoFile(null); // Clear the video file
+        setIsAudioAttached(false); // Remove "Audio Attached" message
+        setOpenPopup(false); // Close popup after successful post
+        setOtpVerified(false);
         return;
       }
     }
     
         // Prepare tweet data
         const formData = new FormData();
-        if (audioBlob) {
-          formData.append("audio", audioBlob);
-        }
-      
-        // Upload audio if present
-        if (audioBlob) {
-          console.log("Uploading audio...");
-  try {
-    const uploadResponse = await axios.post(
-      "https://twiller-twitterclone-2-q41v.onrender.com/upload-audio",
-      formData,
-      { headers: { "Content-Type": "multipart/form-data" } }
-    );
-    const audioUrl = uploadResponse.data.url; // Get the audio URL from the response
-    console.log("Audio uploaded successfully:", audioUrl);
+  if (audioBlob) formData.append("audio", audioBlob);
+  if (videoFile) formData.append("video", videoFile);
 
-    // Post the tweet with the audio URL
+  try {
+    let audioUrl = null;
+    let videoUrl = null;
+
+    // Upload audio if present
+    if (audioBlob) {
+      console.log("Uploading audio...");
+      const audioResponse = await axios.post(
+        "https://twiller-twitterclone-2-q41v.onrender.com/upload-audio",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      audioUrl = audioResponse.data.url; // Get the audio URL from the response
+      console.log("Audio uploaded successfully:", audioUrl);
+    }
+
+    // Upload video if present
+    if (videoFile) {
+      console.log("Uploading video...");
+      const videoResponse = await axios.post(
+        "https://twiller-twitterclone-2-q41v.onrender.com/upload-video",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      videoUrl = videoResponse.data.url; // Get the video URL from the response
+      console.log("Video uploaded successfully:", videoUrl);
+    }
+
+    // Post the tweet with audio/video URLs
     const userPost = {
       profilephoto: userprofilepic,
       post: post,
       photo: imageurl,
       audio: audioUrl, // Use the audio URL here
+      video: videoUrl, // Use the video URL here
       username: username,
       name: name,
       email: email,
@@ -364,41 +406,42 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
     // Reset state after successful post
     setpost("");
     setimageurl("");
-    setAudioBlob(audioUrl);
+    setAudioBlob(null);
+    
+    setVideoFile(null); // Clear the video file
     setIsAudioAttached(false); // Remove "Audio Attached" message
-
     setOpenPopup(false); // Close popup after successful post
     setOtpVerified(false); // Reset OTP verification
   } catch (error) {
     console.error("Error during tweet submission:", error);
     alert("An error occurred while posting the tweet. Please try again.");
-  }
-        } else {
-          // Post without audio
-          const userPost = {
-            profilephoto: userprofilepic,
-            post: post,
-            photo: imageurl,
-          
-            username: username,
-            name: name,
-            email: email,
-          };
-      
-          fetch("https://twiller-twitterclone-2-q41v.onrender.com/post", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify(userPost),
-          })
-            .then((res) => res.json())
-            .then((data) => {
-              console.log(data);
-              setpost("");
-              setimageurl("");
-            });
-        }
-      };
+    setpost("");
+    setimageurl("");
+    setAudioBlob(null);
     
+    setVideoFile(null); // Clear the video file
+    setIsAudioAttached(false); // Remove "Audio Attached" message
+    setOpenPopup(false); // Close popup after successful post
+    setOtpVerified(false);
+  }
+      };
+      const handleVideoUpload = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+      
+        // Validate video size and format
+        if (file.size > 500 * 1024 * 1024) {
+          alert("Video must be less than 500MB.");
+          return;
+        }
+        if (!["video/mp4", "video/webm", "video/ogg"].includes(file.type)) {
+          alert("Only MP4, WebM, and Ogg formats are allowed.");
+          return;
+        }
+      
+        setVideoFile(file); // Store the selected video file
+        setVideoUrl(URL.createObjectURL(file)); // Preview the video locally
+      };
     return (
         <div className="tweetBox">
       <form onSubmit={handletweet}>
@@ -418,6 +461,29 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
             required
           />
           </div>
+          {videoUrl && (
+        <div className="videoPreview">
+          <video controls src={videoUrl} style={{ width: "100%" }} />
+          <button onClick={() => setVideoUrl("")}>Remove Video</button>
+        </div>
+      )}
+
+      {/* Video Upload Button */}
+      <label htmlFor="video" className="videoIcon">
+  {isLoading ? (
+    <p>Uploading Video...</p>
+  ) : (
+    <VideoLibraryIcon fontSize="large" style={{ color: "black" }} />
+  )}
+</label>
+<input
+  type="file"
+  id="video"
+  accept="video/*"
+  className="videoInput"
+  onChange={handleVideoUpload}
+  style={{ display: "none" }} // Hide the actual input
+/>
         <div className="imageIcon_tweetButton">
           <label htmlFor="image" className="imageIcon">
             {

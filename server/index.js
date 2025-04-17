@@ -236,7 +236,10 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 100 * 1024 * 1024 }, // Limit file size to 100MB
 }).single("audio");
-
+const upload2 = multer({
+  storage: storage,
+  limits: { fileSize: 100 * 1024 * 1024 }, // Limit file size to 100MB
+}).single("video");
 function isWithinPostingWindow() {
   const now = new Date();
   const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
@@ -259,7 +262,9 @@ async function run() {
     const bucket = new GridFSBucket(database, {
       bucketName: "audios", // Collection name for GridFS
     });
-
+    const bucket2 = new GridFSBucket(database, {
+      bucketName: "videos", // Collection name for GridFS
+    });
     app.post("/register", async (req, res) => {
       const user = req.body;
 
@@ -1218,8 +1223,85 @@ app.post("/store-login-metadata", async (req, res) => {
     console.log(error);
   }
 }
-// Endpoint to store login metadata after successful login
+app.post("/upload-video", (req, res) => {
+  upload2(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      // Handle Multer errors (e.g., file too large)
+      return res.status(400).json({ error: "File too large. Maximum size is 500MB." });
+    } else if (err) {
+      // Handle other errors
+      return res.status(500).json({ error: "Error uploading file" });
+    }
 
+    // Check if a file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const videoFile = req.file; // Uploaded file
+
+    try {
+      // Upload the file to GridFS
+      const uploadStream = bucket2.openUploadStream(videoFile.originalname, {
+        contentType: videoFile.mimetype,
+      });
+
+      uploadStream.end(videoFile.buffer);
+
+      // Wait for the upload to finish
+      uploadStream.once("finish", () => {
+        const videoId = uploadStream.id; // The ID of the uploaded file in GridFS
+        console.log("Uploaded video file with ID:", videoId); // Log the ID
+
+        // Construct the video URL
+        const videoUrl = `https://twiller-twitterclone-2-q41v.onrender.com/video/${videoId}`;
+
+        // Respond with the video URL and ID
+        res.json({ url: videoUrl, id: videoId });
+      });
+
+      // Handle errors during upload
+      uploadStream.on("error", (error) => {
+        console.error("Error uploading video to GridFS:", error);
+        res.status(500).json({ error: "Failed to upload video" });
+      });
+    } catch (error) {
+      console.error("Error uploading video:", error);
+      res.status(500).json({ error: "Failed to upload video" });
+    }
+  });
+});
+// Endpoint to store login metadata after successful login
+// Endpoint to retrieve video from GridFS
+app.get("/video/:id", async (req, res) => {
+  const fileId = req.params.id;
+
+  try {
+    // Validate the fileId
+    if (!fileId || !ObjectId.isValid(fileId)) {
+      console.error("Invalid file ID:", fileId);
+      return res.status(400).json({ error: "Invalid file ID" });
+    }
+
+    // Open a download stream for the video file
+    const downloadStream = bucket2.openDownloadStream(new ObjectId(fileId));
+
+    // Set the appropriate content type (e.g., video/mp4)
+    res.set("Content-Type", "video/mp4");
+
+    // Pipe the download stream to the response
+    downloadStream.pipe(res);
+
+    // Handle errors during download
+    downloadStream.on("error", (error) => {
+      console.error("Error downloading video from GridFS:", error);
+      res.status(404).json({ error: "Video not found" });
+    });
+  } catch (error) {
+    console.error("Error retrieving video:", error);
+    res.status(500).json({ error: "Failed to retrieve video" });
+  }
+});
 run().catch(console.dir);
 
 app.get("/", (req,res) => {

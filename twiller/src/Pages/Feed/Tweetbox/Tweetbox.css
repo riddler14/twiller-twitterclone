@@ -57,7 +57,15 @@
 .imageInput {
   display: none;
 }
+.videoIcon {
+  display: inline-block;
+  cursor: pointer;
+  color: black; /* Ensure the icon is visible */
+}
 
+.videoInput {
+  display: none; /* Hide the file input */
+}
 /* Tablet Styles */
 @media screen and (max-width: 768px) {
   .tweetBox__input > input {

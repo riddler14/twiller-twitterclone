@@ -1,4 +1,4 @@
-import {React,useState} from "react";
+import {React,useState,useRef} from "react";
 import "./Posts.css";
 import { Avatar } from "@mui/material";
 import axios from "axios";
@@ -12,12 +12,15 @@ import useLoggedinuser from "../../../hooks/useLoggedinuser";
 
 
 const Posts = ({ p }) => {
-  const { name, username, photo, post, profilephoto,audio,email } = p;
+  const { name, username, photo, post, profilephoto,audio,video,email } = p;
   const navigate=useNavigate();
   const [userId, setUserId] = useState(null); // Store the user's _id locally
   const [loggedinuser] = useLoggedinuser(); // Assuming this hook provides the logged-in user's data
   const loggedInEmail = loggedinuser[0]?.email;
   // Fetch user's _id based on email
+
+  const videoRef = useRef(null); // Reference to the video element
+  const [tapCount, setTapCount] = useState(0); // Track tap count for multi-tap gestures
   const fetchUserId = async (email) => {
     try {
       const response = await axios.get(
@@ -51,6 +54,83 @@ const Posts = ({ p }) => {
       navigate(`/home/profile/${userId}`); // Navigate to the user's profile page
     }
   };
+  const resetTapCount = () => {
+    setTimeout(() => setTapCount(0), 300); // 300ms timeout for multi-tap detection
+  };
+
+  // Handle double-tap gestures
+  const handleDoubleTap = (direction) => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (direction === "right") {
+      video.currentTime += 10; // Move 10 seconds forward
+    } else if (direction === "left") {
+      video.currentTime -= 10; // Move 10 seconds backward
+    }
+  };
+
+  // Handle single-tap gestures
+  const handleSingleTap = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play(); // Resume playback
+    } else {
+      video.pause(); // Pause playback
+    }
+  };
+
+  // Handle three-tap gestures
+  const handleTripleTap = (position) => {
+    switch (position) {
+      case "middle":
+        alert("Moving to the next video..."); // Replace with logic to move to the next video
+        break;
+      case "right":
+        alert("Closing the website...");
+        window.close(); // Close the browser tab
+        break;
+      case "left":
+        alert("Showing comments...");
+        // Replace with logic to show the comment section
+        break;
+      default:
+        break;
+    }
+  };
+
+  // Detect taps and their positions
+  const handleTap = (e) => {
+    const { clientX, clientY } = e.touches[0];
+    const rect = e.target.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+
+    // Determine tap position (left, middle, right)
+    const isLeft = clientX < width / 3;
+    const isRight = clientX > (width * 2) / 3;
+    const isMiddle = !isLeft && !isRight;
+
+    // Increment tap count
+    setTapCount((prev) => prev + 1);
+
+    // Handle gestures based on tap count
+    if (tapCount === 1) {
+      handleSingleTap();
+    } else if (tapCount === 2) {
+      if (isRight) handleDoubleTap("right");
+      if (isLeft) handleDoubleTap("left");
+    } else if (tapCount === 3) {
+      if (isMiddle) handleTripleTap("middle");
+      if (isRight) handleTripleTap("right");
+      if (isLeft) handleTripleTap("left");
+    }
+
+    // Reset tap count after a delay
+    resetTapCount();
+  };
 
   return (
     <div className="post">
@@ -78,6 +158,28 @@ const Posts = ({ p }) => {
               <source src={audio} type="audio/wav" />
               Your browser does not support the audio element.
             </audio>
+          </div>
+        )}
+        {video && (
+          <div
+            style={{
+              position: "relative",
+              width: "100%",
+              height: "100%",
+              overflow: "hidden",
+            }}
+            onTouchStart={handleTap} // Add touch event listener for gestures
+          >
+            <video
+              ref={videoRef}
+              src={video}
+              controls
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
           </div>
         )}
         <div className="post__footer">

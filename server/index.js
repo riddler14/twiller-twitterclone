@@ -1219,10 +1219,6 @@ app.post("/store-login-metadata", async (req, res) => {
     res.status(500).json({ error: "Failed to store login metadata" });
   }
 });
-  } catch (error) {
-    console.log(error);
-  }
-}
 app.post("/upload-video", (req, res) => {
   upload2(req, res, async (err) => {
     if (err instanceof multer.MulterError) {
@@ -1302,6 +1298,11 @@ app.get("/video/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to retrieve video" });
   }
 });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 run().catch(console.dir);
 
 app.get("/", (req,res) => {

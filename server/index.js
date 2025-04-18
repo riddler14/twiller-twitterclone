@@ -1293,6 +1293,27 @@ app.get("/video/:id", async (req, res) => {
       console.error("Error downloading video from GridFS:", error);
       res.status(404).json({ error: "Video not found" });
     });
+    // Endpoint to fetch a single post by ID
+app.get("/post/:id", async (req, res) => {
+  const postId = req.params.id; // Extract the post ID from the URL
+
+  try {
+    // Fetch the post by ID from the database
+    const post = await postcollection.findOne({ _id: new ObjectId(postId) });
+
+    if (!post) {
+      // If no post is found, return a 404 error
+      return res.status(404).json({ error: "Post not found." });
+    }
+
+    // Return the post as a JSON response
+    res.json({ post });
+  } catch (error) {
+    // Handle any errors during the process
+    console.error("Error fetching post:", error);
+    res.status(500).json({ error: "Failed to fetch post." });
+  }
+});
   } catch (error) {
     console.error("Error retrieving video:", error);
     res.status(500).json({ error: "Failed to retrieve video" });

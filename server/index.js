@@ -252,7 +252,7 @@ async function run() {
     console.log(`server running on port ${port}`);
     const database = client.db("database");
 
-    
+    const postcollection = client.db("database").collection("posts"); // Collection to store posts
     const usercollection = client.db("database").collection("users");
     const otpCollection = client.db("database").collection("otps");
     const commentcollection = client.db("database").collection("comments"); // Collection to store OTPs
@@ -450,7 +450,7 @@ async function run() {
         const currentDate = now.toDateString();
 
         // Fetch the user's post history for today
-        const postsToday = await commentcollection
+        const postsToday = await postcollection
           .find({
             email: post.email,
             createdAt: { $gte: new Date(currentDate) },
@@ -496,7 +496,7 @@ async function run() {
         // Users with 10+ followers can post unlimited times
 
         // Insert the post into the database
-        const result = await commentcollection.insertOne({
+        const result = await postcollection.insertOne({
           ...post,
           createdAt: now,
         });
@@ -676,7 +676,7 @@ async function run() {
     });
 
     app.get("/post", async (req, res) => {
-      const post = (await commentcollection.find().toArray()).reverse();
+      const post = (await postcollection.find().toArray()).reverse();
       res.send(post);
     });
     app.get("/comment", async (req, res) => {
@@ -686,7 +686,7 @@ async function run() {
     app.get("/userpost", async (req, res) => {
       const email = req.query.email;
       const post = (
-        await commentcollection.find({ email: email }).toArray()
+        await postcollection.find({ email: email }).toArray()
       ).reverse();
       res.send(post);
     });

@@ -1453,7 +1453,7 @@ async function run() {
         }
 
         // Fetch the post by ID from the database
-        const post = await commentcollection.findOne({
+        const post = await postcollection.findOne({
           _id: new ObjectId(postId),
         });
 

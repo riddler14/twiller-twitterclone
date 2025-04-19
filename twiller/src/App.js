@@ -19,7 +19,7 @@ import Bookmark from "./Pages/Bookmark/Bookmark";
 import ProfileUser from "./Pages/Profile/ProfileUser";
 import NotificationManager from './components/NotificationManager';
 import { I18nextProvider, useTranslation } from 'react-i18next';
-
+import UserFeed from './Pages/Feed/UserFeed';
 
 
 function App() {
@@ -40,6 +40,7 @@ function App() {
       <Routes>
           <Route path="/" element={<Home/>}>
             <Route index element={<Feed/>}/>
+            
           </Route>
           <Route path="/" element={<Home/>}/>
           <Route path="/login" element={<Login />} />
@@ -48,6 +49,8 @@ function App() {
           
           <Route path="/home" element={<Home />}>
             <Route path="feed" element={<Feed />} />
+            <Route path="feed/:postId" element={<UserFeed />} />
+
             <Route path="explore" element={<Explore />} />
             <Route path="notification" element={<Notification />} />
             <Route path="messages" element={<Message />} />
@@ -56,6 +59,7 @@ function App() {
             <Route path="bookmarks" element={<Bookmark />} />
             <Route path="profile" element={<Profile />} />
             
+
             <Route path="more" element={<More />} />
             <Route path="profile/:id" element={<ProfileUser />} />
             <Route path="profile/:email" element={<ProfileUser />} />

@@ -1,0 +1,101 @@
+/* TweetBox Base Styles */
+.tweetBox {
+    padding-bottom: 10px;
+    
+    padding-right: 10px;
+    
+  }
+  .reply-text {
+    font-size: 14px;
+    color: #555;
+    margin-bottom: 10px;
+  }
+  
+  .reply-text span {
+    color: #1da1f2;
+    font-weight: bold;
+  }
+  .tweetBox > form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .tweetBox__input {
+    padding: 20px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .tweetBox__input > input {
+    flex: 1;
+    margin-left: 15px;
+    font-size: 20px;
+    border: none;
+    margin-top: 0px;
+    outline: none;
+  }
+  
+  .imageIcon_tweetButton {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .error-message {
+    color: red;
+    font-size: 0.9rem;
+    margin-top: 8px;
+  }
+  
+  .tweetBox__tweetButton {
+    background-color: var(--twitter-color);
+    border: none;
+    color: white;
+    font-weight: 700;
+    text-transform: inherit;
+    border-radius: 50px;
+    width: 100px;
+    height: 40px;
+    cursor: pointer;
+  }
+  
+  .imageIcon {
+    color: var(--twitter-color);
+    padding-left: 25px;
+    cursor: pointer;
+  }
+  
+  .imageInput {
+    display: none;
+  }
+  .videoIcon {
+    display: inline-block;
+    cursor: pointer;
+    color: black; /* Ensure the icon is visible */
+  }
+  
+  .videoInput {
+    display: none; /* Hide the file input */
+  }
+  /* Tablet Styles */
+  @media screen and (max-width: 768px) {
+    .tweetBox__input > input {
+      font-size: 16px;
+    }
+  
+    .tweetBox__tweetButton {
+      width: 80px;
+      height: 35px;
+    }
+  }
+  
+  /* Mobile Styles */
+  @media screen and (max-width: 480px) {
+    .tweetBox__input > input {
+      font-size: 14px;
+    }
+  
+    .tweetBox__tweetButton {
+      width: 70px;
+      height: 30px;
+    }
+  }

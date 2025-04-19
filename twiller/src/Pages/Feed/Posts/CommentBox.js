@@ -1,5 +1,5 @@
 import React, { useState,useRef }  from 'react'
-import "./Tweetbox.css";
+import "./CommentBox.css";
 import { Avatar, Button, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
 import AddPhotoAlternateOutlinedIcon from "@mui/icons-material/AddPhotoAlternateOutlined";
 import MicIcon from "@mui/icons-material/Mic"; // For audio icon
@@ -8,8 +8,8 @@ import { useUserAuth } from "../../../context/UserAuthContext";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
 import { useTranslation } from 'react-i18next';
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
-
-const Tweetbox=()=>{
+import { useNavigate } from 'react-router-dom';
+const CommentBox=({a})=>{
     const [post, setpost] = useState("");
     const [imageurl, setimageurl] = useState("");
     const [isloading, setisloading] = useState(false);
@@ -30,14 +30,22 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
   const [isLoading,setIsLoading]=useState(false);
   const [videoFile, setVideoFile] = useState(null); // Store selected video file
   const [videoUrl, setVideoUrl] = useState(""); // Store video preview URL
-
+  const {authorPostId}=a;
+  const [author,setAuthor]=useState(authorPostId);
   const mediaRecorderRef = useRef(null); // Reference for MediaRecorder
   const chunksRef = useRef([]); // Store recorded audio chunks
   const audioRef = useRef(null); // Reference for Audio object
   const timerIntervalRef = useRef(null); // Store interval ID for play timer
-
+  const [isFocused, setIsFocused] = useState(false); // Track focus state of the input
+  const [showReplyText, setShowReplyText] = useState(false); // Show "R
+  const navigate=useNavigate();
+    const [userId, setUserId] = useState(null); // Store the user's _id locally
+     // Assuming this hook provides the logged-in user's data
+  
+  
     const { user } = useUserAuth();
     const [loggedinuser] = useLoggedinuser();
+    const loggedInEmail = loggedinuser[0]?.email;
     const email = user?.email;
     const userprofilepic = loggedinuser[0]?.profileImage
       ? loggedinuser[0].profileImage
@@ -311,7 +319,8 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
         setpost("");
         setimageurl("");
         setAudioBlob(null);
-        
+        setAuthor("");
+        setVideoUrl(""); // Clear the video preview URL
         setVideoFile(null); // Clear the video file
         setIsAudioAttached(false); // Remove "Audio Attached" message
         setOpenPopup(false); // Close popup after successful post
@@ -324,7 +333,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
         setpost("");
         setimageurl("");
         setAudioBlob(null);
-        
+        setAuthor("");
         setVideoFile(null); // Clear the video file
         setIsAudioAttached(false); // Remove "Audio Attached" message
         setOpenPopup(false); // Close popup after successful post
@@ -340,7 +349,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
         setpost("");
         setimageurl("");
         setAudioBlob(null);
-        
+        setAuthor("");
         setVideoFile(null); // Clear the video file
         setIsAudioAttached(false); // Remove "Audio Attached" message
         setOpenPopup(false); // Close popup after successful post
@@ -388,13 +397,14 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
       post: post,
       photo: imageurl,
       audio: audioUrl, // Use the audio URL here
-      video: videoUrl, // Use the video URL here
+      video: videoUrl,
+      author:author, // Use the video URL here
       username: username,
       name: name,
       email: email,
     };
 
-    const postResponse = await fetch("https://twiller-twitterclone-2-q41v.onrender.com/post", {
+    const postResponse = await fetch("https://twiller-twitterclone-2-q41v.onrender.com/comment", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(userPost),
@@ -408,6 +418,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
     setimageurl("");
     setAudioBlob(null);
     setVideoUrl("");
+    setAuthor("");
     setVideoFile(null); // Clear the video file
     setIsAudioAttached(false); // Remove "Audio Attached" message
     setOpenPopup(false); // Close popup after successful post
@@ -419,7 +430,8 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
     setimageurl("");
     setAudioBlob(null);
     setVideoUrl(""); // Clear the video preview URL
-    setVideoFile(null); // Clear the video file
+    setVideoFile(null);
+    setAuthor(""); // Clear the video file
     setIsAudioAttached(false); // Remove "Audio Attached" message
     setOpenPopup(false); // Close popup after successful post
     setOtpVerified(false);
@@ -442,8 +454,54 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
         setVideoFile(file); // Store the selected video file
         setVideoUrl(URL.createObjectURL(file)); // Preview the video locally
       };
+      const handleFocus = () => {
+        setIsFocused(true);
+        setShowReplyText(true);
+      };
+    
+      
+      const fetchUserId = async (email) => {
+          try {
+            const response = await axios.get(
+              `https://twiller-twitterclone-2-q41v.onrender.com/userprofile?email=${encodeURIComponent(email)}`
+            );
+      
+            if (response.data.user) {
+              setUserId(response.data.user._id); // Store the _id locally
+            }   if (email === loggedInEmail) {
+              alert("This is your profile!");
+              navigate(`/home/profile`);
+              
+            }else {
+              console.error("User not found for email:", email);
+            }
+          } catch (error) {
+            console.error("Error fetching user ID:", error);
+          }
+        };
+      
+        // Handle user click to navigate to the user's profile
+        const handleUserClick = () => {
+          if (!email) {
+            console.error("Email is missing.");
+            alert("This post does not have a valid email.");
+            return;
+          }
+         
+          if (!userId) {
+            fetchUserId(email); // Fetch the user's _id if not already fetched
+          }else {
+            navigate(`/home/profile/${userId}`); // Navigate to the user's profile page
+          }
+        };
     return (
-        <div className="tweetBox">
+        <div className="tweetBox" onFocus={handleFocus}
+       >
+            {showReplyText && (
+        <div className="reply-text">
+          Replying to <span>@{username}</span>
+        </div>
+      )}
       <form onSubmit={handletweet}>
         <div className="tweetBox__input">
           <Avatar
@@ -452,16 +510,18 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
                 ? loggedinuser[0].profileImage
                 : user && user.photoURL
             }
+            onClick={handleUserClick}
           />
           <input
             type="text"
-            placeholder={t("What's Happening?")}
+            placeholder={t("Write a Comment...")}
             onChange={(e) => setpost(e.target.value)}
             value={post}
+            
             required
           />
           </div>
-         
+         {isFocused &&(
         <div className="imageIcon_tweetButton">
           <label htmlFor="image" className="imageIcon">
             {
@@ -473,6 +533,8 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
             id="image"
             className="imageInput"
             onChange={handleuploadimage}
+            
+
           />
             {/* {errorMessage && <p className="error-message">{errorMessage}</p>} */}
             {videoUrl && (
@@ -531,9 +593,10 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
 
 
           <Button className="tweetBox__tweetButton" type="submit">
-            {t('Post')}
+            {t('Comment')}
           </Button>
         </div>
+)}
       </form>
 
       {/* Audio Recording Popup */}
@@ -577,4 +640,4 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
     </div>
     );
 };
-export default Tweetbox;
+export default CommentBox;

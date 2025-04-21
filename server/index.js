@@ -1490,6 +1490,25 @@ async function run() {
         res.status(500).json({ error: "Failed to fetch post." });
       }
     });
+    app.get("/comments", async (req, res) => {
+      const { postId } = req.query; // Extract postId from the query parameters
+    
+      try {
+        // Validate postId
+        if (!postId) {
+          return res.status(400).json({ error: "postId is required." });
+        }
+    
+        // Fetch comments where postId matches
+        const comments = await commentcollection.find({ author:postId }).toArray();
+    
+        // Return the comments as a JSON response
+        res.json({ comments });
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+        res.status(500).json({ error: "Failed to fetch comments." });
+      }
+    });
   } catch (error) {
     console.log(error);
   }

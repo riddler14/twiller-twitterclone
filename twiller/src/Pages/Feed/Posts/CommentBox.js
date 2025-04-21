@@ -30,8 +30,8 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
   const [isLoading,setIsLoading]=useState(false);
   const [videoFile, setVideoFile] = useState(null); // Store selected video file
   const [videoUrl, setVideoUrl] = useState(""); // Store video preview URL
-  const {authorPostId}=a;
-  const [author,setAuthor]=useState(authorPostId);
+  const authorPostId=a;
+  const [author,setAuthor]=useState(null);
   const mediaRecorderRef = useRef(null); // Reference for MediaRecorder
   const chunksRef = useRef([]); // Store recorded audio chunks
   const audioRef = useRef(null); // Reference for Audio object
@@ -398,7 +398,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
       photo: imageurl,
       audio: audioUrl, // Use the audio URL here
       video: videoUrl,
-      author:author, // Use the video URL here
+      author:authorPostId, // Use the video URL here
       username: username,
       name: name,
       email: email,
@@ -412,7 +412,8 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
 
     const postData = await postResponse.json();
     console.log("Tweet posted successfully:", postData);
-
+    console.log("authot Id:", author);
+    
     // Reset state after successful post
     setpost("");
     setimageurl("");

@@ -6,11 +6,14 @@ import { useTranslation } from "react-i18next";
 import UserPost from "./Posts/UserPost";
 import { useParams } from "react-router-dom";
 import CommentBox from "./Posts/CommentBox";
+import Comments from "./Posts/Comments";
 const UserFeed = () => {
   const { postId } = useParams();
   
   const [post, setpost] = useState([]);
   const { t } = useTranslation();
+  const [comments, setComments] = useState([]);
+
   const navigate = useNavigate();
   useEffect(() => {
     const fetchPost = async () => {
@@ -35,7 +38,21 @@ const UserFeed = () => {
   }, [postId, navigate]);
 
   console.log(post);
-
+  console.log(comments);
+  // Fetch comments for the post
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await axios.get(
+          `https://twiller-twitterclone-2-q41v.onrender.com/comments?postId=${postId}`
+        );
+        setComments(response.data.comments || []);
+      } catch (error) {
+        console.error("Error fetching comments:", error);
+      }
+    };
+    fetchComments();
+  }, [postId]);
   if (!post) {
     return <div>Loading...</div>;
   }
@@ -73,6 +90,8 @@ const UserFeed = () => {
 
       {post && <UserPost key={postId} p={post} />}
      <CommentBox a={postId}/>
+           <Comments p={comments} />
+
     </div>
   );
 };

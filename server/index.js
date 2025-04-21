@@ -641,10 +641,8 @@ async function run() {
           return res.status(400).json({ error: "postId is required." });
         }
     
-        // Fetch comments where postId and author match
-        const comments = await commentcollection
-          .find({ postId: postId, author: postId }) // Match both postId and author
-          .toArray();
+        // Fetch comments where postId matches
+        const comments = await commentcollection.find({ postId }).toArray();
     
         // Return the comments as a JSON response
         res.json({ comments });

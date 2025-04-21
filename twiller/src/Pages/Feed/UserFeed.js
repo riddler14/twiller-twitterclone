@@ -44,7 +44,7 @@ const UserFeed = () => {
     const fetchComments = async () => {
       try {
         const response = await axios.get(
-          `https://twiller-twitterclone-2-q41v.onrender.com/comments?postId=${postId}`
+          `https://twiller-twitterclone-2-q41v.onrender.com/comments/${postId}`
         );
         setComments(response.data.comments || []);
       } catch (error) {
@@ -90,7 +90,9 @@ const UserFeed = () => {
 
       {post && <UserPost key={postId} p={post} />}
      <CommentBox a={postId}/>
-           <Comments p={comments} />
+     {comments.map((p) => (
+        <comments key={p._id} p={p} />
+      ))}
 
     </div>
   );

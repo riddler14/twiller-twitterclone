@@ -1490,8 +1490,8 @@ async function run() {
         res.status(500).json({ error: "Failed to fetch post." });
       }
     });
-    app.get("/comments", async (req, res) => {
-      const { postId } = req.query; // Extract postId from the query parameters
+    app.get("/comments/:id", async (req, res) => {
+      const postId  = req.params.id; // Extract postId from the query parameters
     
       try {
         // Validate postId
@@ -1501,7 +1501,10 @@ async function run() {
     
         // Fetch comments where postId matches
         const comments = await commentcollection.find({ author:postId }).toArray();
-    
+        if (!comments) {
+          // If no post is found, return a 404 error
+          return res.status(404).json({ error: "Comments not found." });
+        }
         // Return the comments as a JSON response
         res.json({ comments });
       } catch (error) {

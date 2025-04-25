@@ -433,9 +433,19 @@ async function run() {
       const post = req.body;
 
       // Validate required fields
-      if (!post.name || !post.username || !post.email || !post.post) {
-        return res.status(400).json({ error: "Missing required fields" });
-      }
+      const missingFields = [];
+  if (!post.name) missingFields.push("name");
+  if (!post.username) missingFields.push("username");
+  if (!post.email) missingFields.push("email");
+  if (!post.post) missingFields.push("post");
+
+  // If any fields are missing, return a detailed error response
+  if (missingFields.length > 0) {
+    return res.status(400).json({
+      error: "Missing required fields",
+      details: `The following fields are missing: ${missingFields.join(", ")}`,
+    });
+  }
 
       try {
         // Fetch the user's follow count

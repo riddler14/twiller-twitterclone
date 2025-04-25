@@ -451,9 +451,15 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
           alert("Only MP4, WebM, and Ogg formats are allowed.");
           return;
         }
-      
-        setVideoFile(file); // Store the selected video file
+        setIsLoading(true);
+       try{ setVideoFile(file); // Store the selected video file
         setVideoUrl(URL.createObjectURL(file)); // Preview the video locally
+       }catch(error){
+        console.error("Error during video upload:", error);
+    alert("An error occurred while uploading the video. Please try again.");
+  } finally {
+    setIsLoading(false); // Stop loading
+  }
       };
       const handleFocus = () => {
         setIsFocused(true);

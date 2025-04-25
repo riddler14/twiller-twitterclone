@@ -38,21 +38,30 @@ const UserFeed = () => {
   }, [postId, navigate]);
 
   console.log(post);
-  console.log(comments);
+  
   // Fetch comments for the post
   useEffect(() => {
     const fetchComments = async () => {
       try {
+        console.log("Id Of the Post: ",postId)
         const response = await axios.get(
           `https://twiller-twitterclone-2-q41v.onrender.com/comments/${postId}`
         );
-        setComments(response.data.comments || []);
+        if (response.data.comments) {
+          setComments(response.data.comments);
+        } else {
+          alert("Comment not found.");
+          // Redirect to home if post is not found
+        }
       } catch (error) {
-        console.error("Error fetching comments:", error);
+        console.error("Error fetching Comments:", error);
+        alert("Failed to fetch Comments. Please try again.");
+       
       }
     };
     fetchComments();
-  }, [postId]);
+  }, [comments,postId]);
+  console.log(comments);
   if (!post) {
     return <div>Loading...</div>;
   }
@@ -91,7 +100,7 @@ const UserFeed = () => {
       {post && <UserPost key={postId} p={post} />}
      <CommentBox a={postId}/>
      {comments.map((p) => (
-        <comments key={p._id} p={p} />
+        <Comments key={p._id} p={p} />
       ))}
 
     </div>

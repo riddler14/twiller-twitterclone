@@ -1,4 +1,4 @@
-import React, { useState,useRef } from "react";
+import React, { useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
@@ -8,53 +8,58 @@ import RepeatIcon from "@mui/icons-material/Repeat";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import PublishIcon from "@mui/icons-material/Publish";
 import { Avatar } from "@mui/material";
-import "./Comments.css";
-
+import "./Posts.css";
+import ConfirmationModal from "./ConfirmationModal";
 
 const Comments = ({ p }) => {
   // Extract postId from the URL
-   // Store the fetched post data
-   const { name, username, photo,post, profilephoto, audio,video, email } = p;
+  // Store the fetched post data
+  const { name, username, photo, post, profilephoto, audio, video, email } = p;
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null); // Store the user's _id locally
   const [loggedinuser] = useLoggedinuser(); // Assuming this hook provides the logged-in user's data
   const loggedInEmail = loggedinuser[0]?.email;
-   const videoRef = useRef(null); // Reference to the video element
-    const [tapCount, setTapCount] = useState(0); 
-   
+  const videoRef = useRef(null); // Reference to the video element
+  const [tapCount, setTapCount] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  let tapTimeout = null; // Timeout for resetting tap count
   const fetchUserId = async (email) => {
-      try {
-        const response = await axios.get(
-          `https://twiller-twitterclone-2-q41v.onrender.com/userprofile?email=${encodeURIComponent(email)}`
-        );
-  
-        if (response.data.user) {
-          setUserId(response.data.user._id); // Store the _id locally
-        }   if (email === loggedInEmail) {
-          alert("This is your profile!");
-          return;
-        }else {
-          console.error("User not found for email:", email);
-        }
-      } catch (error) {
-        console.error("Error fetching user ID:", error);
+    try {
+      const response = await axios.get(
+        `https://twiller-twitterclone-2-q41v.onrender.com/userprofile?email=${encodeURIComponent(
+          email
+        )}`
+      );
+
+      if (response.data.user) {
+        setUserId(response.data.user._id); // Store the _id locally
       }
-    };
-  
-    // Handle user click to navigate to the user's profile
-    const handleUserClick = () => {
-      if (!email) {
-        console.error("Email is missing.");
-        alert("This post does not have a valid email.");
+      if (email === loggedInEmail) {
+        alert("This is your profile!");
         return;
+      } else {
+        console.error("User not found for email:", email);
       }
-  
-      if (!userId) {
-        fetchUserId(email); // Fetch the user's _id if not already fetched
-      }else {
-        navigate(`/home/profile/${userId}`); // Navigate to the user's profile page
-      }
-    };
+    } catch (error) {
+      console.error("Error fetching user ID:", error);
+    }
+  };
+
+  // Handle user click to navigate to the user's profile
+  const handleUserClick = () => {
+    if (!email) {
+      console.error("Email is missing.");
+      alert("This post does not have a valid email.");
+      return;
+    }
+
+    if (!userId) {
+      fetchUserId(email); // Fetch the user's _id if not already fetched
+    } else {
+      navigate(`/home/profile/${userId}`); // Navigate to the user's profile page
+    }
+  };
   // useEffect(() => {
   //   const fetchPost = async () => {
   //     try {
@@ -77,22 +82,28 @@ const Comments = ({ p }) => {
   //   fetchPost();
   // }, [id, navigate]);
   const resetTapCount = () => {
-    setTimeout(() => setTapCount(0), 300); // 300ms timeout for multi-tap detection
+    clearTimeout(tapTimeout); // Clear any existing timeout
+    tapTimeout = setTimeout(() => setTapCount(0), 300); // Reset tap count after 300ms // 500ms timeout for multi-tap detection
   };
 
-  // Handle double-tap gestures
   const handleDoubleTap = (direction) => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {
+      console.error("Video reference is not set.");
+      return;
+    }
+    console.log("Current time before update:", video.currentTime);
 
     if (direction === "right") {
-      video.currentTime += 10; // Move 10 seconds forward
+      video.currentTime = Math.min(video.currentTime + 10, video.duration); // Move 10 seconds forward
+      console.log("Forwarded 10 seconds");
     } else if (direction === "left") {
-      video.currentTime -= 10; // Move 10 seconds backward
+      video.currentTime = Math.max(video.currentTime - 10, 0); // Move 10 seconds backward
+      console.log("Reversed 10 seconds");
     }
+    console.log("Current time after update:", video.currentTime);
   };
 
-  // Handle single-tap gestures
   const handleSingleTap = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -104,47 +115,50 @@ const Comments = ({ p }) => {
     }
   };
 
-  // Handle three-tap gestures
   const handleTripleTap = (position) => {
     switch (position) {
       case "middle":
         alert("Moving to the next video..."); // Replace with logic to move to the next video
         break;
       case "right":
-        alert("Closing the website...");
-        window.close(); // Close the browser tab
+        setIsModalOpen(true);
         break;
       case "left":
-        alert("Showing comments...");
-        // Replace with logic to show the comment section
+        alert("Showing comment section...");
+        navigate(`/home/feed/${p._id}`); // Replace with logic to show the comment section
         break;
       default:
         break;
     }
   };
 
-  // Detect taps and their positions
   const handleTap = (e) => {
-    const { clientX, clientY } = e.touches[0];
-    const rect = e.target.getBoundingClientRect();
+    e.preventDefault();
+    const rect = e.target.getBoundingClientRect(); // Get the video element's bounding box
     const width = rect.width;
-    const height = rect.height;
+
+    // Use clientX for mouse/touch position
+    const tapX = e.clientX || e.touches?.[0]?.clientX; // Support both mouse and touch
 
     // Determine tap position (left, middle, right)
-    const isLeft = clientX < width / 3;
-    const isRight = clientX > (width * 2) / 3;
+    const isLeft = tapX < rect.left + width / 3;
+    const isRight = tapX > rect.left + (width * 2) / 3;
     const isMiddle = !isLeft && !isRight;
+    console.log("Tap position:", { isLeft, isMiddle, isRight });
 
     // Increment tap count
-    setTapCount((prev) => prev + 1);
+    const newTapCount = tapCount + 1;
+    setTapCount((prevTapCount) => prevTapCount + 1);
 
     // Handle gestures based on tap count
-    if (tapCount === 1) {
-      handleSingleTap();
-    } else if (tapCount === 2) {
+    if (newTapCount === 1) {
+      if (isMiddle) {
+        handleSingleTap();
+      }
+    } else if (newTapCount === 2) {
       if (isRight) handleDoubleTap("right");
       if (isLeft) handleDoubleTap("left");
-    } else if (tapCount === 3) {
+    } else if (newTapCount === 3) {
       if (isMiddle) handleTripleTap("middle");
       if (isRight) handleTripleTap("right");
       if (isLeft) handleTripleTap("left");
@@ -153,15 +167,26 @@ const Comments = ({ p }) => {
     // Reset tap count after a delay
     resetTapCount();
   };
+
   if (!p) {
     return <div>Loading...</div>; // Handle the case where `p` is undefined
   }
 
- 
- 
+  const handleConfirm = () => {
+    setIsModalOpen(false); // Close the modal
+    try {
+      window.close(); // Attempt to close the tab
+    } catch (error) {
+      window.alert("Unable to close the tab. Please close it manually.");
+    }
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false); // Close the modal without taking any action
+  };
   return (
     <div className="post">
-      <div className="post__avatar" onClick={handleUserClick} >
+      <div className="post__avatar" onClick={handleUserClick}>
         <Avatar src={profilephoto} />
       </div>
       <div className="post__body">
@@ -188,23 +213,20 @@ const Comments = ({ p }) => {
           </div>
         )}
         {video && (
-          <div
-            
-            onTouchStart={handleTap} // Add touch event listener for gestures
-          >
-            <div>
+          <div>
             <video
               ref={videoRef}
               src={video}
               controls
+              controlsList="nofullscreen"
               style={{
                 width: "auto",
-               
               }}
+              onPointerDown={handleTap}
             />
-            </div>
           </div>
         )}
+
         <div className="post__footer">
           <ChatBubbleOutlineIcon
             className="post__footer__icon"
@@ -215,9 +237,13 @@ const Comments = ({ p }) => {
           <PublishIcon className="post__footer__icon" fontSize="small" />
         </div>
       </div>
-     
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        message="Are you sure you want to leave the website?"
+        onConfirm={handleConfirm}
+        onCancel={handleCancel}
+      />
     </div>
-    
   );
 };
 

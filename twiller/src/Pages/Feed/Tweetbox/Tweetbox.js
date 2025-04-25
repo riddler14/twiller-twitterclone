@@ -245,16 +245,25 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
       // Function to handle tweet submission
       const handletweet = async (e) => {
         e.preventDefault();
-        // setErrorMessage("");
       
-        // Fetch user details
+        // Fetch user details if logged in via email/password
         if (user?.providerData[0]?.providerId === "password") {
-          fetch(`https://twiller-twitterclone-2-q41v.onrender.com/loggedinuser?email=${email}`)
-            .then((res) => res.json())
-            .then((data) => {
-              setname(data[0]?.name);
-              setusername(data[0]?.username);
-            });
+          try {
+            const response = await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/loggedinuser?email=${email}`);
+            const data = await response.json();
+      
+            // Ensure name and username are set before proceeding
+            if (!data[0]?.name || !data[0]?.username) {
+              throw new Error("User details not found.");
+            }
+      
+            setname(data[0]?.name);
+            setusername(data[0]?.username);
+          } catch (error) {
+            console.error("Error fetching user details:", error);
+            alert("An error occurred while fetching user details. Please try again.");
+            return;
+          }
         } else {
           setname(user?.displayName);
           setusername(email?.split("@")[0]);
@@ -267,7 +276,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
         }
       
         // Validate audio constraints
-        if (audioBlob && !validateAudio(audioBlob)) {
+        if (audioBlob && !(await validateAudio(audioBlob))) {
           alert("Audio must be less than 5 minutes and 100MB.");
           return;
         }
@@ -277,153 +286,122 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
           alert("You can only upload audio between 2 PM and 7 PM IST.");
           return;
         }
-        
+      
+        // Apply posting rules based on follow count
         const followCount = loggedinuser[0]?.followCount || 0;
-
-    // Fetch posts made by the user
-    const posts = await fetch(
-      `https://twiller-twitterclone-2-q41v.onrender.com/userpost?email=${loggedinuser[0]?.email}`
-    ).then((res) => res.json());
-
-    // Filter posts to include only those made today
-    const now = new Date();
-    const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Midnight of the current day
-    const postsToday = posts.filter((post) => {
-      const postDate = new Date(post.createdAt);
-      return postDate >= currentDate; // Include only posts made today
-    });
-
-    // Apply posting rules based on follow count
-    if (followCount === 0) {
-      // User doesn't follow anyone
-      const isWithinPostingWindow = () => {
-        const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
-        const istTime = new Date(now.getTime() + istOffset);
-
-        const hours = istTime.getUTCHours();
-        const minutes = istTime.getUTCMinutes();
-
-        return hours === 10 && minutes >= 0 && minutes <= 30;
-      };
-
-      if (!isWithinPostingWindow()) {
-        alert("You can only post between 10:00 AM and 10:30 AM IST.");
-        setpost("");
-        setimageurl("");
-        setAudioBlob(null);
-        
-        setVideoFile(null); // Clear the video file
-        setIsAudioAttached(false); // Remove "Audio Attached" message
-        setOpenPopup(false); // Close popup after successful post
-        setOtpVerified(false);
-        return;
-      }
-
-      if (postsToday.length > 0) {
-        alert("You have already posted today.");
-        setpost("");
-        setimageurl("");
-        setAudioBlob(null);
-        
-        setVideoFile(null); // Clear the video file
-        setIsAudioAttached(false); // Remove "Audio Attached" message
-        setOpenPopup(false); // Close popup after successful post
-        setOtpVerified(false);
-        return;
-      }
-    } else if (followCount > 0 && followCount < 10) {
-      // User follows 1–9 people
-      const maxPostsPerDay = followCount <= 2 ? 2 : 5;
-
-      if (postsToday.length >= maxPostsPerDay) {
-        alert(`You can only post ${maxPostsPerDay} times a day.`);
-        setpost("");
-        setimageurl("");
-        setAudioBlob(null);
-        
-        setVideoFile(null); // Clear the video file
-        setIsAudioAttached(false); // Remove "Audio Attached" message
-        setOpenPopup(false); // Close popup after successful post
-        setOtpVerified(false);
-        return;
-      }
-    }
-    
+        const posts = await fetch(
+          `https://twiller-twitterclone-2-q41v.onrender.com/userpost?email=${loggedinuser[0]?.email}`
+        ).then((res) => res.json());
+      
+        const now = new Date();
+        const currentDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Midnight of the current day
+        const postsToday = posts.filter((post) => {
+          const postDate = new Date(post.createdAt);
+          return postDate >= currentDate; // Include only posts made today
+        });
+      
+        if (followCount === 0) {
+          const isWithinPostingWindow = () => {
+            const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+            const istTime = new Date(now.getTime() + istOffset);
+            const hours = istTime.getUTCHours();
+            const minutes = istTime.getUTCMinutes();
+            return hours === 10 && minutes >= 0 && minutes <= 30;
+          };
+      
+          if (!isWithinPostingWindow()) {
+            alert("You can only post between 10:00 AM and 10:30 AM IST.");
+            resetForm();
+            return;
+          }
+      
+          if (postsToday.length > 0) {
+            alert("You have already posted today.");
+            resetForm();
+            return;
+          }
+        } else if (followCount > 0 && followCount < 10) {
+          const maxPostsPerDay = followCount <= 2 ? 2 : 5;
+          if (postsToday.length >= maxPostsPerDay) {
+            alert(`You can only post ${maxPostsPerDay} times a day.`);
+            resetForm();
+            return;
+          }
+        }
+      
         // Prepare tweet data
         const formData = new FormData();
-  if (audioBlob) formData.append("audio", audioBlob);
-  if (videoFile) formData.append("video", videoFile);
-
-  try {
-    let audioUrl = null;
-    let videoUrl = null;
-
-    // Upload audio if present
-    if (audioBlob) {
-      console.log("Uploading audio...");
-      const audioResponse = await axios.post(
-        "https://twiller-twitterclone-2-q41v.onrender.com/upload-audio",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-      audioUrl = audioResponse.data.url; // Get the audio URL from the response
-      console.log("Audio uploaded successfully:", audioUrl);
-    }
-
-    // Upload video if present
-    if (videoFile) {
-      console.log("Uploading video...");
-      const videoResponse = await axios.post(
-        "https://twiller-twitterclone-2-q41v.onrender.com/upload-video",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-      videoUrl = videoResponse.data.url; // Get the video URL from the response
-      console.log("Video uploaded successfully:", videoUrl);
-    }
-
-    // Post the tweet with audio/video URLs
-    const userPost = {
-      profilephoto: userprofilepic,
-      post: post,
-      photo: imageurl,
-      audio: audioUrl, // Use the audio URL here
-      video: videoUrl, // Use the video URL here
-      username: username,
-      name: name,
-      email: email,
-    };
-
-    const postResponse = await fetch("https://twiller-twitterclone-2-q41v.onrender.com/post", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(userPost),
-    });
-
-    const postData = await postResponse.json();
-    console.log("Tweet posted successfully:", postData);
-
-    // Reset state after successful post
-    setpost("");
-    setimageurl("");
-    setAudioBlob(null);
-    setVideoUrl("");
-    setVideoFile(null); // Clear the video file
-    setIsAudioAttached(false); // Remove "Audio Attached" message
-    setOpenPopup(false); // Close popup after successful post
-    setOtpVerified(false); // Reset OTP verification
-  } catch (error) {
-    console.error("Error during tweet submission:", error);
-    alert("An error occurred while posting the tweet. Please try again.");
-    setpost("");
-    setimageurl("");
-    setAudioBlob(null);
-    setVideoUrl(""); // Clear the video preview URL
-    setVideoFile(null); // Clear the video file
-    setIsAudioAttached(false); // Remove "Audio Attached" message
-    setOpenPopup(false); // Close popup after successful post
-    setOtpVerified(false);
-  }
+        if (audioBlob) formData.append("audio", audioBlob);
+        if (videoFile) formData.append("video", videoFile);
+      
+        try {
+          let audioUrl = null;
+          let videoUrl = null;
+      
+          // Upload audio if present
+          if (audioBlob) {
+            console.log("Uploading audio...");
+            const audioResponse = await axios.post(
+              "https://twiller-twitterclone-2-q41v.onrender.com/upload-audio",
+              formData,
+              { headers: { "Content-Type": "multipart/form-data" } }
+            );
+            audioUrl = audioResponse.data.url; // Get the audio URL from the response
+            console.log("Audio uploaded successfully:", audioUrl);
+          }
+      
+          // Upload video if present
+          if (videoFile) {
+            console.log("Uploading video...");
+            const videoResponse = await axios.post(
+              "https://twiller-twitterclone-2-q41v.onrender.com/upload-video",
+              formData,
+              { headers: { "Content-Type": "multipart/form-data" } }
+            );
+            videoUrl = videoResponse.data.url; // Get the video URL from the response
+            console.log("Video uploaded successfully:", videoUrl);
+          }
+      
+          // Post the tweet with audio/video URLs
+          const userPost = {
+            profilephoto: userprofilepic,
+            post: post,
+            photo: imageurl,
+            audio: audioUrl, // Use the audio URL here
+            video: videoUrl, // Use the video URL here
+            username: username,
+            name: name,
+            email: email,
+          };
+      
+          const postResponse = await fetch("https://twiller-twitterclone-2-q41v.onrender.com/post", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify(userPost),
+          });
+      
+          const postData = await postResponse.json();
+          console.log("Tweet posted successfully:", postData);
+      
+          // Reset state after successful post
+          resetForm();
+        } catch (error) {
+          console.error("Error during tweet submission:", error);
+          alert("An error occurred while posting the tweet. Please try again.");
+          resetForm();
+        }
+      };
+      
+      // Helper function to reset form fields
+      const resetForm = () => {
+        setpost("");
+        setimageurl("");
+        setAudioBlob(null);
+        setVideoUrl("");
+        setVideoFile(null); // Clear the video file
+        setIsAudioAttached(false); // Remove "Audio Attached" message
+        setOpenPopup(false); // Close popup after successful post
+        setOtpVerified(false); // Reset OTP verification
       };
       const handleVideoUpload = (e) => {
         const file = e.target.files[0];
@@ -438,9 +416,15 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
           alert("Only MP4, WebM, and Ogg formats are allowed.");
           return;
         }
-      
-        setVideoFile(file); // Store the selected video file
+        setIsLoading(true);
+       try{ setVideoFile(file); // Store the selected video file
         setVideoUrl(URL.createObjectURL(file)); // Preview the video locally
+       }catch(error){
+        console.error("Error during video upload:", error);
+    alert("An error occurred while uploading the video. Please try again.");
+  } finally {
+    setIsLoading(false); // Stop loading
+  }
       };
     return (
         <div className="tweetBox">

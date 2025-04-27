@@ -1452,20 +1452,46 @@ async function run() {
           console.error("Invalid file ID:", fileId);
           return res.status(400).json({ error: "Invalid file ID" });
         }
-
+        const files = await bucket2.find({ _id: new ObjectId(fileId) }).toArray();
+        if (!files || files.length === 0) {
+          return res.status(404).json({ error: "Video not found" });
+        }
+    
+        const videoSize = files[0].length; // Total size of the video file
+    
+        // Handle range requests
+        const range = req.headers.range;
+        if (!range) {
+          console.error("No range header found.");
+          return res.status(400).json({ error: "Range header required" });
+        }
+    
+        // Parse the range header
+        const [startStr, endStr] = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(startStr, 10);
+        const end = endStr ? parseInt(endStr, 10) : Math.min(start + 10 ** 6, videoSize - 1); // Default chunk size: 1MB
+    
+        // Validate the range
+        if (start >= videoSize || end >= videoSize) {
+          return res.status(416).json({ error: "Range not satisfiable" });
+        }
+    
+        // Set headers for range request
+        const contentLength = end - start + 1;
+        res.writeHead(206, {
+          "Content-Range": `bytes ${start}-${end}/${videoSize}`,
+          "Accept-Ranges": "bytes",
+          "Content-Length": contentLength,
+          "Content-Type": "video/mp4", // Adjust based on your video format
+        });
+    
         // Open a download stream for the video file
-        const downloadStream = bucket2.openDownloadStream(new ObjectId(fileId));
-
-        // Set the appropriate content type (e.g., video/mp4)
-        res.set("Content-Type", "video/mp4");
-
-        // Pipe the download stream to the response
+        const downloadStream = bucket2.openDownloadStream(new ObjectId(fileId), { start, end });
         downloadStream.pipe(res);
-
-        // Handle errors during download
+    
         downloadStream.on("error", (error) => {
           console.error("Error downloading video from GridFS:", error);
-          res.status(404).json({ error: "Video not found" });
+          res.status(500).json({ error: "Failed to retrieve video" });
         });
       } catch (error) {
         console.error("Error retrieving video:", error);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import Post from "../Posts/posts";
+import Post from "../Posts/Post";
 import { useNavigate } from "react-router-dom";
 import "./Mainprofile.css";
 import FollowSection from "./FollowSection";

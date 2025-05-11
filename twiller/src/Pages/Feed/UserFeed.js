@@ -13,7 +13,7 @@ const UserFeed = () => {
   const [post, setpost] = useState([]);
   const { t } = useTranslation();
   const [comments, setComments] = useState([]);
-
+  const [username,setusername]=useState("");
   const navigate = useNavigate();
   useEffect(() => {
     const fetchPost = async () => {
@@ -24,6 +24,8 @@ const UserFeed = () => {
         );
         if (response.data.post) {
           setpost(response.data.post);
+          setusername(response.data.post.username || response.data.post.email?.split("@")[0]);
+          console.log("author username: ",username);
         } else {
           alert("Post not found.");
           navigate("/"); // Redirect to home if post is not found
@@ -35,7 +37,7 @@ const UserFeed = () => {
       }
     };
     fetchPost();
-  }, [postId, navigate]);
+  }, [postId,username, navigate]);
 
   console.log(post);
   
@@ -98,7 +100,7 @@ const UserFeed = () => {
       </div>
 
       {post && <UserPost key={postId} p={post} />}
-     <CommentBox a={postId}/>
+     <CommentBox a={postId} u={username}/>
      {comments.map((p) => (
         <Comments key={p._id} p={p} />
       ))}

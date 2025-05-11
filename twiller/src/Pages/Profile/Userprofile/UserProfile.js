@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Post from "../Posts/posts";
+import Post from "../Posts/Post";
 import { useParams, useNavigate } from "react-router-dom";
 import "../Mainprofile/Mainprofile.css"; // Use the same CSS as Mainprofile or adjust as needed
 import FollowButton from "../Mainprofile/FollowButton"; 

@@ -10,7 +10,8 @@ import PublishIcon from "@mui/icons-material/Publish";
 import { useNavigate } from "react-router-dom";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
 import ConfirmationModal from "./ConfirmationModal";
-const Posts = ({ p }) => {
+
+const Posts = ({ p,posts }) => {
   const { name, username, photo, post, profilephoto, audio, video, email } = p;
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null); // Store the user's _id locally
@@ -71,11 +72,16 @@ const Posts = ({ p }) => {
       console.error("Video reference is not set.");
       return;
     }
+    if (video.readyState < 2) {
+      console.error("Video is not ready to play.");
+      return;
+    }
     console.log("Current time before update:", video.currentTime);
-
+    console.log("Seekable range:", video.seekable.start(0), "-", video.seekable.end(0));
     if (direction === "right") {
-      video.currentTime = Math.min(video.currentTime + 10, video.duration); // Move 10 seconds forward
-      console.log("Forwarded 10 seconds");
+      console.log("Forwarded 10 seconds: ",video.currentTime+10);
+      video.currentTime +=10; // Move 10 seconds forward
+      console.log("Forwarded 10 seconds: ",video.currentTime+10);
     } else if (direction === "left") {
       video.currentTime = Math.max(video.currentTime - 10, 0); // Move 10 seconds backward
       console.log("Reversed 10 seconds");
@@ -98,7 +104,18 @@ const Posts = ({ p }) => {
   const handleTripleTap = (position) => {
     switch (position) {
       case "middle":
-        alert("Moving to the next video..."); // Replace with logic to move to the next video
+        const currentIndex = posts.findIndex((item) => item._id === p._id);
+
+        // Find the next post with a video
+        const nextPostWithVideo = posts.slice(currentIndex + 1).find((item) => item.video);
+    
+        if (nextPostWithVideo) {
+          // Navigate to the next post with a video
+          navigate(`/home/feed/${nextPostWithVideo._id}`);
+        } else {
+          // Show an alert if no further video posts are available
+          alert("No further video posts available.");
+        }//e next video
         break;
       case "right":
         
@@ -150,6 +167,43 @@ const Posts = ({ p }) => {
     resetTapCount();
   };
 
+  // const handleTap = (e) => {
+  //   e.preventDefault();
+  //   const rect = e.target.getBoundingClientRect(); // Get the video element's bounding box
+  //   const width = rect.width;
+  
+  //   // Use clientX for mouse/touch position
+  //   const tapX = e.clientX || e.touches?.[0]?.clientX; // Support both mouse and touch
+  
+  //   // Determine tap position (left, middle, right)
+  //   const isLeft = tapX < rect.left + width / 3;
+  //   const isRight = tapX > rect.left + (width * 2) / 3;
+  //   const isMiddle = !isLeft && !isRight;
+  //   console.log("Tap position:", { isLeft, isMiddle, isRight });
+
+  //   // Increment tap count
+  //   const newTapCount = tapCount + 1;
+  //   setTapCount((prevTapCount) => prevTapCount + 1);
+
+  
+  //   // Handle gestures based on tap count
+  //   if (newTapCount === 1) {
+  //     if (isMiddle) {
+  //       handleSingleTap();
+  //     }
+  //   } else if (newTapCount === 2) {
+  //     if (isRight) handleDoubleTap("right");
+  //     if (isLeft) handleDoubleTap("left");
+  //   } else if (newTapCount === 3) {
+  //     if (isMiddle) handleTripleTap("middle");
+  //     if (isRight) handleTripleTap("right");
+  //     if (isLeft) handleTripleTap("left");
+  //   }
+  
+  //   // Reset tap count after a delay
+  //   resetTapCount();
+  // };
+
   const handlePostClick = () => {
     console.log(p._id);
     navigate(`/home/feed/${p._id}`);
@@ -167,7 +221,6 @@ const Posts = ({ p }) => {
   const handleCancel = () => {
     setIsModalOpen(false); // Close the modal without taking any action
   };
-  
   return (
     <div className="post">
       <div className="post__avatar" onClick={handleUserClick}>
@@ -207,8 +260,18 @@ const Posts = ({ p }) => {
                     style={{
                       width: "auto",
                     }}
-                    onPointerDown={handleTap}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      handleTap(e);
+                    }}
+                    onTouchStart={(e) => {
+                      e.preventDefault();
+                      handleTap(e);
+                    }}
+
                     
+                    // Prevent default double-tap behavior
+
                   />
                 </div>
               )}

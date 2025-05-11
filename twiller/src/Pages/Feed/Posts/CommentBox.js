@@ -9,14 +9,14 @@ import useLoggedinuser from "../../../hooks/useLoggedinuser";
 import { useTranslation } from 'react-i18next';
 import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
 import { useNavigate } from 'react-router-dom';
-const CommentBox=({a})=>{
+const CommentBox=({a,u})=>{
     const [post, setpost] = useState("");
     const [imageurl, setimageurl] = useState("");
     const [isloading, setisloading] = useState(false);
     const {t}=useTranslation();
     // const [errorMessage, setErrorMessage] = useState("");
-    const [name, setname] = useState("");
-    const [username, setusername] = useState("");
+    // const [name, setname] = useState("");
+    // const [username, setusername] = useState("");
     const [audioBlob, setAudioBlob] = useState(null); // Store recorded audio blob
   const [isRecording, setIsRecording] = useState(false); // Track recording state
   const [otpVerified, setOtpVerified] = useState(false); // Track OTP verification
@@ -31,6 +31,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
   const [videoFile, setVideoFile] = useState(null); // Store selected video file
   const [videoUrl, setVideoUrl] = useState(""); // Store video preview URL
   const authorPostId=a;
+  const authorusername=u;
   const [author,setAuthor]=useState(null);
   const mediaRecorderRef = useRef(null); // Reference for MediaRecorder
   const chunksRef = useRef([]); // Store recorded audio chunks
@@ -47,10 +48,11 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
     const [loggedinuser] = useLoggedinuser();
     const loggedInEmail = loggedinuser[0]?.email;
     const email = user?.email;
-    const userprofilepic = loggedinuser[0]?.profileImage
-      ? loggedinuser[0].profileImage
-      : user && user.photoURL;
-
+    const userprofilepic = loggedinuser[0]?.profileImage? loggedinuser[0]?.profileImage : user && user.photoURL;
+      const name=loggedinuser[0]?.name;
+      const username=loggedinuser[0]?.username ? loggedinuser[0].username :email?.split("@")[0] ;
+       console.log(name);
+       console.log(username);
       const handleuploadimage = (e) => {
         setisloading(true);
         const image = e.target.files[0];
@@ -256,18 +258,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
         // setErrorMessage("");
       
         // Fetch user details
-        if (user?.providerData[0]?.providerId === "password") {
-          fetch(`https://twiller-twitterclone-2-q41v.onrender.com/loggedinuser?email=${email}`)
-            .then((res) => res.json())
-            .then((data) => {
-              setname(data[0]?.name);
-              setusername(data[0]?.username);
-            });
-        } else {
-          setname(user?.displayName);
-          setusername(email?.split("@")[0]);
-        }
-      
+       
         // Ensure OTP is verified if audio is present
         if (audioBlob && !otpVerified) {
           alert("Please verify OTP before posting.");
@@ -506,7 +497,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
        >
             {showReplyText && (
         <div className="reply-text">
-          Replying to <span>@{username}</span>
+          Replying to <span>@{authorusername}</span>
         </div>
       )}
       <form onSubmit={handletweet}>

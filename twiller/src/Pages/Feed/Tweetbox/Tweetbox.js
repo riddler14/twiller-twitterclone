@@ -15,8 +15,8 @@ const Tweetbox=()=>{
     const [isloading, setisloading] = useState(false);
     const {t}=useTranslation();
     // const [errorMessage, setErrorMessage] = useState("");
-    const [name, setname] = useState("");
-    const [username, setusername] = useState("");
+    // const [name, setname] = useState("");
+    // const [username, setusername] = useState("");
     const [audioBlob, setAudioBlob] = useState(null); // Store recorded audio blob
   const [isRecording, setIsRecording] = useState(false); // Track recording state
   const [otpVerified, setOtpVerified] = useState(false); // Track OTP verification
@@ -39,10 +39,40 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
     const { user } = useUserAuth();
     const [loggedinuser] = useLoggedinuser();
     const email = user?.email;
-    const userprofilepic = loggedinuser[0]?.profileImage
-      ? loggedinuser[0].profileImage
-      : user && user.photoURL;
-
+    const userprofilepic = loggedinuser[0]?.profileImage? loggedinuser[0]?.profileImage : user && user.photoURL;
+   const name=loggedinuser[0]?.name;
+   const username=loggedinuser[0]?.username ? loggedinuser[0].username :email?.split("@")[0] ;
+    console.log(name);
+    console.log(username);
+      // useEffect(() => {
+      //   const fetchUserDetails = async () => {
+      //     if (user?.providerData[0]?.providerId === "password") {
+      //       try {
+      //         const response = await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/loggedinuser?email=${email}`);
+      //         const data = await response.json();
+      //         console.log(data);
+      //         if (!Array.isArray(data) || data.length === 0) {
+      //           throw new Error("User details not found.");
+      //         }
+      //         if (!data[0]?.name || !data[0]?.username) {
+      //           throw new Error("User details not found.");
+      //         }
+      
+      //         setname(data[0]?.name);
+      //         setusername(data[0]?.username);
+      //       } catch (error) {
+      //         console.error("Error fetching user details:", error);
+      //         alert("An error occurred while fetching user details. Please try again.");
+      //       }
+      //     } else {
+      //       // For non-password providers, use displayName and email
+      //       setname(user?.displayName || "Guest");
+      //       setusername(email?.split("@")[0] || "user");
+      //     }
+      //   };
+      
+      //   fetchUserDetails();
+      // }, [email, user]);
       const handleuploadimage = (e) => {
         setisloading(true);
         const image = e.target.files[0];
@@ -247,27 +277,7 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
         e.preventDefault();
       
         // Fetch user details if logged in via email/password
-        if (user?.providerData[0]?.providerId === "password") {
-          try {
-            const response = await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/loggedinuser?email=${email}`);
-            const data = await response.json();
-      
-            // Ensure name and username are set before proceeding
-            if (!data[0]?.name || !data[0]?.username) {
-              throw new Error("User details not found.");
-            }
-      
-            setname(data[0]?.name);
-            setusername(data[0]?.username);
-          } catch (error) {
-            console.error("Error fetching user details:", error);
-            alert("An error occurred while fetching user details. Please try again.");
-            return;
-          }
-        } else {
-          setname(user?.displayName);
-          setusername(email?.split("@")[0]);
-        }
+       
       
         // Ensure OTP is verified if audio is present
         if (audioBlob && !otpVerified) {

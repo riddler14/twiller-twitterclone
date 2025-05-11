@@ -10,8 +10,12 @@ const Feed=()=>{
       fetch("https://twiller-twitterclone-2-q41v.onrender.com/post")
         .then((res) => res.json())
         .then((data) => {
-          setpost(data);
+          const normalizedData = Array.isArray(data) ? data : []; // Ensure data is an array
+      setpost(normalizedData);
         })
+        .catch((error) => {
+          console.error("Error fetching posts:", error);
+        });
         
     },[post]);
     console.log(post)
@@ -48,7 +52,7 @@ const Feed=()=>{
       </div>
       <Tweetbox />
       {post.map((p) => (
-        <Posts key={p._id} p={p} />
+        <Posts key={p._id} p={p} posts={post}/>
       ))}
     </div>
     );

@@ -12,6 +12,7 @@ import Message from "./Pages/Messages/Message";
 //import ProtectedRoute from "./Pages/ProtectedRoute";
 import Lists from "./Pages/Lists/Lists";
 import Chatbot from "./Pages/Chatbot/chatbot";
+import Subscribe from "./Pages/Subscription/subscribe";
 import Profile from "./Pages/Profile/Profile";
 import More from "./Pages/more/More";
 import { UserAuthContextProvider } from "./context/UserAuthContext";
@@ -56,6 +57,7 @@ function App() {
             <Route path="messages" element={<Message />} />
             <Route path="lists" element={<Lists />} />
             <Route path='chatbot' element={<Chatbot/>}/>
+            <Route path='subscribe' element={<Subscribe/>}/>
             <Route path="bookmarks" element={<Bookmark />} />
             <Route path="profile" element={<Profile />} />
             

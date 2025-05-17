@@ -18,7 +18,7 @@ import { Avatar } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-
+import VerifiedIcon from '@mui/icons-material/Verified';
 import "./sidebar.css";
 import Customlink from "./Customlink";
 import Sidebaroption from "./Sidebaroption";
@@ -83,6 +83,9 @@ const Sidebar = ({ handlelogout, user }) => {
         </Customlink>
         <Customlink to="/home/chatbot">
           <Sidebaroption Icon={ChatBubbleIcon} text={t("Chatbot")} />
+        </Customlink>
+         <Customlink to="/home/subscribe">
+          <Sidebaroption Icon={VerifiedIcon} text={t("Subscribe")} />
         </Customlink>
         <Customlink to="/home/profile">
           <Sidebaroption Icon={PermIdentityIcon} text={t("Profile")} />

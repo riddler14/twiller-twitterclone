@@ -21,7 +21,7 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 const twilioClient = twilio(accountSid, authToken);
 const useragent = require("express-useragent");
-
+const Razorpay=require("razorpay");
 require("dotenv").config();
 
 const app = express();
@@ -246,6 +246,29 @@ function isWithinPostingWindow() {
 
   return hours === 10 && minutes >= 0 && minutes <= 30;
 }
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+const plans = {
+  free: { price: 0, tweets: 1 },
+  bronze: { price: 100, tweets: 3 },
+  silver: { price: 300, tweets: 5 },
+  gold: { price: 1000, tweets: Infinity },
+};
+
+// Helper function to check if payment is allowed
+function isPaymentAllowed() {
+  const now = new Date();
+  const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+  const istTime = new Date(now.getTime() + istOffset);
+
+  const hours = istTime.getUTCHours();
+  const minutes = istTime.getUTCMinutes();
+
+  return hours === 10 && minutes >= 0 && minutes <= 59; // Allow payments only between 10 AM to 11 AM IST
+}
 async function run() {
   try {
     await client.connect();
@@ -454,7 +477,20 @@ async function run() {
         if (!user) {
           return res.status(400).json({ error: "User not found" });
         }
+        const { subscription } = user;
+    const { plan, tweetLimit, tweetsPosted } = subscription;
 
+    if (tweetsPosted >= tweetLimit) {
+      return res.status(403).json({
+        error: `You have reached your monthly tweet limit for the ${plan} plan.`,
+      });
+    }
+
+    // Insert the post into the database
+    
+
+    // Increment the tweetsPosted count
+    
         const followCount = user.followCount || 0;
         const now = new Date();
         const currentDate = now.toDateString();
@@ -510,6 +546,11 @@ async function run() {
           ...post,
           createdAt: now,
         });
+
+        await usercollection.updateOne(
+      { email: post.email },
+      { $inc: { "subscription.tweetsPosted": 1 } }
+    );
         // Check if the post contains the keywords "cricket" or "science"
         const lowerCasePost = post.post.toLowerCase();
         const keywords = ["cricket", "science"];
@@ -1548,6 +1589,53 @@ async function run() {
         res.status(500).json({ error: "Failed to fetch comments." });
       }
     });
+    app.post("/subscribe", async (req, res) => {
+  const { email, plan } = req.body;
+
+  // Validate input
+  if (!email || !plan) {
+    return res.status(400).json({ error: "Email and plan are required" });
+  }
+
+  // Check if payment is allowed at this time
+  if (!isPaymentAllowed()) {
+    return res.status(400).json({
+      error: "Payments are only allowed between 10 AM to 11 AM IST",
+    });
+  }
+
+  // Validate the selected plan
+  const selectedPlan = plans[plan];
+  if (!selectedPlan) {
+    return res.status(400).json({ error: "Invalid plan selected" });
+  }
+
+  try {
+    // Create a Razorpay order
+    const options = {
+      amount: selectedPlan.price * 100, // Amount in paise (₹1 = 100 paise)
+      currency: "INR",
+      receipt: crypto.randomBytes(10).toString("hex"), // Generate a unique receipt ID
+      notes: {
+        email: email,
+        plan: plan,
+      },
+    };
+
+    const order = await razorpay.orders.create(options);
+
+    // Respond with the order details
+    res.json({
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      keyId: process.env.RAZORPAY_KEY_ID, // Pass the Razorpay key ID to the frontend
+    });
+  } catch (error) {
+    console.error("Error creating Razorpay order:", error);
+    res.status(500).json({ error: "Failed to create Razorpay order" });
+  }
+});
   } catch (error) {
     console.log(error);
   }

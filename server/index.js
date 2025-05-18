@@ -1618,7 +1618,7 @@ async function run() {
 
     if (user && user.subscription && user.subscription.plan) {
       return res.status(400).json({
-        error: `You are already subscribed to the ${user.subscription.plan} plan.`,
+        error: "Already subscribed to a plan",
       });
     }
     const options = {

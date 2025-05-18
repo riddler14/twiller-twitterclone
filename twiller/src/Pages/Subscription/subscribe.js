@@ -45,8 +45,14 @@ const Subscribe = () => {
 
       const data = await response.json();
       if (!response.ok) {
+      // Handle specific error messages
+      if (data.error === "Already subscribed to a plan") {
+        alert("You are already subscribed to this plan.");
+      } else {
         throw new Error(data.error || "Failed to create Razorpay order");
       }
+      return;
+    }
 
       // Initialize Razorpay with the order details
       const options = {

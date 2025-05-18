@@ -1654,12 +1654,14 @@ app.post("/razorpay-webhook", express.raw({ type: "application/json" }), async (
       console.error("Webhook signature verification failed");
       return res.status(400).json({ error: "Invalid webhook signature" });
     }
+        console.log("Webhook Payload:", body);
 
     // Handle successful payment
     if (body.event === "payment.captured") {
       const payment = body.payload.payment.entity;
       const email = payment.notes.email;
       const plan = payment.notes.plan;
+      console.log("Payment successful for email:", email);
 
       const plans = {
         free: { price: 0, tweets: 1 },

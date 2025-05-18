@@ -1605,7 +1605,9 @@ async function run() {
   }
 
   // Validate the selected plan
-  const selectedPlan = plans[plan];
+    const normalizedPlan = plan.toLowerCase().trim();
+
+  const selectedPlan = plans[normalizedPlan];
   if (!selectedPlan) {
     return res.status(400).json({ error: "Invalid plan selected" });
   }
@@ -1618,7 +1620,7 @@ async function run() {
       receipt: crypto.randomBytes(10).toString("hex"), // Generate a unique receipt ID
       notes: {
         email: email,
-        plan: plan,
+        plan: normalizedPlan,
       },
     };
 

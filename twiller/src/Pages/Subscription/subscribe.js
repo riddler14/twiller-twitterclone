@@ -11,17 +11,17 @@ const Subscribe = () => {
     const email=user?.email;
   const plans = [
     {
-      name: "Bronze Plan",
+      name: "Bronze",
       price: "₹100/month",
       benefits: ["3 tweets per month"],
     },
     {
-      name: "Silver Plan",
+      name: "Silver",
       price: "₹300/month",
       benefits: ["5 tweets per month"],
     },
     {
-      name: "Gold Plan",
+      name: "Gold",
       price: "₹1000/month",
       benefits: ["Unlimited tweets"],
     },
@@ -44,7 +44,7 @@ const Subscribe = () => {
 
       // Initialize Razorpay with the order details
       const options = {
-        key: process.env.RAZORPAY_KEY_ID, // Replace with your Razorpay test or live key
+        key: "rzp_test_tXIry42LkGIxXt", // Replace with your Razorpay test or live key
         amount: data.amount,
         currency: data.currency,
         name: data.name, // Replace with your app name

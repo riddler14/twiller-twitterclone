@@ -1638,6 +1638,90 @@ async function run() {
     res.status(500).json({ error: "Failed to create Razorpay order" });
   }
 });
+app.post("/razorpay-webhook", express.raw({ type: "application/json" }), async (req, res) => {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET; // Your webhook secret
+  const signature = req.headers["x-razorpay-signature"];
+  const body = req.body;
+
+  // Verify the webhook signature
+  const generatedSignature = crypto
+    .createHmac("sha256", secret)
+    .update(JSON.stringify(body))
+    .digest("hex");
+
+  if (generatedSignature !== signature) {
+    console.error("Webhook signature verification failed");
+    return res.status(400).json({ error: "Invalid webhook signature" });
+  }
+
+  // Handle successful payment
+  if (body.event === "payment.captured") {
+    const payment = body.payload.payment.entity;
+    const email = payment.notes.email;
+    const plan = payment.notes.plan;
+
+    // Define subscription plans
+    const plans = {
+      free: { price: 0, tweets: 1 },
+      bronze: { price: 100, tweets: 3 },
+      silver: { price: 300, tweets: 5 },
+      gold: { price: 1000, tweets: Infinity },
+    };
+
+    // Update user's subscription details
+    await usercollection.updateOne(
+      { email },
+      {
+        $set: {
+          subscription: {
+            plan: plan,
+            tweetLimit: plans[plan].tweets,
+            tweetsPosted: 0, // Reset tweetsPosted when subscribing to a new plan
+          },
+        },
+      }
+    );
+
+    // Optionally, send an email with the invoice
+    // const invoiceDetails = `
+    //   Thank you for subscribing to the ${plan} plan!
+    //   Your plan allows you to post ${plans[plan].tweets === Infinity ? "unlimited" : plans[plan].tweets} tweets per month.
+    //   Amount Paid: ₹${plans[plan].price}
+    // `;
+
+    // // Use Nodemailer or another email service to send the email
+    // sendEmail(email, "Subscription Confirmation", invoiceDetails);
+     const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: "Twiller-Support",
+        to: email,
+        subject: "Subscription Invoice",
+        text: `
+      Thank you for subscribing to the ${plan} plan!
+      Your plan allows you to post ${plans[plan].tweets === Infinity ? "unlimited" : plans[plan].tweets} tweets per month.
+      Amount Paid: ₹${plans[plan].price}
+    `,
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+        
+        res.json({ message: "Email sent successfully" });
+      } catch (error) {
+        console.error("Error sending email:", error);
+        res.status(500).json({ error: "Failed to send email" });
+      }
+  }
+
+  res.json({ received: true });
+});
   } catch (error) {
     console.log(error);
   }

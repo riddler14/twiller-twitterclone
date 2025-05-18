@@ -3,12 +3,13 @@ import '../Chatbot/chatbot.css';
 import { useTranslation } from 'react-i18next';
 import VerifiedUserIcon from "@mui/icons-material/Verified";
 import Button from '@mui/material/Button'; // Import Material UI Button
-import { useUserAuth } from '../../context/UserAuthContext';
+import useLoggedinuser from '../../hooks/useLoggedinuser';
 const Subscribe = () => {
   const {t}=useTranslation();
     const [loading, setLoading] = useState(false);
-    const user=useUserAuth();
-    const email=user?.email;
+    
+    const [loggedinuser]=useLoggedinuser();
+    const email=loggedinuser[0]?.email;
   const plans = [
     {
       name: "Bronze",
@@ -30,11 +31,16 @@ const Subscribe = () => {
     const handlePayment = async (plan) => {
     setLoading(true);
     try {
+
+      if (!email || !email.includes("@")) {
+      alert("Please log in or provide a valid email.");
+      return;
+    }
       // Call the backend to create a Razorpay order
       const response = await fetch("https://twiller-twitterclone-2-q41v.onrender.com/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: "user@example.com", plan: plan.name.toLowerCase() }),
+        body: JSON.stringify({ email: email, plan: plan.name.toLowerCase() }),
       });
 
       const data = await response.json();

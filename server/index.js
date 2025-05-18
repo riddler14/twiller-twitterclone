@@ -1614,6 +1614,13 @@ async function run() {
 
   try {
     // Create a Razorpay order
+    const user = await usercollection.findOne({ email: email });
+
+    if (user && user.subscription && user.subscription.plan) {
+      return res.status(400).json({
+        error: `You are already subscribed to the ${user.subscription.plan} plan.`,
+      });
+    }
     const options = {
       amount: selectedPlan.price * 100, // Amount in paise (₹1 = 100 paise)
       currency: "INR",

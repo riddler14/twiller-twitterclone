@@ -1670,9 +1670,9 @@ app.post("/razorpay-webhook", express.raw({ type: "application/json" }), async (
 
     // Update user's subscription details
     await usercollection.updateOne(
-      { email },
+      { email:email },
       {
-        $set: {
+        $push: {
           subscription: {
             plan: plan,
             tweetLimit: plans[plan].tweets,
@@ -1720,7 +1720,7 @@ app.post("/razorpay-webhook", express.raw({ type: "application/json" }), async (
       }
   }
 
-  res.json({ received: true });
+  
 });
   } catch (error) {
     console.log(error);

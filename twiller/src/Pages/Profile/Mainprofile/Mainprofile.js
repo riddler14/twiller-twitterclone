@@ -13,6 +13,7 @@ import axios from "axios";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
 // import { listenForNotifications } from "./socket";
 import {useTranslation} from "react-i18next";
+import VerifiedUserIcon from "@mui/icons-material/Verified";
 
 const Mainprofile = ({ user }) => {
   const navigate = useNavigate();
@@ -28,6 +29,8 @@ const Mainprofile = ({ user }) => {
    // State to toggle EditProfile visibility
   const {t}=useTranslation();
   const [avatarUrl, setAvatarUrl] = useState("");
+    const [subscriptionPlan, setSubscriptionPlan] = useState("free");
+
   const [showLoginHistoryPopup, setShowLoginHistoryPopup] = useState(false); // Controls the login history popup visibility
 const [loginHistory, setLoginHistory] = useState([]); // Stores the login history data
   // useEffect(() => {
@@ -415,6 +418,41 @@ const [loginHistory, setLoginHistory] = useState([]); // Stores the login histor
   const handleCancelAvatar = () => {
     setIsPopupVisible(false); // Close the customization popup without saving
   };
+   useEffect(() => {
+    const fetchSubscriptionPlan = async () => {
+      try {
+        const response = await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/subscription?email=${encodeURIComponent(user.email)}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          setSubscriptionPlan(data.subscriptionPlan);
+        } else {
+          console.error("Error fetching subscription plan:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching subscription plan:", error);
+      }
+    };
+
+    fetchSubscriptionPlan();
+  }, [user.email]);
+
+
+  // Determine the verified icon based on the subscription plan
+  const getVerifiedIcon = () => {
+    switch (subscriptionPlan) {
+      case "bronze":
+        return <VerifiedUserIcon className="verified-icon bronze" />;
+      case "silver":
+        return <VerifiedUserIcon className="verified-icon silver" />;
+      case "gold":
+        return <VerifiedUserIcon className="verified-icon gold" />;
+      default:
+        return null; // No icon for "free" plan
+    }
+  };
+
+
   return (
     <div>
       <ArrowBackIcon className="arrow-icon" onClick={() => navigate("/")} />
@@ -489,6 +527,7 @@ const [loginHistory, setLoginHistory] = useState([]); // Stores the login histor
                     {loggedinuser[0]?.name
                       ? loggedinuser[0].name
                       : user && user.displayname}
+                      {getVerifiedIcon()}
                   </h3>
                   <p className="usernameSection">@{username}</p>
                 </div>

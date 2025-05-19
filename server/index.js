@@ -1744,6 +1744,35 @@ cron.schedule("0 0 * * *", async () => {
     console.error("Error cleaning up expired subscriptions:", error);
   }
 });
+app.get("/subscription", async (req, res) => {
+  const { email } = req.query;
+
+  // Validate the email
+  if (!email || typeof email !== "string" || email.trim() === "") {
+    return res.status(400).json({ error: "Invalid email" });
+  }
+
+  try {
+    const user = await usercollection.findOne(
+      { email: email },
+      { projection: { subscription: 1 } }
+    );
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Default to "free" plan if no subscription exists
+    const subscriptionPlan = user.subscription?.plan || "free";
+
+    res.json({
+      subscriptionPlan,
+    });
+  } catch (error) {
+    console.error("Error fetching subscription plan:", error);
+    res.status(500).json({ error: "Failed to fetch subscription plan" });
+  }
+});
     async function sendSubscriptionEmail(email, plan, planDetails) {
       const transporter = nodemailer.createTransport({
         service: "Gmail",

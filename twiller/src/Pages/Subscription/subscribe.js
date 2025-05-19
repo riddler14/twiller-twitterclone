@@ -1,15 +1,15 @@
-import React,{useState} from 'react'
-import '../Chatbot/chatbot.css';
-import { useTranslation } from 'react-i18next';
+import React, { useState } from "react";
+import "../Chatbot/chatbot.css";
+import { useTranslation } from "react-i18next";
 import VerifiedUserIcon from "@mui/icons-material/Verified";
-import Button from '@mui/material/Button'; // Import Material UI Button
-import useLoggedinuser from '../../hooks/useLoggedinuser';
+import Button from "@mui/material/Button"; // Import Material UI Button
+import useLoggedinuser from "../../hooks/useLoggedinuser";
 const Subscribe = () => {
-  const {t}=useTranslation();
-    const [loading, setLoading] = useState(false);
-    
-    const [loggedinuser]=useLoggedinuser();
-    const email=loggedinuser[0]?.email;
+  const { t } = useTranslation();
+  const [loading, setLoading] = useState(false);
+
+  const [loggedinuser] = useLoggedinuser();
+  const email = loggedinuser[0]?.email;
   const plans = [
     {
       name: "Bronze",
@@ -28,31 +28,33 @@ const Subscribe = () => {
     },
   ];
 
-    const handlePayment = async (plan) => {
+  const handlePayment = async (plan) => {
     setLoading(true);
     try {
-
       if (!email || !email.includes("@")) {
-      alert("Please log in or provide a valid email.");
-      return;
-    }
+        alert("Please log in or provide a valid email.");
+        return;
+      }
       // Call the backend to create a Razorpay order
-      const response = await fetch("https://twiller-twitterclone-2-q41v.onrender.com/subscribe", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email, plan: plan.name.toLowerCase() }),
-      });
+      const response = await fetch(
+        "https://twiller-twitterclone-2-q41v.onrender.com/subscribe",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: email, plan: plan.name.toLowerCase() }),
+        }
+      );
 
       const data = await response.json();
       if (!response.ok) {
-      // Handle specific error messages
-      if (data.error === "Already subscribed to a plan") {
-        alert("You are already subscribed to this plan.");
-      } else {
-        throw new Error(data.error || "Failed to create Razorpay order");
+        // Handle specific error messages
+        if (data.error === "Already subscribed to a plan") {
+          alert("You are already subscribed to this plan.");
+        } else {
+          throw new Error(data.error || "Failed to create Razorpay order");
+        }
+        return;
       }
-      return;
-    }
 
       // Initialize Razorpay with the order details
       const options = {
@@ -69,7 +71,7 @@ const Subscribe = () => {
         },
         prefill: {
           email: email, // Replace with the user's email
-  // Replace with the user's phone number
+          // Replace with the user's phone number
         },
         theme: {
           color: "#3f51b5", // Customize the theme color
@@ -88,7 +90,7 @@ const Subscribe = () => {
   };
 
   return (
-     <div className="chatbot">
+    <div className="chatbot">
       <div className="chatbot__header">
         <h2>
           Subscricptions{" "}
@@ -108,14 +110,18 @@ const Subscribe = () => {
                 <li key={idx}>{benefit}</li>
               ))}
             </ul>
-            <Button variant="contained" color="primary" onClick={()=>handlePayment(plan)} disabled={loading}
-              >
-               {loading ? t("Processing...") : t("Subscribe")}
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => handlePayment(plan)}
+              disabled={loading}
+            >
+              {loading ? t("Processing...") : t("Subscribe")}
             </Button>
           </div>
         ))}
       </div>
-      </div>
+    </div>
   );
 };
 

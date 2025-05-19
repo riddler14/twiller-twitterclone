@@ -21,7 +21,7 @@ const authToken = process.env.TWILIO_AUTH_TOKEN;
 const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 const twilioClient = twilio(accountSid, authToken);
 const useragent = require("express-useragent");
-const Razorpay=require("razorpay");
+const Razorpay = require("razorpay");
 require("dotenv").config();
 
 const app = express();
@@ -267,7 +267,7 @@ function isPaymentAllowed() {
   const hours = istTime.getUTCHours();
   const minutes = istTime.getUTCMinutes();
 
-   return hours >= 10 && hours < 23; // Allow payments only between 10 AM to 11 AM IST
+  return hours >= 10 && hours < 23; // Allow payments only between 10 AM to 11 AM IST
 }
 async function run() {
   try {
@@ -457,18 +457,20 @@ async function run() {
 
       // Validate required fields
       const missingFields = [];
-  if (!post.name) missingFields.push("name");
-  if (!post.username) missingFields.push("username");
-  if (!post.email) missingFields.push("email");
-  if (!post.post) missingFields.push("post");
+      if (!post.name) missingFields.push("name");
+      if (!post.username) missingFields.push("username");
+      if (!post.email) missingFields.push("email");
+      if (!post.post) missingFields.push("post");
 
-  // If any fields are missing, return a detailed error response
-  if (missingFields.length > 0) {
-    return res.status(400).json({
-      error: "Missing required fields",
-      details: `The following fields are missing: ${missingFields.join(", ")}`,
-    });
-  }
+      // If any fields are missing, return a detailed error response
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          error: "Missing required fields",
+          details: `The following fields are missing: ${missingFields.join(
+            ", "
+          )}`,
+        });
+      }
 
       try {
         // Fetch the user's follow count
@@ -478,19 +480,18 @@ async function run() {
           return res.status(400).json({ error: "User not found" });
         }
         const { subscription } = user;
-    const { plan, tweetLimit, tweetsPosted } = subscription;
+        const { plan, tweetLimit, tweetsPosted } = subscription;
 
-    if (tweetsPosted >= tweetLimit) {
-      return res.status(403).json({
-        error: `You have reached your monthly tweet limit for the ${plan} plan.`,
-      });
-    }
+        if (tweetsPosted >= tweetLimit) {
+          return res.status(403).json({
+            error: `You have reached your monthly tweet limit for the ${plan} plan.`,
+          });
+        }
 
-    // Insert the post into the database
-    
+        // Insert the post into the database
 
-    // Increment the tweetsPosted count
-    
+        // Increment the tweetsPosted count
+
         const followCount = user.followCount || 0;
         const now = new Date();
         const currentDate = now.toDateString();
@@ -548,9 +549,9 @@ async function run() {
         });
 
         await usercollection.updateOne(
-      { email: post.email },
-      { $inc: { "subscription.tweetsPosted": 1 } }
-    );
+          { email: post.email },
+          { $inc: { "subscription.tweetsPosted": 1 } }
+        );
         // Check if the post contains the keywords "cricket" or "science"
         const lowerCasePost = post.post.toLowerCase();
         const keywords = ["cricket", "science"];
@@ -685,16 +686,16 @@ async function run() {
 
     app.get("/comments", async (req, res) => {
       const { postId } = req.query; // Extract postId from the query parameters
-    
+
       try {
         // Validate postId
         if (!postId) {
           return res.status(400).json({ error: "postId is required." });
         }
-    
+
         // Fetch comments where postId matches
         const comments = await commentcollection.find({ postId }).toArray();
-    
+
         // Return the comments as a JSON response
         res.json({ comments });
       } catch (error) {
@@ -1493,30 +1494,34 @@ async function run() {
           console.error("Invalid file ID:", fileId);
           return res.status(400).json({ error: "Invalid file ID" });
         }
-        const files = await bucket2.find({ _id: new ObjectId(fileId) }).toArray();
+        const files = await bucket2
+          .find({ _id: new ObjectId(fileId) })
+          .toArray();
         if (!files || files.length === 0) {
           return res.status(404).json({ error: "Video not found" });
         }
-    
+
         const videoSize = files[0].length; // Total size of the video file
-    
+
         // Handle range requests
         const range = req.headers.range;
         if (!range) {
           console.error("No range header found.");
           return res.status(400).json({ error: "Range header required" });
         }
-    
+
         // Parse the range header
         const [startStr, endStr] = range.replace(/bytes=/, "").split("-");
         const start = parseInt(startStr, 10);
-        const end = endStr ? parseInt(endStr, 10) : Math.min(start + 10 ** 6, videoSize - 1); // Default chunk size: 1MB
-    
+        const end = endStr
+          ? parseInt(endStr, 10)
+          : Math.min(start + 10 ** 6, videoSize - 1); // Default chunk size: 1MB
+
         // Validate the range
         if (start >= videoSize || end >= videoSize) {
           return res.status(416).json({ error: "Range not satisfiable" });
         }
-    
+
         // Set headers for range request
         const contentLength = end - start + 1;
         res.writeHead(206, {
@@ -1525,11 +1530,14 @@ async function run() {
           "Content-Length": contentLength,
           "Content-Type": "video/mp4", // Adjust based on your video format
         });
-    
+
         // Open a download stream for the video file
-        const downloadStream = bucket2.openDownloadStream(new ObjectId(fileId), { start, end });
+        const downloadStream = bucket2.openDownloadStream(
+          new ObjectId(fileId),
+          { start, end }
+        );
         downloadStream.pipe(res);
-    
+
         downloadStream.on("error", (error) => {
           console.error("Error downloading video from GridFS:", error);
           res.status(500).json({ error: "Failed to retrieve video" });
@@ -1568,16 +1576,18 @@ async function run() {
       }
     });
     app.get("/comments/:id", async (req, res) => {
-      const postId  = req.params.id; // Extract postId from the query parameters
-    
+      const postId = req.params.id; // Extract postId from the query parameters
+
       try {
         // Validate postId
         if (!postId) {
           return res.status(400).json({ error: "postId is required." });
         }
-    
+
         // Fetch comments where postId matches
-        const comments = await commentcollection.find({ author:postId }).toArray();
+        const comments = await commentcollection
+          .find({ author: postId })
+          .toArray();
         if (!comments) {
           // If no post is found, return a 404 error
           return res.status(404).json({ error: "Comments not found." });
@@ -1590,146 +1600,152 @@ async function run() {
       }
     });
     app.post("/subscribe", async (req, res) => {
-  const { email, plan } = req.body;
+      const { email, plan } = req.body;
 
-  // Validate input
-  if (!email || !plan) {
-    return res.status(400).json({ error: "Email and plan are required" });
-  }
+      // Validate input
+      if (!email || !plan) {
+        return res.status(400).json({ error: "Email and plan are required" });
+      }
 
-  // Check if payment is allowed at this time
-  if (!isPaymentAllowed()) {
-    return res.status(400).json({
-      error: "Payments are only allowed between 10 AM to 11 AM IST",
-    });
-  }
+      // Check if payment is allowed at this time
+      if (!isPaymentAllowed()) {
+        return res.status(400).json({
+          error: "Payments are only allowed between 10 AM to 11 AM IST",
+        });
+      }
 
-  // Validate the selected plan
-    const normalizedPlan = plan.toLowerCase().trim();
+      // Validate the selected plan
+      const normalizedPlan = plan.toLowerCase().trim();
 
-  const selectedPlan = plans[normalizedPlan];
-  if (!selectedPlan) {
-    return res.status(400).json({ error: "Invalid plan selected" });
-  }
+      const selectedPlan = plans[normalizedPlan];
+      if (!selectedPlan) {
+        return res.status(400).json({ error: "Invalid plan selected" });
+      }
 
-  try {
-    // Create a Razorpay order
-    const user = await usercollection.findOne({ email: email });
+      try {
+        // Create a Razorpay order
+        const user = await usercollection.findOne({ email: email });
 
-    if (user && user.subscription && user.subscription.plan) {
-      return res.status(400).json({
-        error: "Already subscribed to a plan",
-      });
-    }
-    const options = {
-      amount: selectedPlan.price * 100, // Amount in paise (₹1 = 100 paise)
-      currency: "INR",
-      receipt: crypto.randomBytes(10).toString("hex"), // Generate a unique receipt ID
-      notes: {
-        email: email,
-        plan: normalizedPlan,
-      },
-    };
-
-    const order = await razorpay.orders.create(options);
-
-    // Respond with the order details
-    res.json({
-      orderId: order.id,
-      amount: order.amount,
-      currency: order.currency,
-      keyId: process.env.RAZORPAY_KEY_ID, // Pass the Razorpay key ID to the frontend
-    });
-  } catch (error) {
-    console.error("Error creating Razorpay order:", error);
-    res.status(500).json({ error: "Failed to create Razorpay order" });
-  }
-});
-app.post("/razorpay-webhook", express.raw({ type: "application/json" }), async (req, res) => {
-  try {
-    const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-    const signature = req.headers["x-razorpay-signature"];
-    const body = req.body;
-
-    // Verify the webhook signature
-    const generatedSignature = crypto
-      .createHmac("sha256", secret)
-      .update(JSON.stringify(body))
-      .digest("hex");
-
-    if (generatedSignature !== signature) {
-      console.error("Webhook signature verification failed");
-      return res.status(400).json({ error: "Invalid webhook signature" });
-    }
-        console.log("Webhook Payload:", body);
-
-    // Handle successful payment
-    if (body.event === "payment.captured") {
-      const payment = body.payload.payment.entity;
-      const email = payment.notes.email;
-      const plan = payment.notes.plan;
-      console.log("Payment successful for email:", email);
-
-      const plans = {
-        free: { price: 0, tweets: 1 },
-        bronze: { price: 100, tweets: 3 },
-        silver: { price: 300, tweets: 5 },
-        gold: { price: 1000, tweets: Infinity },
-      };
-
-      // Update user's subscription details
-      await usercollection.updateOne(
-        { email: email },
-        {
-          $set: {
-            subscription: {
-              plan: plan,
-              tweetLimit: plans[plan].tweets,
-              tweetsPosted: 0,
-            },
-          },
+        if (user.subscription && user.subscription.plan) {
+          return res.status(400).json({
+            error: "Already subscribed to a plan",
+          });
         }
-      );
+        const options = {
+          amount: selectedPlan.price * 100, // Amount in paise (₹1 = 100 paise)
+          currency: "INR",
+          receipt: crypto.randomBytes(10).toString("hex"), // Generate a unique receipt ID
+          notes: {
+            email: email,
+            plan: normalizedPlan,
+          },
+        };
 
-      // Send subscription confirmation email
-      sendSubscriptionEmail(email, plan, plans[plan]);
-    }
+        const order = await razorpay.orders.create(options);
 
-    // Acknowledge receipt of the webhook
-    res.json({ received: true });
-  } catch (error) {
-    console.error("Error processing webhook:", error);
-    res.status(200).json({ received: true }); // Always acknowledge receipt
-  }
-});
+        // Respond with the order details
+        res.json({
+          orderId: order.id,
+          amount: order.amount,
+          currency: order.currency,
+          keyId: process.env.RAZORPAY_KEY_ID, // Pass the Razorpay key ID to the frontend
+        });
+      } catch (error) {
+        console.error("Error creating Razorpay order:", error);
+        res.status(500).json({ error: "Failed to create Razorpay order" });
+      }
+    });
+    app.post(
+      "/razorpay-webhook",
+      express.raw({ type: "application/json" }),
+      async (req, res) => {
+        try {
+          const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
+          const signature = req.headers["x-razorpay-signature"];
+          const body = req.body;
 
-async function sendSubscriptionEmail(email, plan, planDetails) {
-  const transporter = nodemailer.createTransport({
-    service: "Gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+          // Verify the webhook signature
+          const generatedSignature = crypto
+            .createHmac("sha256", secret)
+            .update(JSON.stringify(body))
+            .digest("hex");
 
-  const mailOptions = {
-    from: "Twiller-Support",
-    to: email,
-    subject: "Subscription Invoice",
-    text: `
+          if (generatedSignature !== signature) {
+            console.error("Webhook signature verification failed");
+            return res.status(400).json({ error: "Invalid webhook signature" });
+          }
+          console.log("Webhook Payload:", body);
+
+          // Handle successful payment
+          if (body.event === "payment.captured") {
+            const payment = body.payload.payment.entity;
+            const email = payment.notes.email;
+            const plan = payment.notes.plan;
+            console.log("Payment successful for email:", email);
+
+            const plans = {
+              free: { price: 0, tweets: 1 },
+              bronze: { price: 100, tweets: 3 },
+              silver: { price: 300, tweets: 5 },
+              gold: { price: 1000, tweets: Infinity },
+            };
+
+            // Update user's subscription details
+            await usercollection.updateOne(
+              { email: email },
+              {
+                $set: {
+                  subscription: {
+                    plan: plan,
+                    tweetLimit: plans[plan].tweets,
+                    tweetsPosted: 0,
+                  },
+                },
+              }
+            );
+
+            // Send subscription confirmation email
+            sendSubscriptionEmail(email, plan, plans[plan]);
+          }
+
+          // Acknowledge receipt of the webhook
+          res.json({ received: true });
+        } catch (error) {
+          console.error("Error processing webhook:", error);
+          res.status(200).json({ received: true }); // Always acknowledge receipt
+        }
+      }
+    );
+
+    async function sendSubscriptionEmail(email, plan, planDetails) {
+      const transporter = nodemailer.createTransport({
+        service: "Gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      const mailOptions = {
+        from: "Twiller-Support",
+        to: email,
+        subject: "Subscription Invoice",
+        text: `
       Thank you for subscribing to the ${plan} plan!
-      Your plan allows you to post ${planDetails.tweets === Infinity ? "unlimited" : planDetails.tweets} tweets per month.
+      Your plan allows you to post ${
+        planDetails.tweets === Infinity ? "unlimited" : planDetails.tweets
+      } tweets per month.
       Amount Paid: ₹${planDetails.price}
     `,
-  };
+      };
 
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log("Subscription confirmation email sent to:", email);
-  } catch (error) {
-    console.error("Error sending subscription email:", error);
-  }
-}
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log("Subscription confirmation email sent to:", email);
+      } catch (error) {
+        console.error("Error sending subscription email:", error);
+      }
+    }
   } catch (error) {
     console.log(error);
   }

@@ -22,6 +22,7 @@ const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 const twilioClient = twilio(accountSid, authToken);
 const useragent = require("express-useragent");
 const Razorpay = require("razorpay");
+const cron=require("node-cron");
 require("dotenv").config();
 
 const app = express();
@@ -1689,7 +1690,8 @@ async function run() {
               silver: { price: 300, tweets: 5 },
               gold: { price: 1000, tweets: Infinity },
             };
-
+              const subscriptionExpiresAt = new Date();
+          subscriptionExpiresAt.setMonth(subscriptionExpiresAt.getMonth() + 1);
             // Update user's subscription details
             await usercollection.updateOne(
               { email: email },
@@ -1699,6 +1701,8 @@ async function run() {
                     plan: plan,
                     tweetLimit: plans[plan].tweets,
                     tweetsPosted: 0,
+                    subscriptionExpiresAt: subscriptionExpiresAt,
+
                   },
                 },
               }
@@ -1716,7 +1720,30 @@ async function run() {
         }
       }
     );
+    
 
+// Schedule a task to run every day at midnight
+cron.schedule("0 0 * * *", async () => {
+  try {
+    const now = new Date();
+
+    // Find users whose subscriptions have expired
+    const expiredUsers = await usercollection.find({
+      "subscription.subscriptionExpiresAt": { $lte: now },
+    });
+
+    // Remove the subscription field for expired users
+    for (const user of expiredUsers) {
+      await usercollection.updateOne(
+        { email: user.email },
+        { $unset: { subscription: "" } }
+      );
+      console.log(`Removed subscription for user: ${user.email}`);
+    }
+  } catch (error) {
+    console.error("Error cleaning up expired subscriptions:", error);
+  }
+});
     async function sendSubscriptionEmail(email, plan, planDetails) {
       const transporter = nodemailer.createTransport({
         service: "Gmail",
@@ -1745,6 +1772,7 @@ async function run() {
       } catch (error) {
         console.error("Error sending subscription email:", error);
       }
+
     }
   } catch (error) {
     console.log(error);

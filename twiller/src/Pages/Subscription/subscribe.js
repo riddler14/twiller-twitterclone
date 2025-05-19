@@ -49,7 +49,7 @@ const Subscribe = () => {
       if (!response.ok) {
         // Handle specific error messages
         if (data.error === "Already subscribed to a plan") {
-          alert("You are already subscribed to this plan.");
+          alert("You are already subscribed to a plan.");
         } else {
           throw new Error(data.error || "Failed to create Razorpay order");
         }

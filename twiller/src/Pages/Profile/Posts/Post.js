@@ -1,4 +1,4 @@
-import {React,useState,useRef} from "react";
+import {useState,useRef,useEffect} from "react";
 import { Avatar } from "@mui/material";
 import VerifiedUserIcon from "@mui/icons-material/Verified";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
@@ -8,13 +8,15 @@ import PublishIcon from "@mui/icons-material/Publish";
 import { useNavigate } from 'react-router-dom';
 import ConfirmationModal from "../../Feed/Posts/ConfirmationModal";
 const Post = ({p}) => {
-    const { name, username, photo, post, profilephoto,audio,video } = p;
+    const { name, username, photo, post, profilephoto,audio,video,email } = p;
      const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate=useNavigate();
       // Fetch user's _id based on email
     
       const videoRef = useRef(null); // Reference to the video element
       const [tapCount, setTapCount] = useState(0);
+        const [subscriptionPlan, setSubscriptionPlan] = useState("free");
+
       let tapTimeout = null; // Timeout for resetting tap count
     const resetTapCount = () => {
       clearTimeout(tapTimeout); // Clear any existing timeout
@@ -128,6 +130,39 @@ const Post = ({p}) => {
     const handleCancel = () => {
       setIsModalOpen(false); // Close the modal without taking any action
     };
+    useEffect(() => {
+    const fetchSubscriptionPlan = async () => {
+      try {
+        const response = await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/subscription?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          setSubscriptionPlan(data.subscriptionPlan);
+        } else {
+          console.error("Error fetching subscription plan:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching subscription plan:", error);
+      }
+    };
+
+    fetchSubscriptionPlan();
+  }, [email]);
+
+
+  // Determine the verified icon based on the subscription plan
+  const getVerifiedIcon = () => {
+    switch (subscriptionPlan) {
+      case "bronze":
+        return <VerifiedUserIcon className="verified-icon bronze" />;
+      case "silver":
+        return <VerifiedUserIcon className="verified-icon silver" />;
+      case "gold":
+        return <VerifiedUserIcon className="verified-icon gold" />;
+      default:
+        return <VerifiedUserIcon className="post__badge"/>; // No icon for "free" plan
+    }
+  };
     return (
       <div className="post">
         <div className="post__avatar">
@@ -139,7 +174,7 @@ const Post = ({p}) => {
               <h3>
                 {name}{" "}
                 <span className="post__headerSpecial">
-                  <VerifiedUserIcon className="post__badge" /> @{username}
+                  {getVerifiedIcon()} @{username}
                 </span>
               </h3>
             </div>

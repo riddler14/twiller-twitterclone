@@ -103,6 +103,25 @@ text-decoration: underline;
   background: #f44336; /* Red for cancel */
   color: white;
 }
+.verified-icon {
+  font-size: 18px;
+  margin-left: 5px;
+}
+
+/* Bronze plan icon */
+.verified-icon.bronze {
+  color: #cd7f32; /* Bronze color */
+}
+
+/* Silver plan icon */
+.verified-icon.silver {
+  color: #c0c0c0; /* Silver color */
+}
+
+/* Gold plan icon */
+.verified-icon.gold {
+  color: #ffd700; /* Gold color */
+}
 video {
   touch-action: none; /* Disable all default touch gestures */
   user-select: none; /* Prevent text selection during gestures */

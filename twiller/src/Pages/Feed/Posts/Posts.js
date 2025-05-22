@@ -1,4 +1,4 @@
-import { React, useState, useRef } from "react";
+import {  useState, useRef,useEffect } from "react";
 import "./Posts.css";
 import { Avatar } from "@mui/material";
 import axios from "axios";
@@ -18,9 +18,9 @@ const Posts = ({ p,posts }) => {
   const [loggedinuser] = useLoggedinuser(); // Assuming this hook provides the logged-in user's data
   const loggedInEmail = loggedinuser[0]?.email;
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [subscriptionPlan, setSubscriptionPlan] = useState("free");
   // Fetch user's _id based on email
-
+  
   const videoRef = useRef(null); // Reference to the video element
   const [tapCount, setTapCount] = useState(0);
   let tapTimeout = null; // Timeout for resetting tap count
@@ -221,6 +221,39 @@ const Posts = ({ p,posts }) => {
   const handleCancel = () => {
     setIsModalOpen(false); // Close the modal without taking any action
   };
+  useEffect(() => {
+    const fetchSubscriptionPlan = async () => {
+      try {
+        const response = await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/subscription?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+
+        if (response.ok) {
+          setSubscriptionPlan(data.subscriptionPlan);
+        } else {
+          console.error("Error fetching subscription plan:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching subscription plan:", error);
+      }
+    };
+
+    fetchSubscriptionPlan();
+  }, [email]);
+
+
+  // Determine the verified icon based on the subscription plan
+  const getVerifiedIcon = () => {
+    switch (subscriptionPlan) {
+      case "bronze":
+        return <VerifiedUserIcon className="verified-icon bronze" />;
+      case "silver":
+        return <VerifiedUserIcon className="verified-icon silver" />;
+      case "gold":
+        return <VerifiedUserIcon className="verified-icon gold" />;
+      default:
+        return <VerifiedUserIcon className="post__badge"/>; // No icon for "free" plan
+    }
+  };
   return (
     <div className="post">
       <div className="post__avatar" onClick={handleUserClick}>
@@ -232,7 +265,7 @@ const Posts = ({ p,posts }) => {
             <h3 onClick={handleUserClick} className="user_name">
               {name}{" "}
               <span className="post__headerSpecial">
-                <VerifiedUserIcon className="post__badge" /> @{username}
+                {getVerifiedIcon()} @{username}
               </span>
             </h3>
           </div>

@@ -6,7 +6,7 @@ import FollowButton from "../Mainprofile/FollowButton";
 import FollowSection from "../Mainprofile/FollowSection";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-
+import VerifiedUserIcon from "@mui/icons-material/Verified";
 import axios from "axios";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
 
@@ -28,7 +28,7 @@ const UserProfile = () => {
   const [followersCount, setFollowersCount] = useState(0);
   // eslint-disable-next-line
   const [followingCount, setFollowingCount] = useState(0);
-
+    const [subscriptionPlan, setSubscriptionPlan] = useState("free");
   // Fetch initial counts
   useEffect(() => {
     const fetchCounts = async () => {
@@ -52,7 +52,7 @@ const UserProfile = () => {
 
     fetchCounts();
   }, [user?.email]);
-
+  
   // Callback to update counts
   const handleFollowUpdate = (action) => {
     if (action === "follow") {
@@ -95,7 +95,24 @@ const UserProfile = () => {
         .catch((error) => console.error("Error fetching posts:", error));
     }
   }, [user?.email]);
+  useEffect(() => {
+    const fetchSubscriptionPlan = async () => {
+      try {
+        const response = await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/subscription?email=${encodeURIComponent(user.email)}`);
+        const data = await response.json();
 
+        if (response.ok) {
+          setSubscriptionPlan(data.subscriptionPlan);
+        } else {
+          console.error("Error fetching subscription plan:", data.error);
+        }
+      } catch (error) {
+        console.error("Error fetching subscription plan:", error);
+      }
+    };
+
+    fetchSubscriptionPlan();
+  }, [user?.email]);
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -104,6 +121,21 @@ const UserProfile = () => {
     return <div>User not found.</div>;
   }
 
+
+
+  // Determine the verified icon based on the subscription plan
+  const getVerifiedIcon = () => {
+    switch (subscriptionPlan) {
+      case "bronze":
+        return <VerifiedUserIcon className="verified-icon bronze" />;
+      case "silver":
+        return <VerifiedUserIcon className="verified-icon silver" />;
+      case "gold":
+        return <VerifiedUserIcon className="verified-icon gold" />;
+      default:
+        return <VerifiedUserIcon className="post__badge" />; // No icon for "free" plan
+    }
+  };
   return (
     <div>
       <ArrowBackIcon className="arrow-icon" onClick={() => navigate("/")} />
@@ -160,7 +192,8 @@ const UserProfile = () => {
               <div className="userInfo">
                 <div>
                   <h3 className="heading-3">
-                    {user.name}
+                    {user && user.name}
+                   {" "} {getVerifiedIcon()}
                   </h3>
                   <p className="usernameSection">@{user?.username || user?.email?.split("@")[0]}</p>
                 </div>

@@ -454,135 +454,132 @@ async function run() {
     // });
 
     app.post("/post", async (req, res) => {
-      const post = req.body;
+  const post = req.body;
 
-      // Validate required fields
-      const missingFields = [];
-      if (!post.name) missingFields.push("name");
-      if (!post.username) missingFields.push("username");
-      if (!post.email) missingFields.push("email");
-      if (!post.post) missingFields.push("post");
+  // Validate required fields
+  const missingFields = [];
+  if (!post.name) missingFields.push("name");
+  if (!post.username) missingFields.push("username");
+  if (!post.email) missingFields.push("email");
+  if (!post.post) missingFields.push("post");
 
-      // If any fields are missing, return a detailed error response
-      if (missingFields.length > 0) {
-        return res.status(400).json({
-          error: "Missing required fields",
-          details: `The following fields are missing: ${missingFields.join(
-            ", "
-          )}`,
-        });
-      }
-
-      try {
-        // Fetch the user's follow count
-        const user = await usercollection.findOne({ email: post.email });
-
-        if (!user) {
-          return res.status(400).json({ error: "User not found" });
-        }
-        const { subscription } = user;
-        const { plan, tweetLimit, tweetsPosted } = subscription;
-
-        if (tweetsPosted >= tweetLimit) {
-          return res.status(403).json({
-            error: `You have reached your monthly tweet limit for the ${plan} plan.`,
-          });
-        }
-
-        // Insert the post into the database
-
-        // Increment the tweetsPosted count
-
-        const followCount = user.followCount || 0;
-        const now = new Date();
-        const currentDate = now.toDateString();
-
-        // Fetch the user's post history for today
-        const postsToday = await postcollection
-          .find({
-            email: post.email,
-            createdAt: { $gte: new Date(currentDate) },
-          })
-          .toArray();
-
-        // Helper function to check posting window
-        const isWithinPostingWindow = () => {
-          const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
-          const istTime = new Date(now.getTime() + istOffset);
-
-          const hours = istTime.getUTCHours();
-          const minutes = istTime.getUTCMinutes();
-
-          // Check if the time is between 10:00 AM and 10:30 AM IST
-          return hours === 10 && minutes >= 0 && minutes <= 30;
-        };
-
-        // Apply posting rules based on follow count
-        if (followCount === 0) {
-          // User doesn't follow anyone
-          if (!isWithinPostingWindow()) {
-            return res.status(400).json({
-              error: "You can only post between 10:00 AM and 10:30 AM IST",
-            });
-          }
-
-          if (postsToday.length > 0) {
-            return res
-              .status(400)
-              .json({ error: "You have already posted today" });
-          }
-        } else if (followCount > 0 && followCount < 10) {
-          // User follows 1–9 people
-          const maxPostsPerDay = followCount <= 2 ? 2 : 5; // Adjust limits as needed
-
-          if (postsToday.length >= maxPostsPerDay) {
-            return res.status(400).json({
-              error: `You can only post ${maxPostsPerDay} times a day`,
-            });
-          }
-        }
-        // Users with 10+ followers can post unlimited times
-
-        // Insert the post into the database
-        const result = await postcollection.insertOne({
-          ...post,
-          createdAt: now,
-        });
-
-        await usercollection.updateOne(
-          { email: post.email },
-          { $inc: { "subscription.tweetsPosted": 1 } }
-        );
-        // Check if the post contains the keywords "cricket" or "science"
-        const lowerCasePost = post.post.toLowerCase();
-        const keywords = ["cricket", "science"];
-        const containsKeyword = keywords.some((keyword) =>
-          lowerCasePost.includes(keyword)
-        );
-
-        if (containsKeyword) {
-          // Fetch all users with notificationsEnabled set to true
-          const usersWithNotifications = await usercollection
-            .find({ notificationsEnabled: true })
-            .toArray();
-
-          // Send notifications to these users
-          usersWithNotifications.forEach((user) => {
-            if (user.email !== post.email) {
-              // Emit an event to notify the frontend
-              io.emit(`notification-${user.email}`, {
-                title: "New Post Alert!",
-                body: `${post.name} posted: ${post.post}`,
-              });
-            }
-          });
-        }
-        res.send(result);
-      } catch (error) {
-        console.error("Error inserting post:", error);
-        res.status(500).json({ error: "Failed to post tweet" });
-      }
+  if (missingFields.length > 0) {
+    return res.status(400).json({
+      error: "Missing required fields",
+      details: `The following fields are missing: ${missingFields.join(", ")}`,
     });
+  }
+
+  try {
+    // Fetch the user's subscription and follow count
+    const user = await usercollection.findOne({ email: post.email });
+
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
+    const { subscription } = user;
+    const { plan, tweetLimit, tweetsPosted } = subscription || {};
+    const followCount = user.followCount || 0;
+
+    // Default values for free plan
+    const defaultTweetLimit = 1; // Free plan allows 1 tweet per month
+    const effectiveTweetLimit = tweetLimit || defaultTweetLimit;
+
+    // Check monthly tweet limit
+    if (tweetsPosted >= effectiveTweetLimit) {
+      return res.status(403).json({
+        error: `You have reached your monthly tweet limit for the ${plan || "free"} plan.`,
+      });
+    }
+
+    const now = new Date();
+    const currentDate = now.toDateString();
+
+    // Fetch the user's post history for today
+    const postsToday = await postcollection
+      .find({
+        email: post.email,
+        createdAt: { $gte: new Date(currentDate) },
+      })
+      .toArray();
+
+    // Helper function to check posting window
+    const isWithinPostingWindow = () => {
+      const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+      const istTime = new Date(now.getTime() + istOffset);
+
+      const hours = istTime.getUTCHours();
+      const minutes = istTime.getUTCMinutes();
+
+      // Users who don't follow anyone can only post between 10:00 AM and 10:30 AM IST
+      return hours === 10 && minutes >= 0 && minutes <= 30;
+    };
+
+    // Apply daily posting limits based on follow count
+    let maxPostsPerDay = Infinity; // Default to unlimited posts
+    if (followCount === 0) {
+      // User doesn't follow anyone
+      if (!isWithinPostingWindow()) {
+        return res.status(400).json({
+          error: "You can only post between 10:00 AM and 10:30 AM IST",
+        });
+      }
+      maxPostsPerDay = 1; // Only 1 post per day
+    } else if (followCount > 0 && followCount < 10) {
+      // User follows 1–9 people
+      maxPostsPerDay = followCount <= 2 ? 2 : 5; // Adjust limits as needed
+    }
+
+    // Enforce daily posting limits
+    if (postsToday.length >= maxPostsPerDay) {
+      return res.status(400).json({
+        error: `You can only post ${maxPostsPerDay} times a day`,
+      });
+    }
+
+    // Insert the post into the database
+    const result = await postcollection.insertOne({
+      ...post,
+      createdAt: now,
+    });
+
+    // Increment the tweetsPosted count
+    await usercollection.updateOne(
+      { email: post.email },
+      { $inc: { "subscription.tweetsPosted": 1 } }
+    );
+
+    // Check if the post contains the keywords "cricket" or "science"
+    const lowerCasePost = post.post.toLowerCase();
+    const keywords = ["cricket", "science"];
+    const containsKeyword = keywords.some((keyword) =>
+      lowerCasePost.includes(keyword)
+    );
+
+    if (containsKeyword) {
+      // Fetch all users with notificationsEnabled set to true
+      const usersWithNotifications = await usercollection
+        .find({ notificationsEnabled: true })
+        .toArray();
+
+      // Send notifications to these users
+      usersWithNotifications.forEach((user) => {
+        if (user.email !== post.email) {
+          io.emit(`notification-${user.email}`, {
+            title: "New Post Alert!",
+            body: `${post.name} posted: ${post.post}`,
+          });
+        }
+      });
+    }
+
+    res.send(result);
+  } catch (error) {
+    console.error("Error inserting post:", error);
+    res.status(500).json({ error: "Failed to post tweet" });
+  }
+});
     app.post("/comment", async (req, res) => {
       const post = req.body;
 

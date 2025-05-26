@@ -1,40 +1,45 @@
-// File: src/components/NotificationManager.js
-import  { useEffect } from "react";
-import { useSocket } from "../context/SocketContext";
+import { useEffect } from "react";
+import io from "socket.io-client";
+import useLoggedinuser from "../hooks/useLoggedinuser";
 
 const NotificationManager = () => {
-  const socket = useSocket();
+  const [loggedinuser] = useLoggedinuser();
 
   useEffect(() => {
-    if (!socket) return;
+    if (!loggedinuser || !loggedinuser[0]?.email) return;
 
-    const handleNotification = (notification) => {
+    // Initialize the Socket.IO client
+    const socket = io("https://twiller-twitterclone-2-q41v.onrender.com", {
+      query: { email: loggedinuser[0].email }, // Pass the user's email as a query parameter
+    });
+
+    // Request notification permissions if not already granted
+    if (Notification.permission !== "granted") {
+      Notification.requestPermission().then((permission) => {
+        if (permission === "granted") {
+          console.log("Notification permission granted.");
+        }
+      });
+    }
+
+    // Listen for notification events from the backend
+    socket.on(`notification-${loggedinuser[0].email}`, (data) => {
       if (Notification.permission === "granted") {
-        new Notification(notification.title, {
-          body: notification.body,
-          icon: "/path-to-your-app-icon.png", // Replace with your app icon path
-        });
-      } else if (Notification.permission !== "denied") {
-        Notification.requestPermission().then((permission) => {
-          if (permission === "granted") {
-            new Notification(notification.title, {
-              body: notification.body,
-              icon: "/path-to-your-app-icon.png", // Replace with your app icon path
-            });
-          }
+        // Show a browser notification
+        new Notification(data.title, {
+          body: data.body,
         });
       }
-    };
+    });
 
-    // Listen for notifications specific to the user
-    socket.on("notification", handleNotification);
-
+    // Cleanup the listener on component unmount
     return () => {
-      socket.off("notification", handleNotification); // Cleanup listener
+      socket.off(`notification-${loggedinuser[0].email}`);
+      socket.disconnect();
     };
-  }, [socket]);
+  }, [loggedinuser]);
 
-  return null; // This component does not render anything
+  return null; // This component doesn't render anything
 };
 
 export default NotificationManager;

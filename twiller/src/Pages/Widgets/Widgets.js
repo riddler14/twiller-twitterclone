@@ -1,4 +1,4 @@
-import React,{useState,useRef,useEffect,useCallback} from 'react'
+import {useState,useRef,useEffect,useCallback} from 'react'
 import "./widget.css";
 import SearchIcon from "@mui/icons-material/Search";
 import IconButton from "@mui/material/IconButton";

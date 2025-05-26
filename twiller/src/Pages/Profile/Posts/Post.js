@@ -7,6 +7,7 @@ import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import PublishIcon from "@mui/icons-material/Publish";
 import { useNavigate } from 'react-router-dom';
 import ConfirmationModal from "../../Feed/Posts/ConfirmationModal";
+import "../../Feed/Posts/Posts.css";
 const Post = ({p}) => {
     const { name, username, photo, post, profilephoto,audio,video,email } = p;
      const [isModalOpen, setIsModalOpen] = useState(false);

@@ -15,7 +15,7 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
-  const [isOtpSent, setIsOtpSent] = useState(false);
+  // const [isOtpSent, setIsOtpSent] = useState(false);
   const [showOtpPopup, setShowOtpPopup] = useState(false); // Controls the OTP popup visibility
   const [error, setError] = useState("");
   const [googleEmail, setGoogleEmail] = useState(""); // Email retrieved from Google Sign-In
@@ -94,7 +94,7 @@ const Login = () => {
   
       console.log("OTP sent successfully:", response.data); // Debugging log
       alert(response.data.message); // Notify the user that the OTP has been sent
-      setIsOtpSent(true); // Show OTP input field
+      // setIsOtpSent(true); // Show OTP input field
     } catch (error) {
       console.error("Error sending OTP:", error); // Log the full error
       setError(error.response?.data?.error || "Failed to send OTP. Please try again.");

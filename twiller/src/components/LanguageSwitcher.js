@@ -10,7 +10,7 @@ const LanguageSwitcher = () => {
   const [otp, setOtp] = useState('');
   const [verificationMethod, setVerificationMethod] = useState('');
   const [verificationSent, setVerificationSent] = useState(false);
-  const [verificationSuccess, setVerificationSuccess] = useState(false);
+  // const [verificationSuccess, setVerificationSuccess] = useState(false);
   const [verificationError, setVerificationError] = useState('');
   const [retryCount, setRetryCount] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState('en'); // Track the selected language
@@ -29,7 +29,7 @@ const LanguageSwitcher = () => {
     setEmailOrMobile('');
     setOtp('');
     setVerificationSent(false);
-    setVerificationSuccess(false);
+    // setVerificationSuccess(false);
     setVerificationError('');
     setRetryCount(0);
   };
@@ -98,7 +98,7 @@ const LanguageSwitcher = () => {
         console.log("Saving language to localStorage:", lng); // Debugging line
         i18n.changeLanguage(lng); // Switch the language here
         localStorage.setItem('language', lng); // Save the language preference
-        setVerificationSuccess(true);
+        // setVerificationSuccess(true);
         closePopup(); // Close the popup on success
       } else {
         setVerificationError(t('error_verifying_otp'));

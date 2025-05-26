@@ -83,7 +83,10 @@
   margin-top: 0;
   border: 1px solid white;
   width: 100%;
-  overflow-x: hidden; /* Prevent horizontal scrolling */
+  max-height: 100vh;
+  overflow-x: hidden; 
+    overflow-y: auto;  /* Enable vertical scrolling if needed */
+/* Prevent horizontal scrolling */
 }
 
 .profile-bio {

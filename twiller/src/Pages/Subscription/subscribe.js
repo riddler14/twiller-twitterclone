@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import "../Chatbot/chatbot.css";
 import { useTranslation } from "react-i18next";
 import VerifiedUserIcon from "@mui/icons-material/Verified";
@@ -50,7 +50,9 @@ const Subscribe = () => {
         // Handle specific error messages
         if (data.error === "Already subscribed to a plan") {
           alert("You are already subscribed to a plan.");
-        } else {
+        } if(data.error ==="Payments are only allowed between 10 AM to 11 AM IST"){
+          alert("Payments are only allowed between 10 AM to 11 AM IST");
+        }else {
           throw new Error(data.error || "Failed to create Razorpay order");
         }
         return;

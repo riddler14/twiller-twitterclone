@@ -1801,6 +1801,25 @@ app.get("/subscription", async (req, res) => {
       }
 
     }
+
+    async function listAvailableModels() {
+  try {
+    const { models } = await genAI.listModels();
+    console.log("Available Models:");
+    for (const model of models) {
+      console.log(`  - Name: ${model.name}`);
+      console.log(`    Description: ${model.description}`);
+      console.log(`    Supported Methods: ${model.supportedGenerationMethods.join(', ')}`);
+      console.log('---');
+    }
+  } catch (error) {
+    console.error("Error listing models:", error);
+  }
+}
+
+// Call this function once (e.g., when your app starts or in a separate script)
+// to see the exact model names and supported methods available to you.
+listAvailableModels();
   } catch (error) {
     console.log(error);
   }

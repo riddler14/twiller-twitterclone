@@ -12,7 +12,7 @@ import useLoggedinuser from "../../../hooks/useLoggedinuser";
 import ConfirmationModal from "./ConfirmationModal";
 
 const Posts = ({ p,posts }) => {
-  const { name, username, photo, post, profileImage, audio, video, email } = p;
+  const { name, username, photo, post, audio, video, email } = p;
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null); // Store the user's _id locally
   const [loggedinuser] = useLoggedinuser(); // Assuming this hook provides the logged-in user's data
@@ -20,11 +20,21 @@ const Posts = ({ p,posts }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [subscriptionPlan, setSubscriptionPlan] = useState("free");
   // Fetch user's _id based on email
-  
+    const [profilePhoto, setProfilePhoto] = useState("");
+
   const videoRef = useRef(null); // Reference to the video element
   const [tapCount, setTapCount] = useState(0);
   let tapTimeout = null; // Timeout for resetting tap count
   // Track tap count for multi-tap gestures
+  useEffect(() => {
+    // Fetch the profile image when the component mounts
+    const fetchAndSetProfilePhoto = async () => {
+      const profileImage = await fetchProfileImage(email); // Use the email from the post
+      setProfilePhoto(profileImage);
+    };
+
+    fetchAndSetProfilePhoto();
+  }, [email]);
   const fetchUserId = async (email) => {
     try {
       const response = await axios.get(
@@ -46,7 +56,19 @@ const Posts = ({ p,posts }) => {
       console.error("Error fetching user ID:", error);
     }
   };
-
+  const fetchProfileImage = async (email) => {
+  try {
+    const response = await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/userprofile?email=${email}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch profile image");
+    }
+    const data = await response.json();
+    return data.user.profileImage || "default-profile-image-url"; // Fallback to default image
+  } catch (error) {
+    console.error("Error fetching profile image:", error);
+    return "default-profile-image-url"; // Fallback to default image
+  }
+};
   // Handle user click to navigate to the user's profile
   const handleUserClick = () => {
     if (!email) {
@@ -257,7 +279,7 @@ const Posts = ({ p,posts }) => {
   return (
     <div className="post">
       <div className="post__avatar" onClick={handleUserClick}>
-        <Avatar src={profileImage} />
+        <Avatar src={profilePhoto} />
       </div>
       <div className="post__body">
         <div className="post__header">

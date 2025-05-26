@@ -1061,6 +1061,7 @@ async function run() {
           {
             projection: {
               _id: 1,
+              profileImage:1,
             },
           }
         );

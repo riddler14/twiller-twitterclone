@@ -218,7 +218,7 @@ async function fetchTweets(query) {
 
 async function generateResponse(query) {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" }); // Use the Gemini Pro model
+    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" }); // Use the Gemini Pro model
     const result = await model.generateContent(query);
     const response = await result.response;
     return response.text();

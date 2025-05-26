@@ -12,7 +12,7 @@ import useLoggedinuser from "../../../hooks/useLoggedinuser";
 import ConfirmationModal from "./ConfirmationModal";
 
 const Posts = ({ p,posts }) => {
-  const { name, username, photo, post, profilephoto, audio, video, email } = p;
+  const { name, username, photo, post, profileImage, audio, video, email } = p;
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null); // Store the user's _id locally
   const [loggedinuser] = useLoggedinuser(); // Assuming this hook provides the logged-in user's data
@@ -257,7 +257,7 @@ const Posts = ({ p,posts }) => {
   return (
     <div className="post">
       <div className="post__avatar" onClick={handleUserClick}>
-        <Avatar src={profilephoto} />
+        <Avatar src={profileImage} />
       </div>
       <div className="post__body">
         <div className="post__header">

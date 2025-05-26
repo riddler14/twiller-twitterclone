@@ -539,9 +539,14 @@ async function run() {
       });
     }
 
-    // Insert the post into the database
+
+    // Fetch the latest profileImage for the user
+    const profileImage = user.profileImage || "default-profile-image-url";
+
+    // Insert the post into the database with the latest profileImage
     const result = await postcollection.insertOne({
       ...post,
+      profileImage: profileImage, // Include the latest profileImage
       createdAt: now,
     });
 

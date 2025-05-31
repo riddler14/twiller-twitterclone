@@ -1,7 +1,8 @@
 {
-    
-    
- 
+    "Subscriptions":"Abonnements",
+    "Subscribe":"S'abonner",
+    "Login History":"Historique de connexion",
+    "Disable Notifications":" Désactiver les notifications",
     "Sign Up": "S'inscrire",
     "Send OTP": "Envoyer OTP",
     "Verify OTP": "Vérifier OTP",

@@ -35,25 +35,23 @@ const Posts = ({ p,posts }) => {
 
     fetchAndSetProfilePhoto();
   }, [email]);
-  const fetchUserId = async (email) => {
+const fetchUserId = async (email) => {
     try {
       const response = await axios.get(
         `https://twiller-twitterclone-2-q41v.onrender.com/userprofile?email=${encodeURIComponent(
           email
         )}`
-      );
-
-      if (response.data.user) {
-        setUserId(response.data.user._id); // Store the _id locally
-      }
-      if (email === loggedInEmail) {
-        alert("This is your profile!");
-        navigate(`/home/profile`);
+      ); 
+      if (response.data.user) { 
+        setUserId(response.data.user._id); 
+        return response.data.user._id; // Return the ID so handleUserClick can use it immediately
       } else {
-        console.error("User not found for email:", email);
+        console.error("User not found for email:", email); 
+        return null; // Return null if user not found
       }
     } catch (error) {
-      console.error("Error fetching user ID:", error);
+      console.error("Error fetching user ID:", error); 
+      return null;
     }
   };
   const fetchProfileImage = async (email) => {
@@ -70,17 +68,29 @@ const Posts = ({ p,posts }) => {
   }
 };
   // Handle user click to navigate to the user's profile
-  const handleUserClick = () => {
-    if (!email) {
-      console.error("Email is missing.");
-      alert("This post does not have a valid email.");
+ const handleUserClick = async () => { // Make it async because fetchUserId is async
+    if (!email) { 
+      console.error("Email is missing."); 
+      alert("This post does not have a valid email."); 
       return;
     }
 
-    if (!userId) {
-      fetchUserId(email); // Fetch the user's _id if not already fetched
+    let currentUserId = userId; // Use a local variable for immediate check
+
+    if (!currentUserId) { // If userId is not in state yet
+      currentUserId = await fetchUserId(email); // Fetch it and await the result
+      if (!currentUserId) { // If fetchUserId failed to get an ID
+          alert("Could not retrieve user profile."); // Or some other error message
+          return;
+      }
+    }
+
+    // Now that we definitely have currentUserId, perform the check
+    if (email === loggedInEmail) { 
+      alert("This is your profile!"); 
+      // DO NOT NAVIGATE HERE
     } else {
-      navigate(`/home/profile/${userId}`); // Navigate to the user's profile page
+      navigate(`/home/profile/${currentUserId}`); 
     }
   };
   const resetTapCount = () => {
@@ -306,15 +316,13 @@ const Posts = ({ p,posts }) => {
         )}
 
               {video && (
-                <div>
+                <div className="post__video-wrapper">
                   <video
                     ref={videoRef}
                     src={video}
                     controls
                     controlsList="nofullscreen"
-                    style={{
-                      width: "auto",
-                    }}
+                    className="post__video"
                     onPointerDown={(e) => {
                       e.preventDefault();
                       handleTap(e);

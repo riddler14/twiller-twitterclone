@@ -95,7 +95,7 @@ const Subscribe = () => {
     <div className="chatbot">
       <div className="chatbot__header">
         <h2>
-          Subscricptions{" "}
+          {t("Subscriptions")}{" "}
           <span className="post__headerSpecial">
             <VerifiedUserIcon className="post__badge" />
           </span>

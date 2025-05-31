@@ -1,5 +1,8 @@
-{
-  
+{ 
+  "Subscriptions":"सदस्यताएँ",
+  "Subscribe":"सदस्यता लें",
+  "Login History":"लॉगिन इतिहास",
+  "Disable Notifications":"सूचनाएं अक्षम करें",
   "Sign Up": "साइन अप करें",
   "Send OTP": "OTP भेजें",
   "Verify OTP": "OTP सत्यापित करें",

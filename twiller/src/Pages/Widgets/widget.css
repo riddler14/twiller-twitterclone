@@ -140,9 +140,7 @@
   .widgets {
     display: none; /* Hide widgets by default on mobile */
   }
-  .widgets__input{
-    display: none;
-  }
+  
   .widgets.active {
     display: block; 
   }

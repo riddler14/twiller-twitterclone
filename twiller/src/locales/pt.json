@@ -1,9 +1,11 @@
 {
-  
+  "Subscriptions":"Assinaturas",
+  "Disable Notifications":"Desativar notificações",
+  "Login History":"Histórico de login",
   "Sign Up": "Inscrever-se",
   "Send OTP": "Enviar OTP",
   "Verify OTP": "Verificar OTP",
-  
+  "Subscribe":"Inscrever-se",
   "Log In": "Entrar",
   
   "Happening Now": "Acontecendo agora",

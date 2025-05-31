@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import ConfirmationModal from "../../Feed/Posts/ConfirmationModal";
 import "../../Feed/Posts/Posts.css";
 const Post = ({p}) => {
-    const { name, username, photo, post, profilephoto,audio,video,email } = p;
+    const { name, username, photo, post,audio,video,email } = p;
      const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate=useNavigate();
       // Fetch user's _id based on email
@@ -17,13 +17,35 @@ const Post = ({p}) => {
       const videoRef = useRef(null); // Reference to the video element
       const [tapCount, setTapCount] = useState(0);
         const [subscriptionPlan, setSubscriptionPlan] = useState("free");
-
+    const [profilePhoto, setProfilePhoto] = useState("");
       let tapTimeout = null; // Timeout for resetting tap count
     const resetTapCount = () => {
       clearTimeout(tapTimeout); // Clear any existing timeout
       tapTimeout = setTimeout(() => setTapCount(0), 300); // Reset tap count after 300ms // 500ms timeout for multi-tap detection
     };
-  
+     useEffect(() => {
+    // Fetch the profile image when the component mounts
+    const fetchAndSetProfilePhoto = async () => {
+      const profileImage = await fetchProfileImage(email); // Use the email from the post
+      setProfilePhoto(profileImage);
+    };
+
+    fetchAndSetProfilePhoto();
+  }, [email]);
+
+  const fetchProfileImage = async (email) => {
+  try {
+    const response = await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/userprofile?email=${email}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch profile image");
+    }
+    const data = await response.json();
+    return data.user.profileImage || "default-profile-image-url"; // Fallback to default image
+  } catch (error) {
+    console.error("Error fetching profile image:", error);
+    return "default-profile-image-url"; // Fallback to default image
+  }
+};
     const handleDoubleTap = (direction) => {
       const video = videoRef.current;
       if (!video) {
@@ -167,7 +189,7 @@ const Post = ({p}) => {
     return (
       <div className="post">
         <div className="post__avatar">
-          <Avatar src={profilephoto} />
+          <Avatar src={profilePhoto} />
         </div>
         <div className="post__body">
           <div className="post__header">
@@ -193,15 +215,13 @@ const Post = ({p}) => {
           </div>
         )}
         {video && (
-                <div>
+                <div className="post__video-wrapper">
                   <video
                     ref={videoRef}
                     src={video}
                     controls
                     controlsList="nofullscreen"
-                    style={{
-                      width: "auto",
-                    }}
+                    className="post__video"
                     onPointerDown={handleTap}
                     
                   />

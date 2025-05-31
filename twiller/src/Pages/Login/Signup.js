@@ -1,4 +1,4 @@
-import React, { useState} from 'react'
+import { useState} from 'react'
 import { Link, useNavigate } from "react-router-dom";
 import twitterimg from "../../image/twitter.jpeg";
 import TwitterIcon from "@mui/icons-material/Twitter";
@@ -13,8 +13,7 @@ const Signup=()=>{
     const [email, setemail] = useState("");
     const [error, seterror] = useState("");
     const [password, setpassword] = useState("");
-    const { signin } = useUserAuth();
-    const { googleSignin } = useUserAuth();
+    const { googleSignin,signin } = useUserAuth();
     const navigate = useNavigate();
     const {t}=useTranslation();
     const handlesubmit = async (e) => {
@@ -109,7 +108,6 @@ const Signup=()=>{
                   </button>
                 </div>
               </form>
-              <hr />
               <div className="google-button">
                 <GoogleButton
                   className="g-btn"

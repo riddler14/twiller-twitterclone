@@ -147,7 +147,7 @@ const Widgets=()=>{
           <TwitterTweetEmbed tweetId={"1811030889922711622"} />
           <TwitterTimelineEmbed
             sourceType="profile"
-            screenName="Maharashtra"
+            screenName="HelloMTDC"
             options={{ height: 400 }}
           />
         </div>

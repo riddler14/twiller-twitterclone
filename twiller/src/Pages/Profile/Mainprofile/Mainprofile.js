@@ -532,7 +532,7 @@ const [loginHistory, setLoginHistory] = useState([]); // Stores the login histor
                   <p className="usernameSection">@{username}</p>
                 </div>
                 <button onClick={toggleNotificationPreference} className="notification-settings">
-                {notificationsEnabled ? "Disable Notifications" : "Enable Notifications"}
+                {notificationsEnabled ? t("Disable Notifications") : t("Enable Notifications")}
               </button>
                  {/* Conditional Rendering of Edit Profile or Follow Button */}
          

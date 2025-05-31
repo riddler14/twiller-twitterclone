@@ -20,22 +20,26 @@
   max-width: 100%;
   height: auto;
 }
-.post__body > video {
-  border-radius: 20px;
-  max-width: 100%; /* Ensures the video doesn't exceed the post's width */
-  height: auto;    /* Maintains aspect ratio */
-  max-height: 500px;
-   position: relative;
-  padding-top: 56.25%; /* 16:9 aspect ratio (9 / 16 = 0.5625) */
-  overflow: hidden; /* Optional: Set a maximum height to avoid excessively tall videos */
+.post__video { /* Matches the class added in Post.jsx */
+    position: absolute; /* Position relative to .post__video-wrapper */
+    top: 0;
+    left: 0;
+    width: 100%; /* Fill the container */
+    height: 100%; /* Fill the container, maintaining aspect ratio */
+    object-fit: contain; /* Scales down to fit, letterboxing if aspect ratios differ */
+    /* If you want it to always fill and crop instead of letterbox, use object-fit: cover; */
 }
-.post__body > video > source {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+.post__video-wrapper { /* Matches the class added in Post.jsx */
+    position: relative;
+    width: 100%; /* Take full width of its parent (.post__body) */
+    padding-bottom: 56.25%; /* 16:9 aspect ratio (9 / 16 = 0.5625) */
+    height: 0; /* Collapse actual height, let padding control it */
+    overflow: hidden; /* Important: clips anything that overflows */
+    border-radius: 20px; /* Apply border-radius to the wrapper */
+    margin-top: 10px; /* Space above the video */
+    background-color: black; /* Optional: background for the video container */
 }
+
 
 .post__footer {
   display: flex;

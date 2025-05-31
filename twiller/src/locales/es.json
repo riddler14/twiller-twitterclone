@@ -65,5 +65,9 @@
   "Birth Date": "Fecha de nacimiento",
   "Edit date of birth": "Editar fecha de nacimiento",
   "This can only be changed a few times Make sure you enter the age of the person using the account.": "Esto solo se puede cambiar unas pocas veces. Asegúrate de ingresar la edad de la persona que usa la cuenta.",
-  "Choose Avatar": "Elegir avatar"
+  "Choose Avatar": "Elegir avatar",
+  "Login History":"Historial de inicio de sesión",
+  "Disable Notifications":"Desactivar notificaciones",
+  "Subscribe":"Suscribirse",
+  "Subscriptions":"Suscripciones"
 }

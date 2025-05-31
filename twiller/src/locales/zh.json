@@ -1,9 +1,11 @@
 {
-  
+  "Subscriptions":"订阅",
+  "Disable Notifications":"禁用通知",
+  "Login History":"登录历史",
   "Sign Up": "注册",
   "Send OTP": "发送OTP",
   "Verify OTP": "验证OTP",
-  
+  "Subscribe":"订阅",
   "Log In": "登录",
   
   "Happening Now": "正在发生",

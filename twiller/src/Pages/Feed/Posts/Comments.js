@@ -14,7 +14,7 @@ import ConfirmationModal from "./ConfirmationModal";
 const Comments = ({ p }) => {
   // Extract postId from the URL
   // Store the fetched post data
-  const { name, username, photo, post, profilephoto, audio, video, email } = p;
+  const { name, username, photo, post, audio, video, email } = p;
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null); // Store the user's _id locally
   const [loggedinuser] = useLoggedinuser(); // Assuming this hook provides the logged-in user's data
@@ -24,6 +24,30 @@ const Comments = ({ p }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [subscriptionPlan, setSubscriptionPlan] = useState("free");
   let tapTimeout = null; // Timeout for resetting tap count
+  const [profilePhoto, setProfilePhoto] = useState("");
+  useEffect(() => {
+    // Fetch the profile image when the component mounts
+    const fetchAndSetProfilePhoto = async () => {
+      const profileImage = await fetchProfileImage(email); // Use the email from the post
+      setProfilePhoto(profileImage);
+    };
+
+    fetchAndSetProfilePhoto();
+  }, [email]);
+
+   const fetchProfileImage = async (email) => {
+  try {
+    const response = await fetch(`https://twiller-twitterclone-2-q41v.onrender.com/userprofile?email=${email}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch profile image");
+    }
+    const data = await response.json();
+    return data.user.profileImage || "default-profile-image-url"; // Fallback to default image
+  } catch (error) {
+    console.error("Error fetching profile image:", error);
+    return "default-profile-image-url"; // Fallback to default image
+  }
+};
   const fetchUserId = async (email) => {
     try {
       const response = await axios.get(
@@ -220,7 +244,7 @@ const Comments = ({ p }) => {
   return (
     <div className="post">
       <div className="post__avatar" onClick={handleUserClick}>
-        <Avatar src={profilephoto} />
+        <Avatar src={profilePhoto} />
       </div>
       <div className="post__body">
         <div className="post__header">

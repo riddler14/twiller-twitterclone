@@ -10,7 +10,7 @@ export const useSocket = () => useContext(SocketContext);
 export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
   // useLoggedinuser will likely return [null, ...] initially, then [userData, ...]
-  const [loggedinuser, isLoading] = useLoggedinuser(); // Assuming useLoggedinuser might also return an isLoading flag
+  const [loggedinuser] = useLoggedinuser(); // Assuming useLoggedinuser might also return an isLoading flag
 
   // Line 14: This is where the error originates.
   // We need to ensure loggedinuser and its email are available before using them.
@@ -40,7 +40,7 @@ export const SocketProvider = ({ children }) => {
         setSocket(null);
       }
     }
-  }, [loggedinuser, userEmail]); // Re-run effect if loggedinuser or userEmail changes
+  }, [loggedinuser, userEmail,socket]); // Re-run effect if loggedinuser or userEmail changes
 
   // Optional: You might want to render a loading state or nothing if the user is not yet loaded
   // or if socket connection is pending, depending on your UI/UX needs.

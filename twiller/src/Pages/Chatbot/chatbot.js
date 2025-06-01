@@ -6,7 +6,8 @@ import SendIcon from "@mui/icons-material/Send";
 import CircularProgress from "@mui/material/CircularProgress"; // Loading spinner
 import axios from "axios";
 import { useTranslation } from "react-i18next";
-
+import CloseIcon from "@mui/icons-material/Close"; // Add this import
+// ... other imports
 const Chatbot = () => {
   const [query, setQuery] = useState("");
   const [error, setError] = useState(null);
@@ -56,7 +57,14 @@ const Chatbot = () => {
       setIsLoading(false); // Stop loading
     }
   };
-
+   const handleClear = () => {
+    setQuery("");
+    setError(null);
+    setIsLoading(false);
+    setResponse("");
+    setTweets([]);
+    setRateLimitExceeded(false);
+  };
   return (
     <div className="chatbot">
       <div className="chatbot__header">
@@ -66,6 +74,9 @@ const Chatbot = () => {
             <VerifiedUserIcon className="post__badge" />
           </span>
         </h2>
+        <button className="clear-button" onClick={handleClear} aria-label="Clear Chatbot">
+          <CloseIcon />
+        </button>
       </div>
 
       <div className="result_container">

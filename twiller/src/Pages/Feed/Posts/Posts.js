@@ -243,11 +243,12 @@ const fetchUserId = async (email) => {
  
   const handleConfirm = () => {
     setIsModalOpen(false); // Close the modal
-    try {
-      window.close(); // Attempt to close the tab
-    } catch (error) {
-      window.alert("Unable to close the tab. Please close it manually.");
-    }
+     localStorage.removeItem("userEmail");
+  localStorage.removeItem("authToken");
+  localStorage.removeItem("isAdmin");
+  // ...
+
+  window.location.href = "https://www.google.com"; 
   };
 
   const handleCancel = () => {

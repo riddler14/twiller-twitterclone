@@ -1,15 +1,19 @@
 /* Chatbot Base Styles */
 .chatbot {
-  flex: 0.4; /* Match the Feed page's flex value */
+  flex: 0.5; /* Example: Let it take 50% of the available space in a flex container */
+              /* Or, if you have a specific desired width, use max-width and width */
+  min-width: 350px; /* Give it a reasonable minimum width so it doesn't get too squished */
+  max-width: 600px; /* Set a max-width to prevent it from getting too wide and pushing content */
+                    /* Adjust these values based on your desired layout */
+
   border-right: 1px solid var(--twitter-background);
-  min-width: fit-content;
-  width: 100vw; /* Match the Feed page's width */
-  overflow-y: auto; /* Enable vertical scrolling if needed */
+  overflow-y: auto; /* Keep scrolling for content overflow */
   background-color: white;
+  box-sizing: border-box; 
 }
 
 .chatbot::-webkit-scrollbar {
-  display: none; /* Hide scrollbar for a cleaner look */
+  display: none;
 }
 
 .chatbot__header {
@@ -21,13 +25,37 @@
   padding: 15px 20px;
   display: flex;
   align-items: center;
-  justify-content: center; /* Center the header text */
+  justify-content: space-between; /* Center the header text */
 }
 
 .chatbot__header > h2 {
   font-size: 20px;
   font-weight: 800;
-  margin: 0; /* Remove default margin for better alignment */
+  margin: 0;
+  flex-grow: 1; /* Allows the h2 to take up available space */
+  text-align: center;  /* Remove default margin for better alignment */
+}
+.clear-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--twitter-color); /* Use your theme color for the icon */
+  padding: 0; /* Remove default button padding */
+  display: flex; /* Helps vertically align the icon */
+  align-items: center;
+  justify-content: center;
+  font-size: 24px; /* Adjust icon size if needed */
+  margin-left: 10px; /* Add some space from the header text */
+  transition: opacity 0.2s ease-in-out;
+}
+
+.clear-button:hover {
+  opacity: 0.7;
+}
+
+/* Ensure the icon itself is styled */
+.clear-button .MuiSvgIcon-root {
+  font-size: inherit; /* Inherit size from parent button */
 }
 
 .searchbox {
@@ -147,6 +175,7 @@
     flex: 1; /* Full width on tablets */
     width: 100%;
     border-right: none;
+    min-width: unset;
   }
 
   .chatbot__header {
@@ -172,6 +201,7 @@
     flex: 1; /* Full width on mobile */
     width: 100%;
     border-right: none;
+    min-width: unset;
   }
 
   .chatbot__header {

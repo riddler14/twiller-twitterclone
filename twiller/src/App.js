@@ -21,7 +21,8 @@ import ProfileUser from "./Pages/Profile/ProfileUser";
 import NotificationManager from './components/NotificationManager';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import UserFeed from './Pages/Feed/UserFeed';
-
+import Followers from './Pages/Profile/Mainprofile/Followers';
+import Following from './Pages/Profile/Mainprofile/Following';
 
 function App() {
   const { i18n } = useTranslation();
@@ -65,6 +66,8 @@ function App() {
             <Route path="more" element={<More />} />
             <Route path="profile/:id" element={<ProfileUser />} />
             <Route path="profile/:email" element={<ProfileUser />} />
+            <Route path="profile/followers" element={<Followers />} />
+            <Route path="profile/following" element={<Following />} />
           </Route>
           {/* Dynamic Profile Route */}
           

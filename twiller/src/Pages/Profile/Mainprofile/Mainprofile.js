@@ -452,7 +452,6 @@ const [loginHistory, setLoginHistory] = useState([]); // Stores the login histor
     }
   };
 
-
   return (
     <div>
       <ArrowBackIcon className="arrow-icon" onClick={() => navigate("/")} />

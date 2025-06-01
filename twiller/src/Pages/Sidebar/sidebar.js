@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import TwitterIcon from "@mui/icons-material/Twitter";
 import HomeIcon from "@mui/icons-material/Home";
 import SearchIcon from "@mui/icons-material/Search";

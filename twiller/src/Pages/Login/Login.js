@@ -22,10 +22,65 @@ const Login = () => {
   const navigate = useNavigate();
   const { googleSignin, logIn } = useUserAuth();
 
-  const userAgent = navigator.userAgent;
-  const isMobile = /Mobi|Android/i.test(userAgent); // Check if the device is mobile
-  const isChrome = userAgent.includes("Chrome") && !userAgent.includes("Edg"); // Check for Chrome
-  const isEdge = userAgent.includes("Edg"); // Check for Edge
+ const userAgent = navigator.userAgent;
+  // Robust mobile device detection
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod|Windows Phone|BlackBerry|Opera Mini/i.test(userAgent);
+  
+  // Helper to accurately identify the browser type
+  const getBrowserInfo = () => {
+    // Order matters: check for Edge first as its User-Agent string also contains "Chrome"
+    if (userAgent.includes("Edg")) return "Edge"; // Microsoft Edge (Chromium-based)
+    // Check for Chrome, excluding other Chromium-based browsers or webviews
+    if (userAgent.includes("Chrome") && !userAgent.includes("CriOS") && !userAgent.includes("FxiOS") && !userAgent.includes("wv")) return "Chrome"; // Google Chrome (desktop or Android)
+    if (userAgent.includes("Firefox")) return "Firefox"; // Mozilla Firefox
+    if (userAgent.includes("Safari") && !userAgent.includes("Chrome")) return "Safari"; // Apple Safari (ensure it's not Chrome pretending to be Safari)
+    if (userAgent.includes("CriOS")) return "Chrome (iOS)"; // Chrome on iOS
+    if (userAgent.includes("FxiOS")) return "Firefox (iOS)"; // Firefox on iOS
+    return "Other"; // Catch-all for any other browser
+  };
+
+  const getOSInfo = () => {
+    if (/Windows/i.test(userAgent)) return "Windows";
+    if (/Macintosh|Mac OS X/i.test(userAgent)) return "Mac";
+    if (/Linux/i.test(userAgent)) return "Linux";
+    if (/Android/i.test(userAgent)) return "Android";
+    if (/iOS|iPad|iPhone|iPod/i.test(userAgent)) return "iOS";
+    return "Other";
+  };
+
+  const getDeviceInfo = () => {
+    return isMobile ? "Mobile" : "Desktop";
+  };
+
+  // --- IMPORTANT CHANGE HERE: Updated isLoginAllowed() ---
+  // This function determines if a login attempt is allowed to proceed at all.
+  const isLoginAllowed = () => {
+    const now = new Date();
+    const currentHour = now.getHours(); // 0-23
+
+    // Rule: Mobile devices are ONLY allowed to log in between 10 AM and 1 PM.
+    // If it's a mobile device AND it's *outside* this 10 AM to 1 PM window, block login.
+    if (isMobile && !(currentHour >= 10 && currentHour < 13)) {
+      const errorMessage = t("Access on mobile devices is only allowed between 10 AM and 1 PM. Please try again later.");
+      setError(errorMessage);
+      alert(errorMessage);
+      return false; // Login is NOT allowed
+    }
+
+    // All other cases (non-mobile devices OR mobile devices within 10 AM - 1 PM) are allowed to proceed.
+    return true; // Login is allowed
+  };
+  // --- END IMPORTANT CHANGE ---
+
+  // --- IMPORTANT CHANGE HERE: Updated shouldSendOtp() ---
+  // This function determines if an OTP is needed *after* login is allowed.
+  const shouldSendOtp = () => {
+    const currentBrowser = getBrowserInfo();
+    // OTP is required ONLY for Chrome.
+    // This will apply to both desktop Chrome and mobile Chrome (if within 10-1PM)
+    return currentBrowser === "Chrome" || currentBrowser === "Chrome (iOS)";
+  };
+  // --- END IMPORTANT CHANGE ---
 
   const fetchIPAddress = async () => {
     try {
@@ -36,24 +91,7 @@ const Login = () => {
       return "Unknown";
     }
   };
-  
-  const getBrowserInfo = () => {
-    if (isChrome) return "Chrome";
-    if (isEdge) return "Edge";
-    return "Other";
-  };
-  
-  const getOSInfo = () => {
-    if (/Windows/i.test(userAgent)) return "Windows";
-    if (/Macintosh/i.test(userAgent)) return "Mac";
-    if (/Linux/i.test(userAgent)) return "Linux";
-    return "Other";
-  };
-  
-  const getDeviceInfo = () => {
-    return isMobile ? "Mobile" : "Desktop";
-  };
-  
+
   const gatherLoginMetadata = async () => {
     const ip = await fetchIPAddress();
     return {
@@ -78,165 +116,149 @@ const Login = () => {
       console.error("Error storing login metadata:", error.message || error);
     }
   };
+
   // Function to send OTP
-  // Function to send OTP
-const handleSendOtp = async (emailToSend) => { // Accept an argument here
-  const targetEmail = emailToSend; // Use the argument passed in
+  const handleSendOtp = async (emailToSend) => {
+    if (!shouldSendOtp()) {
+      console.warn("Attempted to send OTP when not allowed by browser type.");
+      setShowOtpPopup(false);
+      return;
+    }
+    // Redundant check, but good for safety
+    if (!isLoginAllowed()) {
+      setShowOtpPopup(false);
+      return;
+    }
 
-  console.log("Target email for OTP:", targetEmail); // Debugging log
+    const targetEmail = emailToSend;
+    if (!targetEmail || !targetEmail.includes("@")) {
+      setError("Please enter a valid email address.");
+      return;
+    }
 
-  if (!targetEmail || !targetEmail.includes("@")) {
-    setError("Please enter a valid email address.");
-    return;
-  }
-
-  try {
-    const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/send-chrome-otp", { email: targetEmail });
-
-    console.log("OTP sent successfully:", response.data); // Debugging log
-    alert(response.data.message); // Notify the user that the OTP has been sent
-  } catch (error) {
-    console.error("Error sending OTP:", error); // Log the full error
-    setError(error.response?.data?.error || "Failed to send OTP. Please try again.");
-  }
-};
+    try {
+      const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/send-chrome-otp", { email: targetEmail });
+      alert(response.data.message);
+    } catch (error) {
+      console.error("Error sending OTP:", error);
+      setError(error.response?.data?.error || "Failed to send OTP. Please try again.");
+    }
+  };
 
   // Function to verify OTP
-  // Function to verify OTP
-// Function to verify OTP
-const handleVerifyOtp = async (e) => {
-  e.preventDefault();
-  const targetEmail = googleEmail || email; // This correctly gets the email
-  if (!otp) {
-    setError("Please enter the OTP.");
-    return;
-  }
-  try {
-    const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/verify-chrome-otp", { email: targetEmail, otp });
+  const handleVerifyOtp = async (e) => {
+    e.preventDefault();
+    if (!shouldSendOtp()) {
+      setError("OTP verification is not enabled for this browser.");
+      setShowOtpPopup(false);
+      return;
+    }
+    // Redundant check, but good for safety
+    if (!isLoginAllowed()) {
+      setShowOtpPopup(false);
+      return;
+    }
 
-    console.log("OTP verification response:", response.data);
+    const targetEmail = googleEmail || email;
+    if (!otp) {
+      setError("Please enter the OTP.");
+      return;
+    }
+    try {
+      const response = await axios.post("https://twiller-twitterclone-2-q41v.onrender.com/verify-chrome-otp", { email: targetEmail, otp });
 
-    if (response.data.success) {
-      alert("OTP verified successfully. Redirecting..."); // Changed message slightly
+      if (response.data.success) {
+        alert("OTP verified successfully. Redirecting...");
+        navigate("/");
+        const metadata = await gatherLoginMetadata();
+        await sendLoginMetadata(targetEmail, metadata);
+        setShowOtpPopup(false);
+      } else {
+        setError(response.data.error || "Failed to verify OTP.");
+      }
+    } catch (error) {
+      console.error("Error verifying OTP:", error);
+      setError(error.response?.data?.error || "Failed to verify OTP");
+    }
+  };
 
-      // Logic after successful OTP verification
-      if (googleEmail) {
-        // This path is for Google Sign-In, where googleSignin() would have initiated the session
-        // It's still good to call it to finalize the Firebase session if it wasn't fully established.
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    // 1. Always check general login allowance first (mobile time restriction)
+    if (!isLoginAllowed()) {
+      setShowOtpPopup(false); // Ensure OTP popup is hidden if login is not allowed
+      return; // Stop execution if login is not allowed
+    }
+
+    try {
+      await logIn(email, password); // Attempt Firebase login
+
+      // 2. Based on browser, determine if OTP is needed
+      if (shouldSendOtp()) {
+        await handleSendOtp(email);
+        setShowOtpPopup(true); // Show OTP popup only if sending OTP
+      } else {
+        // For non-Chrome browsers (Edge, Firefox, Safari) or if OTP not required
+        setShowOtpPopup(false); // Ensure OTP popup is hidden if not needed
+        navigate("/");
+        const metadata = await gatherLoginMetadata();
+        await sendLoginMetadata(email, metadata);
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setError(error.message || "Failed to log in. Please check your credentials.");
+      window.alert(error.message); // Provide a user-friendly alert for login errors
+      setShowOtpPopup(false); // Also hide popup on login error
+    }
+  };
+
+  const handleGoogleSignIn = async (e) => {
+    e.preventDefault();
+
+    // 1. Always check general login allowance first (mobile time restriction)
+    if (!isLoginAllowed()) {
+      setShowOtpPopup(false); // Ensure OTP popup is hidden if login is not allowed
+      return; // Stop execution if login is not allowed
+    }
+
+    try {
+      const userCredential = await googleSignin();
+      const userEmail = userCredential?.user?.email;
+
+      if (!userEmail) {
+        setError("Unable to retrieve email from Google Sign-In.");
+        setShowOtpPopup(false);
+        return;
+      }
+
+      // 2. Based on browser, determine if OTP is needed
+      if (shouldSendOtp()) {
+        setGoogleEmail(userEmail);
         try {
-          await googleSignin(); // Re-confirm Google sign-in to finalize session
-          navigate("/");
-          const metadata = await gatherLoginMetadata();
-          await sendLoginMetadata(googleEmail, metadata);
+          await handleSendOtp(userEmail);
+          setShowOtpPopup(true);
         } catch (error) {
-          setError(error.message || "Google Sign-In failed after OTP verification.");
-          window.alert(error.message);
+          console.error("Error during OTP sending:", error);
+          setError("Failed to send OTP. Please try again.");
+          setShowOtpPopup(false);
         }
       } else {
-        // For regular email/password login, the `logIn` already happened in handleSubmit
-        // So, now just navigate and store metadata.
+        // For non-Chrome browsers or if OTP not required
+        setShowOtpPopup(false);
         navigate("/");
         const metadata = await gatherLoginMetadata();
-        await sendLoginMetadata(email, metadata); // Use 'email' for regular login metadata
+        await sendLoginMetadata(userEmail, metadata);
       }
-      setShowOtpPopup(false); // Close the OTP popup on success
-    } else {
-      setError(response.data.error || "Failed to verify OTP.");
+    } catch (error) {
+      console.error("Error during Google Sign-In:", error);
+      setError(error.message || "Failed to sign in with Google.");
+      setShowOtpPopup(false);
     }
-  } catch (error) {
-    console.error("Error verifying OTP:", error);
-    setError(error.response?.data?.error || "Failed to verify OTP");
-  }
-};
+  };
 
-  // Handle login logic based on device and browser
-  // Handle login logic based on device and browser
-// Handle login logic based on device and browser
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError(""); // Clear previous errors
-
-  const now = new Date();
-  const currentHour = now.getHours();
-
-  if (isMobile) {
-    if (currentHour < 20 || currentHour >= 24) {
-      setError("Login is only allowed between 8 PM and 12 AM on mobile devices.");
-      return;
-    }
-  }
-
-  // --- STEP 1: Attempt initial login for ALL users ---
-  try {
-    // Attempt the Firebase login first
-    await logIn(email, password); // This will throw an error if credentials are bad
-
-    // If logIn is successful, proceed based on browser
-    if (isChrome) {
-      // --- STEP 2 (for Chrome): Send OTP after successful initial login ---
-      // For Chrome users, even though they logged in, we now need OTP for 2FA-like security
-      await handleSendOtp(email); // Pass the email to send OTP
-      setShowOtpPopup(true); // Show the OTP popup
-      // Do NOT navigate here yet; navigation happens AFTER OTP verification
-    } else {
-      // --- STEP 2 (for non-Chrome): Navigate directly ---
-      navigate("/"); // Navigate home for non-Chrome browsers (Edge, others)
-      const metadata = await gatherLoginMetadata();
-      await sendLoginMetadata(email, metadata);
-    }
-
-  } catch (error) {
-    // --- STEP 3: Handle login errors immediately ---
-    console.error("Login error:", error);
-    setError(error.message || "Failed to log in. Please check your credentials.");
-    // Optionally alert the user directly for critical errors
-    window.alert(error.message);
-  }
-};
-
-  // Handle Google Sign-In
-  // Handle Google Sign-In
-const handleGoogleSignIn = async (e) => {
-  e.preventDefault();
-  try {
-    const user = await googleSignin();
-    const userEmail = user?.user?.email;
-
-    if (!userEmail) {
-      setError("Unable to retrieve email from Google Sign-In.");
-      return;
-    }
-
-    console.log("Step 1: Google Sign-In completed. Email:", userEmail);
-
-    if (isChrome) {
-      setGoogleEmail(userEmail); // Still set this for `handleVerifyOtp` and other potential uses
-
-      try {
-        await handleSendOtp(userEmail); // <-- Pass userEmail directly here!
-        console.log("Step 2: OTP sent successfully.");
-        setShowOtpPopup(true);
-      } catch (error) {
-        console.error("Error during OTP sending:", error);
-        setError("Failed to send OTP. Please try again.");
-      }
-    } else {
-      // For non-Chrome browsers, proceed directly
-      try {
-        await googleSignin(); // This might be redundant if `user` already holds the signed-in user
-        navigate("/");
-        const metadata = await gatherLoginMetadata();
-        await sendLoginMetadata(userEmail, metadata); // Use userEmail directly
-      } catch (error) {
-        console.error("Error during direct Google Sign-In:", error);
-        setError(error.message || "Failed to log in with Google.");
-      }
-    }
-  } catch (error) {
-    console.error("Error during Google Sign-In:", error);
-    setError(error.message || "Failed to sign in with Google.");
-  }
-};
+ 
 
   return (
     <>

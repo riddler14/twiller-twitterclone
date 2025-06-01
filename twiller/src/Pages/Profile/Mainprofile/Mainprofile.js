@@ -578,14 +578,20 @@ const [loginHistory, setLoginHistory] = useState([]); // Stores the login histor
 
                     <strong>
                       {loadingLocation
-                       ? t("loadingLocation") // Translate "Loading location ..."
-                       : t("Location",":", {location })}
+      ? t("loadingLocation") // Keep this translated if "Loading location..." is in your i18n
+      : location // Check if location is available
+      ? `Location: ${location}` // Hardcoded string + dynamic location
+      : "Location not available" // Hardcoded fallback for no location
+    }
                     </strong>
                     <br />
                     <strong>
                       {loadingLocation
-                        ? t("loadingLocation") // Translate "Loading location ..."
-                        : t("Weather",":", {weather })}
+      ? t("loadingLocation") // Keep this translated
+      : weather // Check if weather is available
+      ? `Weather: ${weather}` // Hardcoded string + dynamic weather
+      : "Weather not available" // Hardcoded fallback for no weather
+    }
                     </strong>
                   </p>
                   {loggedinuser[0]?.website ? (

@@ -1,15 +1,16 @@
-import React,{useEffect,useState} from 'react'
-import '../../pages.css'
+import React, { useEffect, useState } from 'react';
+import './Followers.css';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { useUserAuth } from "../../../context/UserAuthContext";
-const Followers = () => {
-  const {t}=useTranslation();
-    const { user } = useUserAuth();
-      const [loading, setLoading] = useState(true);
-      const [followersDetailedList, setFollowersDetailedList] = useState([]); 
 
-  const [error, setError] = useState(null); // State to handle errors
+const Followers = () => {
+  const { t } = useTranslation();
+  const { user } = useUserAuth();
+  const [loading, setLoading] = useState(true);
+  const [followersDetailedList, setFollowersDetailedList] = useState([]); 
+  const [error, setError] = useState(null); 
+
   useEffect(() => {
     const fetchFollowersDetails = async () => {
       if (!user?.email) {
@@ -19,7 +20,6 @@ const Followers = () => {
       }
 
       try {
-        // STEP 1: Fetch the list of follower emails for the current user
         const followersEmailsResponse = await axios.get(
           `https://twiller-twitterclone-2-q41v.onrender.com/followers?email=${user?.email}`
         );
@@ -31,7 +31,6 @@ const Followers = () => {
           return;
         }
 
-        // STEP 2: For EACH follower email, fetch their full profile details
         const followerDetailsPromises = followerEmails.map(async (followerEmail) => {
           try {
             const profileResponse = await axios.get(
@@ -41,13 +40,12 @@ const Followers = () => {
             const fetchedUser = profileResponse.data.user;
 
             if (fetchedUser) {
-                // *** IMPORTANT CHANGE HERE: Using 'name' and 'username' from backend ***
                 return {
-                    email: followerEmail, // Keep the email for internal use
+                    email: followerEmail,
                     _id: fetchedUser._id,
                     profileImage: fetchedUser.profileImage,
-                    displayName: fetchedUser.name,     // Now directly from backend
-                    username: fetchedUser.username,    // Now directly from backend
+                    displayName: fetchedUser.name,     
+                    username: fetchedUser.username,    
                 };
             } else {
                 return { email: followerEmail, displayName: t('Unknown User'), username: '' };
@@ -74,51 +72,89 @@ const Followers = () => {
   }, [user?.email, t]);
 
   if (loading) {
-    return <p>{t('Loading followers...')}</p>;
+    return (
+        <div className="follower">
+            <div className="follower__header">
+                <h2>{t("Followers")}</h2>
+            </div>
+            <div className="follower__loading">
+                <p>{t('Loading followers...')}</p>
+            </div>
+        </div>
+    );
   }
 
   if (error) {
-    return <p className="error-message">{t(error)}</p>;
+    return (
+        <div className="follower">
+            <div className="follower__header">
+                <h2>{t("Followers")}</h2>
+            </div>
+            <div className="follower__error">
+                <p className="error-message">{t(error)}</p>
+            </div>
+        </div>
+    );
   }
 
   return (
-    <div className="page">
-      <h2 className="pageTitle">{t('Welcome to Followers page')}</h2>
+    <div className="follower">
+      <div className="follower__header">
+        <h2>{t("Followers")}</h2>
+      </div>
 
       {followersDetailedList.length > 0 ? (
-        <div className="followers-list-container">
-          <h3>{t('Your Followers')}:</h3>
-          <ul className="followers-list">
-            {followersDetailedList.map((follower) => (
-              <li key={follower._id || follower.email} className="follower-item">
-                {follower.profileImage && (
-                  <img 
-                    src={follower.profileImage} 
-                    alt={follower.displayName || follower.username} 
-                    className="follower-avatar" 
-                    style={{ width: '50px', height: '50px', borderRadius: '50%', marginRight: '10px', objectFit: 'cover' }}
-                  />
-                )}
-                <div className="follower-info">
-                  {/* Display name (now from backend's 'name' field) */}
-                  <p><strong>{follower.displayName}</strong></p> 
-                  {/* Display username (now from backend's 'username' field) */}
-                  {follower.username && (
-                    <p className="follower-username">@{follower.username}</p>
+        <div className="follower__list-container">
+          {followersDetailedList.map((follower) => {
+            // --- NEW LOGIC FOR USERNAME DISPLAY ---
+            let displayUsername = follower.username;
+            if (!displayUsername && follower.email) {
+              // If username is not available, use email as a fallback
+              // Check if it's a Gmail address and exclude '@gmail.com'
+              if (follower.email.endsWith('@gmail.com')) {
+                displayUsername = follower.email.split('@')[0];
+              } else {
+                // For other emails, just use the full email if username is missing
+                displayUsername = follower.email; 
+              }
+            }
+            // --- END NEW LOGIC ---
+
+            return (
+              <div className="follower__item" key={follower._id || follower.email}>
+                <div className="follower__avatar-container">
+                  {follower.profileImage ? (
+                    <img
+                      src={follower.profileImage}
+                      alt={follower.displayName || displayUsername || 'User'}
+                      className="follower__avatar"
+                    />
+                  ) : (
+                    <div className="follower__default-avatar">
+                      {follower.displayName ? follower.displayName.charAt(0).toUpperCase() : '?'}
+                    </div>
                   )}
-                  {/* You can still display email for debugging or as additional info if needed */}
-                  {/* {follower.email && <p className="follower-email">{follower.email}</p>} */}
                 </div>
-              </li>
-            ))}
-          </ul>
+                <div className="follower__info">
+                  <p className="follower__displayname">
+                    <strong>{follower.displayName}</strong>
+                  </p>
+                  {/* Display the determined username */}
+                  {displayUsername && (
+                    <p className="follower__username">@{displayUsername}</p>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       ) : (
-        <p>{t('You do not have any followers yet.')}</p>
+        <div className="follower__no-followers">
+          <p>{t('You do not have any followers yet.')}</p>
+        </div>
       )}
     </div>
   );
-
-}
+};
 
 export default Followers;

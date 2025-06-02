@@ -10,6 +10,7 @@ import PublishIcon from "@mui/icons-material/Publish";
 import { Avatar } from "@mui/material";
 import "./Posts.css";
 import ConfirmationModal from "./ConfirmationModal";
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
 
 const UserPost = ({ p }) => {
   // Extract postId from the URL
@@ -22,6 +23,7 @@ const UserPost = ({ p }) => {
    const videoRef = useRef(null); // Reference to the video element
     const [tapCount, setTapCount] = useState(0);
       const [subscriptionPlan, setSubscriptionPlan] = useState("free");
+  const [isPlaying, setIsPlaying] = useState(false);
 
     let tapTimeout = null; 
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -287,18 +289,30 @@ const UserPost = ({ p }) => {
           </div>
         )}
         {video && (
-                <div className="post__video-wrapper">
-                  <video
-                    ref={videoRef}
-                    src={video}
-                    controls
-                    controlsList="nofullscreen"
-                   className="post__video"
-                    onPointerDown={handleTap}
-                    
-                  />
-                </div>
-              )}
+          <div className="post__video-wrapper">
+            <video
+              ref={videoRef}
+              src={video}
+              controlsList="nofullscreen"
+              className="post__video"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                handleTap(e);
+              }}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                handleTap(e);
+              }}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+            />
+            {!isPlaying && (
+              <div className="play-overlay" onClick={handleSingleTap}>
+                <PlayArrowIcon className="play-icon" />
+              </div>
+            )}
+          </div>
+        )}
         
         <div className="post__footer">
         

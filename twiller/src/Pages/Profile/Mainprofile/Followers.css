@@ -1,0 +1,120 @@
+/* Existing styles for .follower and .follower__header */
+.follower {
+  flex: 0.5;
+  min-width: 350px;
+  max-width: 600px;
+  border-right: 1px solid var(--twitter-background);
+  overflow-y: auto;
+  background-color: white;
+  box-sizing: border-box; 
+  display: flex; /* Make it a flex container */
+  flex-direction: column; /* Stack children vertically */
+}
+
+.follower__header {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 100;
+  border-bottom: 1px solid var(--twitter-background); /* Use border-bottom instead of border */
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center the header text */
+  margin-bottom: 10px; /* Space below the header */
+}
+
+.follower__header > h2 {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 0; 
+  /* Removed flex-grow: 1; as it was causing issues with justify-content: center; */
+}
+
+/* --- New Styles for Followers List --- */
+.follower__list-container {
+  flex-grow: 1; /* Allows the list to take up remaining space */
+  overflow-y: auto; /* Ensures the list itself scrolls if too long */
+  padding: 0 15px; /* Add some padding around the list */
+}
+
+.follower__item {
+  display: flex;
+  align-items: center;
+  padding: 15px 0;
+  border-bottom: 1px solid #e0e0e0; /* Separator for each follower */
+  cursor: pointer; /* Indicates it's clickable, perhaps to view profile */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.follower__item:last-child {
+  border-bottom: none; /* No border for the last item */
+}
+
+.follower__item:hover {
+  background-color: #f5f8fa; /* Light background on hover */
+}
+
+.follower__avatar-container {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  overflow: hidden; /* Ensures image is clipped to circle */
+  margin-right: 15px;
+  flex-shrink: 0; /* Prevent avatar from shrinking */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e1e8ed; /* Default background for avatar area */
+}
+
+.follower__avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensures image covers the circle */
+}
+
+.follower__default-avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: #cccccc; /* A neutral grey */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+}
+
+
+.follower__info {
+  flex-grow: 1; /* Allows info to take remaining space */
+}
+
+.follower__displayname {
+  font-weight: bold;
+  margin: 0;
+  font-size: 16px;
+}
+
+.follower__username {
+  color: #657786; /* Twitter's grey text color */
+  font-size: 15px;
+  margin: 0;
+}
+
+/* --- Messages (Loading, Error, No Followers) --- */
+.follower__loading,
+.follower__error,
+.follower__no-followers {
+  padding: 20px;
+  text-align: center;
+  color: #657786;
+  font-size: 16px;
+}
+
+.error-message {
+  color: #e0245e; /* A distinct error color */
+  font-weight: bold;
+}

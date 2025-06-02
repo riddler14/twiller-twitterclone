@@ -8,8 +8,10 @@ import PublishIcon from "@mui/icons-material/Publish";
 import { useNavigate } from 'react-router-dom';
 import ConfirmationModal from "../../Feed/Posts/ConfirmationModal";
 import "../../Feed/Posts/Posts.css";
-const Post = ({p}) => {
-    const { name, username, photo, post,audio,video,email } = p;
+import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+
+const Post = ({p,upost}) => {
+    const { name, username, photo, post,audio,video,email} = p;
      const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate=useNavigate();
       // Fetch user's _id based on email
@@ -18,11 +20,17 @@ const Post = ({p}) => {
       const [tapCount, setTapCount] = useState(0);
         const [subscriptionPlan, setSubscriptionPlan] = useState("free");
     const [profilePhoto, setProfilePhoto] = useState("");
+      const [isPlaying, setIsPlaying] = useState(false);
+    
       let tapTimeout = null; // Timeout for resetting tap count
-    const resetTapCount = () => {
-      clearTimeout(tapTimeout); // Clear any existing timeout
-      tapTimeout = setTimeout(() => setTapCount(0), 300); // Reset tap count after 300ms // 500ms timeout for multi-tap detection
-    };
+      const resetTapCount = () => {
+    clearTimeout(tapTimeout); // Clear any existing timeout
+    // Set a new timeout to reset tap count if no further taps occur within the delay
+    tapTimeout = setTimeout(() => {
+      setTapCount(0);
+      tapTimeout = null; // Clear the timeout reference
+    }, 500); // Changed from 300ms to 500ms for better multi-tap detection
+  };
      useEffect(() => {
     // Fetch the profile image when the component mounts
     const fetchAndSetProfilePhoto = async () => {
@@ -46,95 +54,95 @@ const Post = ({p}) => {
     return "default-profile-image-url"; // Fallback to default image
   }
 };
-    const handleDoubleTap = (direction) => {
-      const video = videoRef.current;
-      if (!video) {
-        console.error("Video reference is not set.");
-        return;
-      }
-      if (video.readyState < 2) {
-        console.error("Video is not ready to play.");
-        return;
-      }
-      console.log("Current time before update:", video.currentTime);
-      console.log("Seekable range:", video.seekable.start(0), "-", video.seekable.end(0));
-      if (direction === "right") {
-        console.log("Forwarded 10 seconds: ",video.currentTime+10);
-        video.currentTime +=10; // Move 10 seconds forward
-        console.log("Forwarded 10 seconds: ",video.currentTime+10);
-      } else if (direction === "left") {
-        video.currentTime = Math.max(video.currentTime - 10, 0); // Move 10 seconds backward
-        console.log("Reversed 10 seconds");
-      }
-      console.log("Current time after update:", video.currentTime);
-  
-    };
-  
-    const handleSingleTap = () => {
-      const video = videoRef.current;
-      if (!video) return;
-  
-      if (video.paused) {
-        video.play(); // Resume playback
-      } else {
-        video.pause(); // Pause playback
-      }
-    };
+     const handleDoubleTap = (direction) => {
+    const video = videoRef.current;
+    if (!video) {
+      console.error("Video reference is not set.");
+      return;
+    }
+    if (video.readyState < 2) {
+      console.error("Video is not ready to play.");
+      return;
+    }
+    console.log("Current time before update:", video.currentTime);
+    console.log("Seekable range:", video.seekable.start(0), "-", video.seekable.end(0));
+    if (direction === "right") {
+      console.log("Forwarded 10 seconds: ", video.currentTime + 10);
+      video.currentTime += 10;
+      console.log("Forwarded 10 seconds: ", video.currentTime + 10);
+    } else if (direction === "left") {
+      video.currentTime = Math.max(video.currentTime - 10, 0);
+      console.log("Reversed 10 seconds");
+    }
+    console.log("Current time after update:", video.currentTime);
+  };
+
+  const handleSingleTap = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play();
+      setIsPlaying(true);
+    } else {
+      video.pause();
+      setIsPlaying(false);
+    }
+  };
   
     const handleTripleTap = (position) => {
-      switch (position) {
-        case "middle":
-          alert("Moving to the next video..."); // Replace with logic to move to the next video
-          break;
-        case "right":
-          
-         setIsModalOpen(true);
-          break;
-        case "left":
-          alert("Showing comment section...");
-          navigate(`/home/feed/${p._id}`);// Replace with logic to show the comment section
-          break;
-        default:
-          break;
-      }
-    };
-  
-    const handleTap = (e) => {
-      e.preventDefault();
-      const rect = e.target.getBoundingClientRect(); // Get the video element's bounding box
-      const width = rect.width;
-    
-      // Use clientX for mouse/touch position
-      const tapX = e.clientX || e.touches?.[0]?.clientX; // Support both mouse and touch
-    
-      // Determine tap position (left, middle, right)
-      const isLeft = tapX < rect.left + width / 3;
-      const isRight = tapX > rect.left + (width * 2) / 3;
-      const isMiddle = !isLeft && !isRight;
-      console.log("Tap position:", { isLeft, isMiddle, isRight });
-  
-      // Increment tap count
-      const newTapCount = tapCount + 1;
-      setTapCount((prevTapCount) => prevTapCount + 1);
-  
-    
-      // Handle gestures based on tap count
-      if (newTapCount === 1) {
-        if (isMiddle) {
-          handleSingleTap();
+    switch (position) {
+      case "middle":
+        const currentIndex = upost.findIndex((item) => item._id === p._id);
+        const nextPostWithVideo = upost.slice(currentIndex + 1).find((item) => item.video);
+
+        if (nextPostWithVideo) {
+          navigate(`/home/feed/${nextPostWithVideo._id}`);
+        } else {
+          alert("No further video posts available.");
         }
-      } else if (newTapCount === 2) {
-        if (isRight) handleDoubleTap("right");
-        if (isLeft) handleDoubleTap("left");
-      } else if (newTapCount === 3) {
-        if (isMiddle) handleTripleTap("middle");
-        if (isRight) handleTripleTap("right");
-        if (isLeft) handleTripleTap("left");
+        break;
+      case "right":
+        setIsModalOpen(true);
+        break;
+      case "left":
+        alert("Showing comment section...");
+        navigate(`/home/feed/${p._id}`);
+        break;
+      default:
+        break;
+    }
+  };
+  
+const handleTap = (e) => {
+    e.preventDefault();
+    const rect = e.target.getBoundingClientRect();
+    const width = rect.width;
+    const tapX = e.clientX || e.touches?.[0]?.clientX;
+    const isLeft = tapX < rect.left + width / 3;
+    const isRight = tapX > rect.left + (width * 2) / 3;
+    const isMiddle = !isLeft && !isRight;
+    console.log("Tap position:", { isLeft, isMiddle, isRight });
+
+    const newTapCount = tapCount + 1;
+    setTapCount((prevTapCount) => prevTapCount + 1);
+
+    if (newTapCount === 1) {
+      if (isMiddle) {
+        handleSingleTap();
       }
-    
-      // Reset tap count after a delay
-      resetTapCount();
-    };
+    } else if (newTapCount === 2) {
+      if (isRight) handleDoubleTap("right");
+      if (isLeft) handleDoubleTap("left");
+    } else if (newTapCount === 3) {
+      if (isMiddle) handleTripleTap("middle");
+      if (isRight) handleTripleTap("right");
+      if (isLeft) handleTripleTap("left");
+    }
+
+    resetTapCount();
+  };
+
   
     const handlePostClick = () => {
       console.log(p._id);
@@ -215,18 +223,30 @@ const Post = ({p}) => {
           </div>
         )}
         {video && (
-                <div className="post__video-wrapper">
-                  <video
-                    ref={videoRef}
-                    src={video}
-                    controls
-                    controlsList="nofullscreen"
-                    className="post__video"
-                    onPointerDown={handleTap}
-                    
-                  />
-                </div>
-              )}
+          <div className="post__video-wrapper">
+            <video
+              ref={videoRef}
+              src={video}
+              controlsList="nofullscreen"
+              className="post__video"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                handleTap(e);
+              }}
+              onTouchStart={(e) => {
+                e.preventDefault();
+                handleTap(e);
+              }}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+            />
+            {!isPlaying && (
+              <div className="play-overlay" onClick={handleSingleTap}>
+                <PlayArrowIcon className="play-icon" />
+              </div>
+            )}
+          </div>
+        )}
           <div className="post__footer">
             <ChatBubbleOutlineIcon
               className="post__footer__icon"

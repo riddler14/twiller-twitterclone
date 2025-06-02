@@ -21,7 +21,7 @@ const Mainprofile = ({ user }) => {
   //const loggedinuser = []
   const [loggedinuser] = useLoggedinuser();
   const username = loggedinuser[0]?.username || user?.email?.split("@")[0];
-  const [post, setpost] = useState([]);
+  const [upost, setpost] = useState([]);
   const [location, setLocation] = useState("");
   const [weather, setWeather] = useState("");
   const [loadingLocation, setLoadingLocation] = useState(false);
@@ -118,9 +118,10 @@ const [loginHistory, setLoginHistory] = useState([]); // Stores the login histor
     )
       .then((res) => res.json())
       .then((data) => {
-        setpost(data);
+       const normalizedData = Array.isArray(data) ? data : []; // Ensure data is an array
+      setpost(normalizedData);
       });
-  }, [user.email]);
+  }, [user?.email]);
 
   useEffect(() => {
     const fetchNotificationPreference = async () => {
@@ -776,8 +777,8 @@ const [loginHistory, setLoginHistory] = useState([]); // Stores the login histor
     </div>
   )}
 
-            {post.map((p) => (
-              <Post p={p} />
+            {upost.map((p) => (
+              <Post key={p._id} p={p} upost={upost} />
             ))}
           </div>
         </div>

@@ -1,4 +1,4 @@
-import React , {useState,useEffect }from 'react'
+import {useState,useEffect }from 'react'
 import './Feed.css'
 import Posts from './Posts/Posts'
 import Tweetbox from './Tweetbox/Tweetbox';

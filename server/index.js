@@ -48,7 +48,11 @@ app.use((req, res, next) => {
 
     // Allowed time window: 10 AM (hour 10) to 1 PM (hour 13, meaning up to 12:59:59)
     const isAllowedTime = currentHour >= 10 && currentHour < 13;
-
+    console.log("Current IST Time (Full):", now.format());
+    console.log("Current IST Hour:", currentHour);
+    console.log("Is Allowed Time (10 AM - 1 PM IST):", isAllowedTime);
+    console.log("User-Agent:", req.headers['user-agent']);
+    console.log("Is Mobile (useragent.isMobile):", req.useragent.isMobile);
     if (!isAllowedTime) {
       // If it's a mobile device and outside the allowed time, send a 403 Forbidden response
       console.log(`Mobile access restricted for ${req.ip} at ${now.format()} (outside 10 AM - 1 PM IST)`);

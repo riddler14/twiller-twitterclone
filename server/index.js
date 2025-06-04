@@ -23,6 +23,7 @@ const twilioClient = twilio(accountSid, authToken);
 const useragent = require("express-useragent");
 const Razorpay = require("razorpay");
 const cron=require("node-cron");
+const moment = require("moment-timezone"); // Make sure to install: npm install moment-timezone
 require("dotenv").config();
 
 const app = express();
@@ -37,6 +38,45 @@ app.use(
 app.use(express.json());
 // const parser = new Parser();
 app.use(useragent.express());
+
+app.use((req, res, next) => {
+  // Only apply this restriction to GET requests (when trying to display the website)
+  // and if the request is from a mobile device.
+  if (req.useragent.isMobile && req.method === 'GET') { 
+    const now = moment().tz('Asia/Kolkata'); // Use 'Asia/Kolkata' for IST 
+    const currentHour = now.hour();
+
+    // Allowed time window: 10 AM (hour 10) to 1 PM (hour 13, meaning up to 12:59:59)
+    const isAllowedTime = currentHour >= 10 && currentHour < 13;
+
+    if (!isAllowedTime) {
+      // If it's a mobile device and outside the allowed time, send a 403 Forbidden response
+      console.log(`Mobile access restricted for ${req.ip} at ${now.format()} (outside 10 AM - 1 PM IST)`);
+      return res.status(403).send(
+        `<!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>Access Restricted</title>
+            <style>
+                body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
+                h1 { color: #d9534f; }
+                p { color: #555; }
+            </style>
+        </head>
+        <body>
+            <h1>Access Restricted</h1>
+            <p>Displaying the website on mobile devices is only allowed between 10 AM and 1 PM IST.</p>
+            <p>Please try again during the allowed hours or access the website from a desktop device.</p>
+        </body>
+        </html>`
+      );
+    }
+  }
+  next(); // Allow the request to proceed if not restricted
+});
+
 const client = new MongoClient(url);
 const server = http.createServer(app);
 const io = new Server(server, {

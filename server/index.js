@@ -93,7 +93,7 @@ const io = new Server(server, {
 // Handle Socket.IO connections
 // Handle Socket.IO connections
 io.on("connection", (socket) => {
-  console.log("A user connected:", socket.id);
+  // console.log("A user connected:", socket.id);
 
   // Extract and decode the email query parameter
   const userEmail = socket.handshake.query.email;
@@ -117,18 +117,18 @@ io.on("connection", (socket) => {
     return;
   }
 
-  console.log("Decoded email:", decodedEmail);
+  // console.log("Decoded email:", decodedEmail);
 
   // Join a room named after the user's email
   socket.join(decodedEmail);
-  console.log(`User ${decodedEmail} joined room: ${decodedEmail}`);
+  // console.log(`User ${decodedEmail} joined room: ${decodedEmail}`);
 
   // Handle disconnection
   socket.on("disconnect", () => {
-    console.log("A user disconnected:", socket.id);
+    // console.log("A user disconnected:", socket.id);
   });
   socket.onopen = () => {
-    console.log("WebSocket connection established");
+    // console.log("WebSocket connection established");
   };
 
   socket.onerror = (error) => {
@@ -136,7 +136,7 @@ io.on("connection", (socket) => {
   };
   // Example: Listen for a custom event (e.g., "send-notification")
   socket.on("send-notification", (data) => {
-    console.log("Received notification data:", data);
+    // console.log("Received notification data:", data);
 
     // Validate the recipient email
     const recipientEmail = data.recipientEmail;
@@ -1849,24 +1849,7 @@ app.get("/subscription", async (req, res) => {
 
     }
 
-    async function listAvailableModels() {
-  try {
-    const { models } = await genAI.listModels();
-    console.log("Available Models:");
-    for (const model of models) {
-      console.log(`  - Name: ${model.name}`);
-      console.log(`    Description: ${model.description}`);
-      console.log(`    Supported Methods: ${model.supportedGenerationMethods.join(', ')}`);
-      console.log('---');
-    }
-  } catch (error) {
-    console.error("Error listing models:", error);
-  }
-}
-
-// Call this function once (e.g., when your app starts or in a separate script)
-// to see the exact model names and supported methods available to you.
-listAvailableModels();
+    
   } catch (error) {
     console.log(error);
   }

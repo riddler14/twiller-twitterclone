@@ -194,6 +194,15 @@ const UserProfile = () => {
                   <h3 className="heading-3">
                     {user && user.name}
                    {" "} {getVerifiedIcon()}
+
+                   <div className="subscription-plan-display">
+      <span className="subscription-plan-text">
+        {subscriptionPlan && subscriptionPlan !== "free"
+          ? `${subscriptionPlan.charAt(0).toUpperCase() + subscriptionPlan.slice(1)} User`
+          : "Free Plan"}
+      </span>
+      
+    </div>
                   </h3>
                   <p className="usernameSection">@{user?.username || user?.email?.split("@")[0]}</p>
                 </div>

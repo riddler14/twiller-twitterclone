@@ -150,7 +150,18 @@
   margin-right: 20px;
   color: black;
 }
+.subscription-plan-display {
+  margin-top: 5px; /* Adjust as needed for spacing */
+  display: flex; /* Aligns text and icon nicely */
+  align-items: center; /* Vertically centers text and icon */
+  font-size: 0.9em; /* Smaller font size */
+  color: #657786; /* A softer color for the text */
+}
 
+.subscription-plan-text {
+  font-weight: 500; /* Slightly bolder */
+  color: var(--twitter-color); /* You can use your Twitter blue color if desired */
+}
 .Edit-profile-btn:hover {
   background-color: rgb(207, 206, 206);
   cursor: pointer;

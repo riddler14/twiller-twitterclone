@@ -1,5 +1,5 @@
 import './App.css';
-import { useEffect } from 'react';
+import { useEffect,useState } from 'react';
 import {Routes,Route} from 'react-router-dom';
 import Home from './Pages/Home';
 import Login from "./Pages/Login/Login";
@@ -23,17 +23,64 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import UserFeed from './Pages/Feed/UserFeed';
 import Followers from './Pages/Profile/Mainprofile/Followers';
 import Following from './Pages/Profile/Mainprofile/Following';
-
+import axios from "axios";
 function App() {
   const { i18n } = useTranslation();
-
-  useEffect(() => {
+  const [isRestricted, setIsRestricted] = useState(false);
+  const [loading, setLoading] = useState(true);
+   useEffect(() => {
     // Load the saved language from localStorage
     const savedLanguage = localStorage.getItem('language') || 'en'; // Default to 'en'
     i18n.changeLanguage(savedLanguage).catch((error) => {
       console.error('Failed to load saved language:', error);
     });
   }, [i18n]);
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        // Make a simple GET request to your backend's root or a dedicated endpoint.
+        // It's crucial this request hits your Node.js server (e.g., port 5000).
+        // Adjust the URL if your backend is hosted differently in production.
+        await axios.get("https://twiller-twitterclone-2-q41v.onrender.com"); 
+        // If the request succeeds (not 403), access is allowed
+        setIsRestricted(false);
+      } catch (error) {
+        // If the backend sends a 403 status (or any other error indicating restriction)
+        if (error.response && error.response.status === 403) {
+          setIsRestricted(true);
+        } else {
+          // Handle other potential errors (network issues, other server errors)
+          console.error("Error checking access:", error);
+          // You might choose to still show the app or a generic error page
+          setIsRestricted(false); 
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAccess();
+  }, []); // Run once on component mount
+
+  if (loading) {
+    return (
+      <div style={{ textAlign: 'center', marginTop: '50px' }}>
+        <p>Loading application...</p>
+      </div>
+    );
+  }
+
+  if (isRestricted) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center', backgroundColor: '#f8d7da', border: '1px solid #f5c6cb', borderRadius: '5px', color: '#721c24', margin: '20px' }}>
+        <h1>Access Restricted</h1>
+        <p>Displaying the website on mobile devices is only allowed between 10 AM and 1 PM IST.</p>
+        <p>Please try again during the allowed hours or access the website from a desktop device.</p>
+        <p style={{fontSize: '0.8em', color: '#a00'}}>Your current time is: {new Date().toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' })} IST</p>
+      </div>
+    );
+  }
+ 
   return (
    <div className='app'>
     <I18nextProvider i18n={i18n}>

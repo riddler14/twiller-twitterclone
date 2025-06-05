@@ -247,11 +247,11 @@ const Posts = ({ p, posts }) => {
   };
 
   return (
-    <div className="post">
+    <div className="post" >
       <div className="post__avatar" onClick={handleUserClick}>
         <Avatar src={profilePhoto} />
       </div>
-      <div className="post__body">
+      <div className="post__body" >
         <div className="post__header">
           <div className="post__headerText">
             <h3 onClick={handleUserClick} className="user_name">
@@ -305,8 +305,9 @@ const Posts = ({ p, posts }) => {
           <ChatBubbleOutlineIcon
             className="post__footer__icon"
             fontSize="small"
+            onClick={handlePostClick}
           />
-          <RepeatIcon className="post__footer__icon" fontSize="small" />
+          <RepeatIcon className="post__footer__icon" fontSize="small"  />
           <FavoriteBorderIcon className="post__footer__icon" fontSize="small" />
           <PublishIcon className="post__footer__icon" fontSize="small" />
         </div>

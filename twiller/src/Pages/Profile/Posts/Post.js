@@ -251,6 +251,8 @@ const handleTap = (e) => {
             <ChatBubbleOutlineIcon
               className="post__footer__icon"
               fontSize="small"
+                          onClick={handlePostClick}
+
             />
             <RepeatIcon className="post__footer__icon" fontSize="small" />
             <FavoriteBorderIcon className="post__footer__icon" fontSize="small" />

@@ -528,8 +528,17 @@ const [loginHistory, setLoginHistory] = useState([]); // Stores the login histor
                       ? loggedinuser[0].name
                       : user && user.displayname}
                       {getVerifiedIcon()}
+                      <div className="subscription-plan-display">
+      <span className="subscription-plan-text">
+        {subscriptionPlan && subscriptionPlan !== "free"
+          ? `${subscriptionPlan.charAt(0).toUpperCase() + subscriptionPlan.slice(1)} User`
+          : "Free Plan"}
+      </span>
+      
+    </div>
                   </h3>
                   <p className="usernameSection">@{username}</p>
+                  
                 </div>
                 <button onClick={toggleNotificationPreference} className="notification-settings">
                 {notificationsEnabled ? t("Disable Notifications") : t("Enable Notifications")}

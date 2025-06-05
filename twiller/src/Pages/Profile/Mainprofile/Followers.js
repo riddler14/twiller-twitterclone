@@ -3,14 +3,14 @@ import './Followers.css';
 import axios from 'axios';
 import { useTranslation } from 'react-i18next';
 import { useUserAuth } from "../../../context/UserAuthContext";
-
+import { useNavigate } from 'react-router-dom';
 const Followers = () => {
   const { t } = useTranslation();
   const { user } = useUserAuth();
   const [loading, setLoading] = useState(true);
   const [followersDetailedList, setFollowersDetailedList] = useState([]); 
   const [error, setError] = useState(null); 
-
+  const navigate=useNavigate();
   useEffect(() => {
     const fetchFollowersDetails = async () => {
       if (!user?.email) {
@@ -71,6 +71,16 @@ const Followers = () => {
     fetchFollowersDetails();
   }, [user?.email, t]);
 
+  useEffect(() => {
+      console.log("11. followingDetailedList state updated (after render):", followersDetailedList);
+  }, [followersDetailedList]);
+
+  // Pass the _id to handleUserClick
+  const handleUserClick = (id) => { // Changed parameter name to 'id' for clarity
+    console.log("Navigating to profile with _id:", id);
+    navigate(`/home/profile/${id}`); 
+  };
+
   if (loading) {
     return (
         <div className="follower">
@@ -121,7 +131,7 @@ const Followers = () => {
             // --- END NEW LOGIC ---
 
             return (
-              <div className="follower__item" key={follower._id || follower.email}>
+              <div className="follower__item" key={follower._id || follower.email} onClick={() => handleUserClick(follower._id)} >
                 <div className="follower__avatar-container">
                   {follower.profileImage ? (
                     <img

@@ -22,7 +22,7 @@ const twilioPhoneNumber = process.env.TWILIO_PHONE_NUMBER;
 const twilioClient = twilio(accountSid, authToken);
 const useragent = require("express-useragent");
 const Razorpay = require("razorpay");
-const cron=require("node-cron");
+const cron = require("node-cron");
 const moment = require("moment-timezone"); // Make sure to install: npm install moment-timezone
 require("dotenv").config();
 
@@ -42,8 +42,8 @@ app.use(useragent.express());
 app.use((req, res, next) => {
   // Only apply this restriction to GET requests (when trying to display the website)
   // and if the request is from a mobile device.
-  if (req.useragent.isMobile && req.method === 'GET') { 
-    const now = moment().tz('Asia/Kolkata'); // Use 'Asia/Kolkata' for IST 
+  if (req.useragent.isMobile && req.method === "GET") {
+    const now = moment().tz("Asia/Kolkata"); // Use 'Asia/Kolkata' for IST
     const currentHour = now.hour();
 
     // Allowed time window: 10 AM (hour 10) to 1 PM (hour 13, meaning up to 12:59:59)
@@ -51,11 +51,15 @@ app.use((req, res, next) => {
     console.log("Current IST Time (Full):", now.format());
     console.log("Current IST Hour:", currentHour);
     console.log("Is Allowed Time (10 AM - 1 PM IST):", isAllowedTime);
-    console.log("User-Agent:", req.headers['user-agent']);
+    console.log("User-Agent:", req.headers["user-agent"]);
     console.log("Is Mobile (useragent.isMobile):", req.useragent.isMobile);
     if (!isAllowedTime) {
       // If it's a mobile device and outside the allowed time, send a 403 Forbidden response
-      console.log(`Mobile access restricted for ${req.ip} at ${now.format()} (outside 10 AM - 1 PM IST)`);
+      console.log(
+        `Mobile access restricted for ${
+          req.ip
+        } at ${now.format()} (outside 10 AM - 1 PM IST)`
+      );
       return res.status(403).send(
         `<!DOCTYPE html>
         <html lang="en">
@@ -313,7 +317,7 @@ function isPaymentAllowed() {
   const minutes = istTime.getUTCMinutes();
 
   return hours === 10 && minutes >= 0 && minutes <= 59; // Allow payments only between 10 AM to 11 AM IST
-// Allow payments only between 10 AM to 11 AM IST
+  // Allow payments only between 10 AM to 11 AM IST
 }
 async function run() {
   try {
@@ -499,154 +503,54 @@ async function run() {
     // });
 
     app.post("/post", async (req, res) => {
-  const post = req.body;
-
-  // Validate required fields
-  const missingFields = [];
-  if (!post.name) missingFields.push("name");
-  if (!post.username) missingFields.push("username");
-  if (!post.email) missingFields.push("email");
-  if (!post.post) missingFields.push("post");
-
-  if (missingFields.length > 0) {
-    return res.status(400).json({
-      error: "Missing required fields",
-      details: `The following fields are missing: ${missingFields.join(", ")}`,
-    });
-  }
-
-  try {
-    // Fetch the user's subscription and follow count
-    const user = await usercollection.findOne({ email: post.email });
-
-    if (!user) {
-      return res.status(400).json({ error: "User not found" });
-    }
-
-    const { subscription } = user;
-    const { plan, tweetLimit, tweetsPosted } = subscription || {};
-    const followCount = user.followCount || 0;
-
-    // Default values for free plan
-    const defaultTweetLimit = 1; // Free plan allows 1 tweet per month
-    const effectiveTweetLimit = tweetLimit || defaultTweetLimit;
-
-    // Check monthly tweet limit
-    if (tweetsPosted >= effectiveTweetLimit) {
-      return res.status(403).json({
-        error: `You have reached your monthly tweet limit for the ${plan || "free"} plan.`,
-      });
-    }
-
-    const now = new Date();
-    const currentDate = now.toDateString();
-
-    // Fetch the user's post history for today
-    const postsToday = await postcollection
-      .find({
-        email: post.email,
-        createdAt: { $gte: new Date(currentDate) },
-      })
-      .toArray();
-
-    // Helper function to check posting window
-    const isWithinPostingWindow = () => {
-      const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
-      const istTime = new Date(now.getTime() + istOffset);
-
-      const hours = istTime.getUTCHours();
-      const minutes = istTime.getUTCMinutes();
-
-      // Users who don't follow anyone can only post between 10:00 AM and 10:30 AM IST
-      return hours === 10 && minutes >= 0 && minutes <= 30;
-    };
-
-    // Apply daily posting limits based on follow count
-    let maxPostsPerDay = Infinity; // Default to unlimited posts
-    if (followCount === 0) {
-      // User doesn't follow anyone
-      if (!isWithinPostingWindow()) {
-        return res.status(400).json({
-          error: "You can only post between 10:00 AM and 10:30 AM IST",
-        });
-      }
-      maxPostsPerDay = 1; // Only 1 post per day
-    } else if (followCount > 0 && followCount < 10) {
-      // User follows 1–9 people
-      maxPostsPerDay = followCount <= 2 ? 2 : 5; // Adjust limits as needed
-    }
-
-    // Enforce daily posting limits
-    if (postsToday.length >= maxPostsPerDay) {
-      return res.status(400).json({
-        error: `You can only post ${maxPostsPerDay} times a day`,
-      });
-    }
-
-    // Insert the post into the database
-    const result = await postcollection.insertOne({
-      ...post,
-      createdAt: now,
-    });
-
-    // Increment the tweetsPosted count
-    await usercollection.updateOne(
-      { email: post.email },
-      { $inc: { "subscription.tweetsPosted": 1 } }
-    );
-
-    // Check if the post contains the keywords "cricket" or "science"
-    const lowerCasePost = post.post.toLowerCase();
-    const keywords = ["cricket", "science"];
-    const containsKeyword = keywords.some((keyword) =>
-      lowerCasePost.includes(keyword)
-    );
-
-    if (containsKeyword) {
-      // Fetch all users with notificationsEnabled set to true
-      const usersWithNotifications = await usercollection
-        .find({ notificationsEnabled: true })
-        .toArray();
-
-      // Send notifications to these users
-      usersWithNotifications.forEach((user) => {
-        if (user.email !== post.email) {
-          io.emit(`notification-${user.email}`, {
-            title: "New Post Alert!",
-            body: `${post.name} posted: ${post.post}`,
-          });
-        }
-      });
-    }
-
-    res.send(result);
-  } catch (error) {
-    console.error("Error inserting post:", error);
-    res.status(500).json({ error: "Failed to post tweet" });
-  }
-});
-    app.post("/comment", async (req, res) => {
       const post = req.body;
 
       // Validate required fields
-      if (!post.name || !post.username || !post.email || !post.post) {
-        return res.status(400).json({ error: "Missing required fields" });
+      const missingFields = [];
+      if (!post.name) missingFields.push("name");
+      if (!post.username) missingFields.push("username");
+      if (!post.email) missingFields.push("email");
+      if (!post.post) missingFields.push("post");
+
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          error: "Missing required fields",
+          details: `The following fields are missing: ${missingFields.join(
+            ", "
+          )}`,
+        });
       }
 
       try {
-        // Fetch the user's follow count
+        // Fetch the user's subscription and follow count
         const user = await usercollection.findOne({ email: post.email });
 
         if (!user) {
           return res.status(400).json({ error: "User not found" });
         }
 
+        const { subscription } = user;
+        const { plan, tweetLimit, tweetsPosted } = subscription || {};
         const followCount = user.followCount || 0;
+
+        // Default values for free plan
+        const defaultTweetLimit = 1; // Free plan allows 1 tweet per month
+        const effectiveTweetLimit = tweetLimit || defaultTweetLimit;
+
+        // Check monthly tweet limit
+        if (tweetsPosted >= effectiveTweetLimit) {
+          return res.status(403).json({
+            error: `You have reached your monthly tweet limit for the ${
+              plan || "free"
+            } plan.`,
+          });
+        }
+
         const now = new Date();
         const currentDate = now.toDateString();
 
         // Fetch the user's post history for today
-        const postsToday = await commentcollection
+        const postsToday = await postcollection
           .find({
             email: post.email,
             createdAt: { $gte: new Date(currentDate) },
@@ -661,11 +565,12 @@ async function run() {
           const hours = istTime.getUTCHours();
           const minutes = istTime.getUTCMinutes();
 
-          // Check if the time is between 10:00 AM and 10:30 AM IST
+          // Users who don't follow anyone can only post between 10:00 AM and 10:30 AM IST
           return hours === 10 && minutes >= 0 && minutes <= 30;
         };
 
-        // Apply posting rules based on follow count
+        // Apply daily posting limits based on follow count
+        let maxPostsPerDay = Infinity; // Default to unlimited posts
         if (followCount === 0) {
           // User doesn't follow anyone
           if (!isWithinPostingWindow()) {
@@ -673,29 +578,31 @@ async function run() {
               error: "You can only post between 10:00 AM and 10:30 AM IST",
             });
           }
-
-          if (postsToday.length > 0) {
-            return res
-              .status(400)
-              .json({ error: "You have already posted today" });
-          }
+          maxPostsPerDay = 1; // Only 1 post per day
         } else if (followCount > 0 && followCount < 10) {
           // User follows 1–9 people
-          const maxPostsPerDay = followCount <= 2 ? 2 : 5; // Adjust limits as needed
-
-          if (postsToday.length >= maxPostsPerDay) {
-            return res.status(400).json({
-              error: `You can only post ${maxPostsPerDay} times a day`,
-            });
-          }
+          maxPostsPerDay = followCount <= 2 ? 2 : 5; // Adjust limits as needed
         }
-        // Users with 10+ followers can post unlimited times
+
+        // Enforce daily posting limits
+        if (postsToday.length >= maxPostsPerDay) {
+          return res.status(400).json({
+            error: `You can only post ${maxPostsPerDay} times a day`,
+          });
+        }
 
         // Insert the post into the database
-        const result = await commentcollection.insertOne({
+        const result = await postcollection.insertOne({
           ...post,
           createdAt: now,
         });
+
+        // Increment the tweetsPosted count
+        await usercollection.updateOne(
+          { email: post.email },
+          { $inc: { "subscription.tweetsPosted": 1 } }
+        );
+
         // Check if the post contains the keywords "cricket" or "science"
         const lowerCasePost = post.post.toLowerCase();
         const keywords = ["cricket", "science"];
@@ -712,10 +619,129 @@ async function run() {
           // Send notifications to these users
           usersWithNotifications.forEach((user) => {
             if (user.email !== post.email) {
-              // Emit an event to notify the frontend
               io.emit(`notification-${user.email}`, {
                 title: "New Post Alert!",
                 body: `${post.name} posted: ${post.post}`,
+              });
+            }
+          });
+        }
+
+        res.send(result);
+      } catch (error) {
+        console.error("Error inserting post:", error);
+        res.status(500).json({ error: "Failed to post tweet" });
+      }
+    });
+    app.post("/comment", async (req, res) => {
+      const post = req.body; // Validate required fields
+
+      const missingFields = [];
+      if (!post.name) missingFields.push("name");
+      if (!post.username) missingFields.push("username");
+      if (!post.email) missingFields.push("email");
+      if (!post.post) missingFields.push("post");
+
+      if (missingFields.length > 0) {
+        return res.status(400).json({
+          error: "Missing required fields",
+          details: `The following fields are missing: ${missingFields.join(
+            ", "
+          )}`,
+        });
+      }
+
+      try {
+        // Fetch the user's subscription and follow count
+        const user = await usercollection.findOne({ email: post.email });
+
+        if (!user) {
+          return res.status(400).json({ error: "User not found" });
+        }
+
+        const { subscription } = user; // Assuming tweetLimit and tweetsPosted apply to comments as well
+        const { plan, tweetLimit, tweetsPosted } = subscription || {};
+        const followCount = user.followCount || 0; // Default values for free plan
+
+        const defaultTweetLimit = 1; // Free plan allows 1 tweet/comment per month
+        const effectiveTweetLimit = tweetLimit || defaultTweetLimit; // Check monthly comment limit
+
+        if (tweetsPosted >= effectiveTweetLimit) {
+          return res.status(403).json({
+            error: `You have reached your monthly comment limit for the ${
+              plan || "free"
+            } plan.`,
+          });
+        }
+
+        const now = new Date();
+        const currentDate = now.toDateString(); // Fetch the user's comment history for today
+
+        const commentsToday = await commentcollection
+          .find({
+            email: post.email,
+            createdAt: { $gte: new Date(currentDate) },
+          })
+          .toArray(); // Helper function to check posting window
+
+        const isWithinPostingWindow = () => {
+          const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+          const istTime = new Date(now.getTime() + istOffset);
+
+          const hours = istTime.getUTCHours();
+          const minutes = istTime.getUTCMinutes(); // Check if the time is between 10:00 AM and 10:30 AM IST
+
+          return hours === 10 && minutes >= 0 && minutes <= 30;
+        }; // Apply daily posting limits based on follow count
+
+        let maxCommentsPerDay = Infinity; // Default to unlimited comments
+        if (followCount === 0) {
+          // User doesn't follow anyone
+          if (!isWithinPostingWindow()) {
+            return res.status(400).json({
+              error: "You can only comment between 10:00 AM and 10:30 AM IST",
+            });
+          }
+          maxCommentsPerDay = 1; // Only 1 comment per day
+        } else if (followCount > 0 && followCount < 10) {
+          // User follows 1–9 people
+          maxCommentsPerDay = followCount <= 2 ? 2 : 5; // Adjust limits as needed
+        } // Enforce daily posting limits
+
+        if (commentsToday.length >= maxCommentsPerDay) {
+          return res.status(400).json({
+            error: `You can only post ${maxCommentsPerDay} comments a day`,
+          });
+        } // Insert the comment into the database
+
+        const result = await commentcollection.insertOne({
+          ...post,
+          createdAt: now,
+        }); // Increment the tweetsPosted count (assuming comments contribute to the same limit)
+
+        await usercollection.updateOne(
+          { email: post.email },
+          { $inc: { "subscription.tweetsPosted": 1 } }
+        ); // Check if the comment contains the keywords "cricket" or "science"
+
+        const lowerCasePost = post.post.toLowerCase();
+        const keywords = ["cricket", "science"];
+        const containsKeyword = keywords.some((keyword) =>
+          lowerCasePost.includes(keyword)
+        );
+
+        if (containsKeyword) {
+          // Fetch all users with notificationsEnabled set to true
+          const usersWithNotifications = await usercollection
+            .find({ notificationsEnabled: true })
+            .toArray(); // Send notifications to these users
+
+          usersWithNotifications.forEach((user) => {
+            if (user.email !== post.email) {
+              // Emit an event to notify the frontend
+              io.emit(`notification-${user.email}`, {
+                title: "New Comment Alert!",
+                body: `${post.name} commented: ${post.post}`,
               });
             }
           });
@@ -1105,9 +1131,9 @@ async function run() {
           {
             projection: {
               _id: 1,
-              profileImage:1,
-              name:1,
-              username:1,
+              profileImage: 1,
+              name: 1,
+              username: 1,
             },
           }
         );
@@ -1735,8 +1761,10 @@ async function run() {
               silver: { price: 300, tweets: 5 },
               gold: { price: 1000, tweets: Infinity },
             };
-              const subscriptionExpiresAt = new Date();
-          subscriptionExpiresAt.setMonth(subscriptionExpiresAt.getMonth() + 1);
+            const subscriptionExpiresAt = new Date();
+            subscriptionExpiresAt.setMonth(
+              subscriptionExpiresAt.getMonth() + 1
+            );
             // Update user's subscription details
             await usercollection.updateOne(
               { email: email },
@@ -1747,7 +1775,6 @@ async function run() {
                     tweetLimit: plans[plan].tweets,
                     tweetsPosted: 0,
                     subscriptionExpiresAt: subscriptionExpiresAt,
-
                   },
                 },
               }
@@ -1765,59 +1792,58 @@ async function run() {
         }
       }
     );
-    
 
-// Schedule a task to run every day at midnight
-cron.schedule("0 0 * * *", async () => {
-  try {
-    const now = new Date();
+    // Schedule a task to run every day at midnight
+    cron.schedule("0 0 * * *", async () => {
+      try {
+        const now = new Date();
 
-    // Find users whose subscriptions have expired
-    const expiredUsers = await usercollection.find({
-      "subscription.subscriptionExpiresAt": { $lte: now },
+        // Find users whose subscriptions have expired
+        const expiredUsers = await usercollection.find({
+          "subscription.subscriptionExpiresAt": { $lte: now },
+        });
+
+        // Remove the subscription field for expired users
+        for (const user of expiredUsers) {
+          await usercollection.updateOne(
+            { email: user.email },
+            { $unset: { subscription: "" } }
+          );
+          console.log(`Removed subscription for user: ${user.email}`);
+        }
+      } catch (error) {
+        console.error("Error cleaning up expired subscriptions:", error);
+      }
     });
+    app.get("/subscription", async (req, res) => {
+      const { email } = req.query;
 
-    // Remove the subscription field for expired users
-    for (const user of expiredUsers) {
-      await usercollection.updateOne(
-        { email: user.email },
-        { $unset: { subscription: "" } }
-      );
-      console.log(`Removed subscription for user: ${user.email}`);
-    }
-  } catch (error) {
-    console.error("Error cleaning up expired subscriptions:", error);
-  }
-});
-app.get("/subscription", async (req, res) => {
-  const { email } = req.query;
+      // Validate the email
+      if (!email || typeof email !== "string" || email.trim() === "") {
+        return res.status(400).json({ error: "Invalid email" });
+      }
 
-  // Validate the email
-  if (!email || typeof email !== "string" || email.trim() === "") {
-    return res.status(400).json({ error: "Invalid email" });
-  }
+      try {
+        const user = await usercollection.findOne(
+          { email: email },
+          { projection: { subscription: 1 } }
+        );
 
-  try {
-    const user = await usercollection.findOne(
-      { email: email },
-      { projection: { subscription: 1 } }
-    );
+        if (!user) {
+          return res.status(404).json({ error: "User not found" });
+        }
 
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+        // Default to "free" plan if no subscription exists
+        const subscriptionPlan = user.subscription?.plan || "free";
 
-    // Default to "free" plan if no subscription exists
-    const subscriptionPlan = user.subscription?.plan || "free";
-
-    res.json({
-      subscriptionPlan,
+        res.json({
+          subscriptionPlan,
+        });
+      } catch (error) {
+        console.error("Error fetching subscription plan:", error);
+        res.status(500).json({ error: "Failed to fetch subscription plan" });
+      }
     });
-  } catch (error) {
-    console.error("Error fetching subscription plan:", error);
-    res.status(500).json({ error: "Failed to fetch subscription plan" });
-  }
-});
     async function sendSubscriptionEmail(email, plan, planDetails) {
       const transporter = nodemailer.createTransport({
         service: "Gmail",
@@ -1846,10 +1872,7 @@ app.get("/subscription", async (req, res) => {
       } catch (error) {
         console.error("Error sending subscription email:", error);
       }
-
     }
-
-    
   } catch (error) {
     console.log(error);
   }

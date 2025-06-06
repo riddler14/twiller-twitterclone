@@ -14,7 +14,8 @@ const CommentBox=({a,u})=>{
     const [imageurl, setimageurl] = useState("");
     const [isloading, setisloading] = useState(false);
     const {t}=useTranslation();
-    // const [errorMessage, setErrorMessage] = useState("");
+       
+
     // const [name, setname] = useState("");
     // const [username, setusername] = useState("");
     const [audioBlob, setAudioBlob] = useState(null); // Store recorded audio blob
@@ -400,6 +401,24 @@ const [playTime, setPlayTime] = useState(0); // Track playback time
       headers: { "content-type": "application/json" },
       body: JSON.stringify(userPost),
     });
+    if (!postResponse.ok) {
+                const errorData = await postResponse.json();
+                alert(errorData.error || "An unknown error occurred.");
+                 setpost("");
+    setimageurl("");
+    setAudioBlob(null);
+    setVideoUrl(""); // Clear the video preview URL
+    setVideoFile(null);
+    setAuthor(""); // Clear the video file
+    setIsAudioAttached(false); // Remove "Audio Attached" message
+    setOpenPopup(false); // Close popup after successful post
+    setOtpVerified(false);
+                if (errorData.details) {
+                    alert(prev => `${prev} ${errorData.details}`);
+                }
+                // Stop further execution if there's a backend error
+                return; 
+            }
 
     const postData = await postResponse.json();
     console.log("Tweet posted successfully:", postData);

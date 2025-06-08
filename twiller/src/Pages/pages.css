@@ -2,13 +2,13 @@
 /* Base Styles for Pages */
 .page {
   display: flex;
-  flex: 0.4; /* Match the Feed page's flex value */
+  flex: 0.4; 
   border-right: 1px solid var(--twitter-background);
   min-width: fit-content;
-  width: 100vw; /* Default width for desktop */
+  /* width: 100vw; Default width for desktop */
   overflow-y: auto; /* Enable vertical scrolling if needed */
   background-color: white;
-  max-width: 1300px;
+  /* max-width: 1300px; */
 }
 
 .page::-webkit-scrollbar {

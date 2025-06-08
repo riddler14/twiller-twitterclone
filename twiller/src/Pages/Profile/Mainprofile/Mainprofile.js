@@ -449,7 +449,7 @@ const [loginHistory, setLoginHistory] = useState([]); // Stores the login histor
       case "gold":
         return <VerifiedUserIcon className="verified-icon gold" />;
       default:
-        return null; // No icon for "free" plan
+        return <VerifiedUserIcon className="post__badge" />; // No icon for "free" plan
     }
   };
 
@@ -527,7 +527,7 @@ const [loginHistory, setLoginHistory] = useState([]); // Stores the login histor
                     {loggedinuser[0]?.name
                       ? loggedinuser[0].name
                       : user && user.displayname}
-                      {getVerifiedIcon()}
+                      {" "}{getVerifiedIcon()}
                       <div className="subscription-plan-display">
       <span className="subscription-plan-text">
         {subscriptionPlan && subscriptionPlan !== "free"

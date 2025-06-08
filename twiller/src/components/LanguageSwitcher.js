@@ -17,6 +17,10 @@ const LanguageSwitcher = () => {
 
   // Function to handle language selection
   const changeLanguage = (lng) => {
+    if (lng === i18n.language) {
+      alert("This is your current language"); // Show the alert box
+      return; // Abort the OTP sending and verification process
+    }
     setSelectedLanguage(lng); // Update the selected language
     // Set the verification method: 'email' for French and English, 'sms' for others
     setVerificationMethod(['fr'].includes(lng) ? 'email' : 'sms');

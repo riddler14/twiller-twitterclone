@@ -314,10 +314,10 @@ function isPaymentAllowed() {
   const istTime = new Date(now.getTime() + istOffset);
 
   const hours = istTime.getUTCHours();
-  const minutes = istTime.getUTCMinutes();
+  // const minutes = istTime.getUTCMinutes(); // Not needed for a whole hour range
 
-  return hours === 10 && minutes >= 0 && minutes <= 59; // Allow payments only between 10 AM to 11 AM IST
-  // Allow payments only between 10 AM to 11 AM IST
+  // Allow payments between 10 AM (inclusive) and 10 PM (inclusive) IST
+  return hours >= 10 && hours < 22; // 10 AM to 9:59:59 PM IST
 }
 async function run() {
   try {

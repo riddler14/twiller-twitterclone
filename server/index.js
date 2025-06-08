@@ -310,14 +310,16 @@ const plans = {
 // Helper function to check if payment is allowed
 function isPaymentAllowed() {
   const now = new Date();
+
   const istOffset = 5.5 * 60 * 60 * 1000; // IST offset in milliseconds
+
   const istTime = new Date(now.getTime() + istOffset);
 
   const hours = istTime.getUTCHours();
-  // const minutes = istTime.getUTCMinutes(); // Not needed for a whole hour range
 
-  // Allow payments between 10 AM (inclusive) and 10 PM (inclusive) IST
-  return hours >= 10 && hours < 22; // 10 AM to 9:59:59 PM IST
+  const minutes = istTime.getUTCMinutes();
+
+  return hours === 10 && minutes >= 0 && minutes <= 59; // Allow payments only between 10 AM to 11 AM IST // Allow payments only between 10 AM to 11 AM IST
 }
 async function run() {
   try {
@@ -635,36 +637,41 @@ async function run() {
     });
 
     // Add this new DELETE endpoint within the `run` function,
-// for example, after the existing `app.post("/post", ...)` endpoint
-// or with other post-related routes.
+    // for example, after the existing `app.post("/post", ...)` endpoint
+    // or with other post-related routes.
 
-app.delete("/post/:id", async (req, res) => {
-  const postId = req.params.id;
+    app.delete("/post/:id", async (req, res) => {
+      const postId = req.params.id;
 
-  if (!postId) {
-    return res.status(400).json({ error: "Post ID is required" });
-  }
+      if (!postId) {
+        return res.status(400).json({ error: "Post ID is required" });
+      }
 
-  try {
-    // Validate if the provided ID is a valid MongoDB ObjectId
-    if (!ObjectId.isValid(postId)) {
-      return res.status(400).json({ error: "Invalid Post ID format" });
-    }
+      try {
+        // Validate if the provided ID is a valid MongoDB ObjectId
+        if (!ObjectId.isValid(postId)) {
+          return res.status(400).json({ error: "Invalid Post ID format" });
+        }
 
-    const result = await postcollection.deleteOne({ _id: new ObjectId(postId) });
+        const result = await postcollection.deleteOne({
+          _id: new ObjectId(postId),
+        });
 
-    if (result.deletedCount === 0) {
-      return res.status(404).json({ error: "Post not found" });
-    }
+        if (result.deletedCount === 0) {
+          return res.status(404).json({ error: "Post not found" });
+        }
 
-    res.json({ message: "Post deleted successfully", deletedCount: result.deletedCount });
-  } catch (error) {
-    console.error("Error deleting post:", error);
-    res.status(500).json({ error: "Failed to delete post" });
-  }
-});
+        res.json({
+          message: "Post deleted successfully",
+          deletedCount: result.deletedCount,
+        });
+      } catch (error) {
+        console.error("Error deleting post:", error);
+        res.status(500).json({ error: "Failed to delete post" });
+      }
+    });
 
-// ... rest of your existing code ...
+    // ... rest of your existing code ...
     app.post("/comment", async (req, res) => {
       const post = req.body; // Validate required fields
 

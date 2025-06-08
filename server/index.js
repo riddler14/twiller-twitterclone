@@ -633,6 +633,38 @@ async function run() {
         res.status(500).json({ error: "Failed to post tweet" });
       }
     });
+
+    // Add this new DELETE endpoint within the `run` function,
+// for example, after the existing `app.post("/post", ...)` endpoint
+// or with other post-related routes.
+
+app.delete("/post/:id", async (req, res) => {
+  const postId = req.params.id;
+
+  if (!postId) {
+    return res.status(400).json({ error: "Post ID is required" });
+  }
+
+  try {
+    // Validate if the provided ID is a valid MongoDB ObjectId
+    if (!ObjectId.isValid(postId)) {
+      return res.status(400).json({ error: "Invalid Post ID format" });
+    }
+
+    const result = await postcollection.deleteOne({ _id: new ObjectId(postId) });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    res.json({ message: "Post deleted successfully", deletedCount: result.deletedCount });
+  } catch (error) {
+    console.error("Error deleting post:", error);
+    res.status(500).json({ error: "Failed to delete post" });
+  }
+});
+
+// ... rest of your existing code ...
     app.post("/comment", async (req, res) => {
       const post = req.body; // Validate required fields
 

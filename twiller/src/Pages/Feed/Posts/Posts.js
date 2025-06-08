@@ -1,6 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import "./Posts.css";
-import { Avatar } from "@mui/material";
+import { Avatar, IconButton, Menu, MenuItem } from "@mui/material"; // Added IconButton, Menu, MenuItem
 import axios from "axios";
 import VerifiedUserIcon from "@mui/icons-material/Verified";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
@@ -8,11 +8,13 @@ import RepeatIcon from "@mui/icons-material/Repeat";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import PublishIcon from "@mui/icons-material/Publish";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz"; // Added MoreHorizIcon
 import { useNavigate } from "react-router-dom";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
 import ConfirmationModal from "./ConfirmationModal";
 
-const Posts = ({ p, posts }) => {
+// Added onPostDelete prop
+const Posts = ({ p, posts, onPostDelete }) => {
   const { name, username, photo, post, audio, video, email } = p;
   const navigate = useNavigate();
   const [userId, setUserId] = useState(null);
@@ -22,6 +24,8 @@ const Posts = ({ p, posts }) => {
   const [subscriptionPlan, setSubscriptionPlan] = useState("free");
   const [profilePhoto, setProfilePhoto] = useState("");
   const [isPlaying, setIsPlaying] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null); // State for menu anchor
+  const openMenu = Boolean(anchorEl); // State to check if menu is open
 
   const videoRef = useRef(null);
   const [tapCount, setTapCount] = useState(0);
@@ -246,6 +250,34 @@ const Posts = ({ p, posts }) => {
     }
   };
 
+  // Menu handlers
+  const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Delete post handler
+  const handleDeletePost = async () => {
+    handleMenuClose(); // Close the menu
+    if (window.confirm("Are you sure you want to delete this post?")) { // Simple confirmation
+      try {
+        // Assuming your backend has an endpoint for deleting posts, e.g., /post/:id
+        await axios.delete(`https://twiller-twitterclone-2-q41v.onrender.com/post/${p._id}`);
+        alert("Post deleted successfully!");
+        if (onPostDelete) {
+          onPostDelete(p._id); // Notify parent component to remove the post
+        }
+      } catch (error) {
+        console.error("Error deleting post:", error);
+        alert("Failed to delete post. Please try again.");
+      }
+    }
+  };
+
+
   return (
     <div className="post" >
       <div className="post__avatar" onClick={handleUserClick}>
@@ -261,6 +293,39 @@ const Posts = ({ p, posts }) => {
               </span>
             </h3>
           </div>
+          {/* Three-dotted menu for delete option */}
+          {loggedInEmail === email && ( // Conditional rendering based on email match
+            <div className="post__headerRight">
+              <IconButton
+                aria-label="more"
+                aria-controls={openMenu ? 'long-menu' : undefined}
+                aria-expanded={openMenu ? 'true' : undefined}
+                aria-haspopup="true"
+                onClick={handleMenuClick}
+              >
+                <MoreHorizIcon />
+              </IconButton>
+              <Menu
+                id="long-menu"
+                MenuListProps={{
+                  'aria-labelledby': 'long-button',
+                }}
+                anchorEl={anchorEl}
+                open={openMenu}
+                onClose={handleMenuClose}
+                PaperProps={{
+                  style: {
+                    maxHeight: 48 * 4.5,
+                    width: '20ch',
+                  },
+                }}
+              >
+                <MenuItem onClick={handleDeletePost}>
+                  Delete
+                </MenuItem>
+              </Menu>
+            </div>
+          )}
           <div className="post__headerDescription" onClick={handlePostClick}>
             <p>{post}</p>
           </div>
@@ -307,7 +372,7 @@ const Posts = ({ p, posts }) => {
             fontSize="small"
             onClick={handlePostClick}
           />
-          <RepeatIcon className="post__footer__icon" fontSize="small"  />
+          <RepeatIcon className="post__footer__icon" fontSize="small" />
           <FavoriteBorderIcon className="post__footer__icon" fontSize="small" />
           <PublishIcon className="post__footer__icon" fontSize="small" />
         </div>

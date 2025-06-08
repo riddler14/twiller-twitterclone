@@ -1,16 +1,19 @@
-import {useState,useRef,useEffect} from "react";
-import { Avatar } from "@mui/material";
+import React, { useState, useRef, useEffect } from "react";
+import "../../Feed/Posts/Posts.css";
+import { Avatar, IconButton, Menu, MenuItem } from "@mui/material"; // Added IconButton, Menu, MenuItem
+import axios from "axios";
 import VerifiedUserIcon from "@mui/icons-material/Verified";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import RepeatIcon from "@mui/icons-material/Repeat";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
 import PublishIcon from "@mui/icons-material/Publish";
-import { useNavigate } from 'react-router-dom';
-import ConfirmationModal from "../../Feed/Posts/ConfirmationModal";
-import "../../Feed/Posts/Posts.css";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import MoreHorizIcon from "@mui/icons-material/MoreHoriz"; // Added MoreHorizIcon
+import { useNavigate } from "react-router-dom";
+import useLoggedinuser from "../../../hooks/useLoggedinuser";
+import ConfirmationModal from "../../Feed/Posts/ConfirmationModal";
 
-const Post = ({p,upost}) => {
+const Post = ({p,upost,onPostDelete}) => {
     const { name, username, photo, post,audio,video,email} = p;
      const [isModalOpen, setIsModalOpen] = useState(false);
     const navigate=useNavigate();
@@ -21,7 +24,11 @@ const Post = ({p,upost}) => {
         const [subscriptionPlan, setSubscriptionPlan] = useState("free");
     const [profilePhoto, setProfilePhoto] = useState("");
       const [isPlaying, setIsPlaying] = useState(false);
-    
+     const [anchorEl, setAnchorEl] = useState(null); // State for menu anchor
+      const openMenu = Boolean(anchorEl); 
+        const [loggedinuser] = useLoggedinuser();
+        
+  const loggedInEmail = loggedinuser[0]?.email;// State
       let tapTimeout = null; // Timeout for resetting tap count
       const resetTapCount = () => {
     clearTimeout(tapTimeout); // Clear any existing timeout
@@ -194,6 +201,32 @@ const handleTap = (e) => {
         return <VerifiedUserIcon className="post__badge"/>; // No icon for "free" plan
     }
   };
+
+    const handleMenuClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+
+  // Delete post handler
+  const handleDeletePost = async () => {
+    handleMenuClose(); // Close the menu
+    if (window.confirm("Are you sure you want to delete this post?")) { // Simple confirmation
+      try {
+        // Assuming your backend has an endpoint for deleting posts, e.g., /post/:id
+        await axios.delete(`https://twiller-twitterclone-2-q41v.onrender.com/post/${p._id}`);
+        alert("Post deleted successfully!");
+        if (onPostDelete) {
+          onPostDelete(p._id); // Notify parent component to remove the post
+        }
+      } catch (error) {
+        console.error("Error deleting post:", error);
+        alert("Failed to delete post. Please try again.");
+      }
+    }
+  };
     return (
       <div className="post">
         <div className="post__avatar">
@@ -209,6 +242,38 @@ const handleTap = (e) => {
                 </span>
               </h3>
             </div>
+            {loggedInEmail === email && ( // Conditional rendering based on email match
+            <div className="post__headerRight">
+              <IconButton
+                aria-label="more"
+                aria-controls={openMenu ? 'long-menu' : undefined}
+                aria-expanded={openMenu ? 'true' : undefined}
+                aria-haspopup="true"
+                onClick={handleMenuClick}
+              >
+                <MoreHorizIcon />
+              </IconButton>
+              <Menu
+                id="long-menu"
+                MenuListProps={{
+                  'aria-labelledby': 'long-button',
+                }}
+                anchorEl={anchorEl}
+                open={openMenu}
+                onClose={handleMenuClose}
+                PaperProps={{
+                  style: {
+                    maxHeight: 48 * 4.5,
+                    width: '20ch',
+                  },
+                }}
+              >
+                <MenuItem onClick={handleDeletePost}>
+                  Delete
+                </MenuItem>
+              </Menu>
+            </div>
+          )}
             <div className="post__headerDescription" onClick={handlePostClick}>
               <p>{post}</p>
             </div>

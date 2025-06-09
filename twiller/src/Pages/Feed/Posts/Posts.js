@@ -12,6 +12,7 @@ import MoreHorizIcon from "@mui/icons-material/MoreHoriz"; // Added MoreHorizIco
 import { useNavigate } from "react-router-dom";
 import useLoggedinuser from "../../../hooks/useLoggedinuser";
 import ConfirmationModal from "./ConfirmationModal";
+import { useTranslation } from "react-i18next";
 
 // Added onPostDelete prop
 const Posts = ({ p, posts, onPostDelete }) => {
@@ -26,7 +27,7 @@ const Posts = ({ p, posts, onPostDelete }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null); // State for menu anchor
   const openMenu = Boolean(anchorEl); // State to check if menu is open
-
+  const {t}=useTranslation();
   const videoRef = useRef(null);
   const [tapCount, setTapCount] = useState(0);
   let tapTimeout = null;
@@ -379,7 +380,7 @@ const Posts = ({ p, posts, onPostDelete }) => {
       </div>
       <ConfirmationModal
         isOpen={isModalOpen}
-        message="Are you sure you want to leave the website?"
+        message={t("Are you sure you want to leave the website?")}
         onConfirm={handleConfirm}
         onCancel={handleCancel}
       />

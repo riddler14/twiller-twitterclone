@@ -24,7 +24,7 @@ const Feed = () => {
     useEffect(() => {
         // Fetch posts when the component mounts
         fetchPosts();
-    }, []); // Empty dependency array means this effect runs only once on mount
+    }, [posts]); // Empty dependency array means this effect runs only once on mount
 
     // Handler for when a post is deleted from the Posts component
     const handlePostDelete = (deletedPostId) => {

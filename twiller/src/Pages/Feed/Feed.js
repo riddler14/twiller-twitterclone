@@ -1,15 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import './Feed.css';
 import Posts from './Posts/Posts';
 import Tweetbox from './Tweetbox/Tweetbox';
 import { useTranslation } from 'react-i18next';
 
 const Feed = () => {
-    const [posts, setPosts] = useState([]); // Renamed 'post' to 'posts' for clarity, as it holds an array
+    const [posts, setPosts] = useState([]);
     const { t } = useTranslation();
 
-    // Function to fetch posts from the backend
-    const fetchPosts = () => {
+    // Memoize fetchPosts to prevent unnecessary re-creations if it were a dependency
+    const fetchPosts = useCallback(() => {
         fetch("https://twiller-twitterclone-2-q41v.onrender.com/post")
             .then((res) => res.json())
             .then((data) => {
@@ -19,20 +19,26 @@ const Feed = () => {
             .catch((error) => {
                 console.error("Error fetching posts:", error);
             });
-    };
+    }, []); // Empty dependency array for fetchPosts itself
 
+    // This useEffect will run only once when the component mounts
     useEffect(() => {
-        // Fetch posts when the component mounts
         fetchPosts();
-    }, [posts]); // Empty dependency array means this effect runs only once on mount
+    }, [fetchPosts]); // fetchPosts is a stable function due to useCallback
+
+    // Handler for when a new post is successfully made in Tweetbox
+    const handleNewPostSuccess = useCallback(() => {
+        fetchPosts(); // Re-fetch all posts to include the new one
+    }, [fetchPosts]);
 
     // Handler for when a post is deleted from the Posts component
-    const handlePostDelete = (deletedPostId) => {
-        // Update the state to remove the deleted post, triggering a re-render
+    const handlePostDelete = useCallback((deletedPostId) => {
+        // Option 1: Filter locally (faster UI update for deletion)
         setPosts((prevPosts) => prevPosts.filter((p) => p._id !== deletedPostId));
-        // Optionally, you could re-fetch all posts if you want to be absolutely sure
-        // fetchPosts(); // Uncomment this line if you prefer a full re-fetch after deletion
-    };
+
+        // Option 2 (If you prefer a full re-fetch after deletion):
+        // fetchPosts();
+    }, []); // Empty dependency array for handlePostDelete as it doesn't depend on outside state
 
     console.log(posts);
 
@@ -41,12 +47,14 @@ const Feed = () => {
             <div className="feed__header">
                 <h2>{t('Home')}</h2>
             </div>
-            <Tweetbox />
+            {/* Pass the handleNewPostSuccess callback to Tweetbox */}
+            <Tweetbox onPostSuccess={handleNewPostSuccess} />
             {posts.map((p) => (
                 <Posts
                     key={p._id}
                     p={p}
-                    posts={posts} // Pass the entire posts array (though not strictly necessary for deletion logic here)
+                    // 'posts' prop might not be needed in Posts component for simple display/delete
+                    // posts={posts}
                     onPostDelete={handlePostDelete} // Pass the delete handler
                 />
             ))}

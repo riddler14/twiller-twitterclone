@@ -18,7 +18,7 @@ import VideoLibraryIcon from "@mui/icons-material/VideoLibrary";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"; // Import a checkmark icon
 import CancelIcon from "@mui/icons-material/Cancel"; // Import a cancel icon for removing video
 
-const Tweetbox = () => {
+const Tweetbox = ({onPostSuccess}) => {
   const [post, setpost] = useState("");
   const [imageurl, setimageurl] = useState("");
   const [isloading, setisloading] = useState(false); // Used for image upload loading
@@ -381,6 +381,10 @@ const Tweetbox = () => {
       const postData = await postResponse.json();
       console.log("Tweet posted successfully:", postData);
       resetForm();
+
+      if (onPostSuccess) {
+                onPostSuccess();
+            }
     } catch (error) {
       console.error("Error during tweet submission:", error);
       alert("An error occurred while posting the tweet. Please try again.");
